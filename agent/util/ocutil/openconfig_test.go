@@ -20,8 +20,8 @@ import (
     "sort"
     "testing"
 
-    "link022/agent/util/mock"
-    "link022/generated/ocstruct"
+    "github.com/google/link022/agent/util/mock"
+    "github.com/google/link022/generated/ocstruct"
 )
 
 func TestVLANIDs(t *testing.T) {

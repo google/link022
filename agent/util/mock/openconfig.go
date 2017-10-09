@@ -16,7 +16,7 @@ limitations under the License.
 package mock
 
 import (
-    "link022/generated/ocstruct"
+    "github.com/google/link022/generated/ocstruct"
     "github.com/openconfig/ygot/ygot"
 )
 

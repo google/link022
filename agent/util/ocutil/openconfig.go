@@ -20,7 +20,7 @@ import (
     "reflect"
     "sort"
 
-    "link022/generated/ocstruct"
+    "github.com/google/link022/generated/ocstruct"
 )
 
 func VLANChanged(existingVLANIDs, updatedVLANIDs []int) bool {

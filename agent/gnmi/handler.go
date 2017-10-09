@@ -19,11 +19,11 @@ import (
     "errors"
     "fmt"
 
-    "link022/agent/context"
-    "link022/agent/util/ocutil"
-    "link022/agent/service"
-    "link022/agent/syscmd"
-    "link022/generated/ocstruct"
+    "github.com/google/link022/agent/context"
+    "github.com/google/link022/agent/util/ocutil"
+    "github.com/google/link022/agent/service"
+    "github.com/google/link022/agent/syscmd"
+    "github.com/google/link022/generated/ocstruct"
     "github.com/openconfig/ygot/ygot"
 
     pb "github.com/openconfig/gnmi/proto/gnmi"
