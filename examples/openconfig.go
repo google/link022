@@ -18,7 +18,7 @@ limitations under the License.
 package main
 
 import (
-  "link022/generated/ocstruct"
+  "github.com/google/link022/generated/ocstruct"
   "github.com/openconfig/ygot/ygot"
   log "github.com/golang/glog"
 )

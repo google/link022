@@ -26,8 +26,8 @@ import (
 
     "google.golang.org/grpc"
     "google.golang.org/grpc/reflection"
-    "link022/agent/context"
-    "link022/agent/gnmi"
+    "github.com/google/link022/agent/context"
+    "github.com/google/link022/agent/gnmi"
     "github.com/google/gnxi/utils/credentials"
 
     log "github.com/golang/glog"

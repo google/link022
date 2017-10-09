@@ -22,10 +22,10 @@ import (
     "reflect"
     "testing"
 
-    "link022/agent/syscmd"
-    "link022/agent/util/mock"
-    "link022/agent/util/ocutil"
-    "link022/generated/ocstruct"
+    "github.com/google/link022/agent/syscmd"
+    "github.com/google/link022/agent/util/mock"
+    "github.com/google/link022/agent/util/ocutil"
+    "github.com/google/link022/generated/ocstruct"
 )
 
 var (

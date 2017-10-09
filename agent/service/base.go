@@ -19,9 +19,9 @@ package service
 import (
     "fmt"
 
-    "link022/generated/ocstruct"
-    "link022/agent/syscmd"
-    "link022/agent/util/ocutil"
+    "github.com/google/link022/generated/ocstruct"
+    "github.com/google/link022/agent/syscmd"
+    "github.com/google/link022/agent/util/ocutil"
     log "github.com/golang/glog"
 )
 

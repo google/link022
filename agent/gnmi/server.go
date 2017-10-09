@@ -22,7 +22,7 @@ import (
     "path"
     "reflect"
 
-    "link022/generated/ocstruct"
+    "github.com/google/link022/generated/ocstruct"
     "github.com/google/gnxi/gnmi"
 
     pb "github.com/openconfig/gnmi/proto/gnmi"
