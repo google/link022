@@ -1,0 +1,97 @@
+{
+  "auth-server-config": {
+    "name": "",
+    "address": "",
+    "auth-port": 0,
+    "secret-key": ""
+  },
+  "office-ap": [
+    {
+      "hostname": "raspberrypi",
+      "radios": {
+        "radio": [
+          {
+            "config": {
+              "channel": 8,
+              "channel-width": 10,
+              "enabled": true,
+              "id": 1,
+              "operating-frequency": "FREQ_2GHZ",
+              "scanning": true,
+              "scanning-interval": 30,
+              "transmit-power": 5
+            },
+            "id": 1
+          }
+        ]
+      },
+      "ssids": {
+        "ssid": [
+          {
+            "config": {
+              "advertise-apname": false,
+              "basic-data-rates": [
+                "RATE_11MB",
+                "RATE_24MB"
+              ],
+              "broadcast-filter": false,
+              "csa": false,
+              "dhcp-required": true,
+              "dot11k": false,
+              "dva": false,
+              "enabled": true,
+              "gtk-timeout": 1000,
+              "hidden": false,
+              "multicast-filter": false,
+              "name": "Google-A-Link022",
+              "operating-frequency": "FREQ_2_5_GHZ",
+              "opmode": "WPA2_ENTERPRISE",
+              "ptk-timeout": 1000,
+              "supported-data-rates": [
+                "RATE_11MB",
+                "RATE_24MB"
+              ],
+              "vlan-id": 250
+            },
+            "name": "Google-A-Emu"
+          },
+          {
+            "config": {
+              "advertise-apname": false,
+              "basic-data-rates": [
+                "RATE_11MB",
+                "RATE_24MB"
+              ],
+              "broadcast-filter": false,
+              "csa": false,
+              "dhcp-required": true,
+              "dot11k": false,
+              "dva": false,
+              "enabled": true,
+              "gtk-timeout": 1000,
+              "hidden": false,
+              "multicast-filter": false,
+              "name": "Google-Guest-Link022",
+              "operating-frequency": "FREQ_2_5_GHZ",
+              "opmode": "OPEN",
+              "ptk-timeout": 1000,
+              "supported-data-rates": [
+                "RATE_11MB",
+                "RATE_24MB"
+              ],
+              "vlan-id": 666
+            },
+            "name": "GoogleGuest-Emu"
+          }
+        ]
+      },
+      "vendor": "link022"
+    }
+  ],
+  "office-name": "emulator-office",
+  "vendor": [
+    {
+      "vendor-name": "link022"
+    }
+  ]
+}
