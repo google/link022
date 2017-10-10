@@ -14,7 +14,7 @@ limitations under the License.
 */
 
 // The openconfig program contains an example demonstrating how to use
-// the auto-generated owca wireless openconfig module.
+// the auto-generated wireless openconfig module.
 package main
 
 import (
@@ -43,19 +43,19 @@ const (
     username          = "admin"
 )
 
-func addAPs(wifiOWCA *ocstruct.Office, apNum int, addAuthWLAN bool) {
+func addAPs(wifiOffice *ocstruct.Office, apNum int, addAuthWLAN bool) {
     if apNum <= 0 {
         return
     }
 
-    wifiOWCA.OfficeAp = make(map[string]*ocstruct.WifiOffice_OfficeAp)
+    wifiOffice.OfficeAp = make(map[string]*ocstruct.WifiOffice_OfficeAp)
 
     // Add AP 1.
     ap1 :=  &ocstruct.WifiOffice_OfficeAp {
         Hostname: ygot.String(ap1Name),
         Vendor: ygot.String(vendor),
     }
-    wifiOWCA.OfficeAp[ap1Name] = ap1
+    wifiOffice.OfficeAp[ap1Name] = ap1
     addRadios(ap1)
     addWLANs(ap1, addAuthWLAN)
 
@@ -68,7 +68,7 @@ func addAPs(wifiOWCA *ocstruct.Office, apNum int, addAuthWLAN bool) {
         Hostname: ygot.String(ap2Name),
         Vendor: ygot.String(vendor),
     }
-    wifiOWCA.OfficeAp[ap2Name] = ap2
+    wifiOffice.OfficeAp[ap2Name] = ap2
     addRadios(ap2)
     addWLANs(ap2, addAuthWLAN)
 }
@@ -151,7 +151,7 @@ func addWLANs(ap *ocstruct.WifiOffice_OfficeAp, addAuthWLAN bool) {
 }
 
 func generateConfig(apNum int, addAuthWLAN bool) *ocstruct.Office {
-    // Generate a WIFI configuration for an OWCA office.
+    // Generate a WIFI configuration for an office.
     office := &ocstruct.Office{}
 
     office.OfficeName = ygot.String(officeName)
@@ -161,7 +161,7 @@ func generateConfig(apNum int, addAuthWLAN bool) *ocstruct.Office {
     }
     apVendor.VendorName = ygot.String(vendor)
 
-    // Set up OWCA-AP (vendor neutral).
+    // Set up AP (vendor neutral).
     addAPs(office, apNum, addAuthWLAN)
 
     return office
