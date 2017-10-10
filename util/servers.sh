@@ -17,11 +17,10 @@
 # can manage the link022 device.
 # A typical setup is to create a peer to peer ethernet link between link022 and
 # the service machine.
-
 # Interface connected to the link022 host
 INTF=eth0
 NS=lk22
-GWIP=10.11.11.1
+GWIP=192.168.11.1
 
 sudo ip netns add ${NS}
 sudo ip link set dev ${INTF} netns ${NS}
@@ -30,5 +29,36 @@ sudo ip netns exec ${NS} ip link set dev ${INTF} up
 
 # Start DHCP
 sudo ip netns exec ${NS} dnsmasq --no-ping -p 0 -k \
- -F set:s0,10.11.11.2,10.11.11.10 \
- -O tag:s0,3,10.11.11.1 -l /tmp/link022.leases -8 /tmp/link022.dhcp.log -i ${INTF} --conf-file= &
+ -F set:s0,192.168.11.2,192.168.11.10 \
+ -O tag:s0,3,192.168.11.1 -O option:dns-server,8.8.8.8 \
+ -l /tmp/link022.leases -8 /tmp/link022.dhcp.log -i ${INTF} --conf-file= &
+
+# Get Internet access for link022
+TO_DEF=to_def
+TO_NS=to_${NS}
+OUT_INTF=wlan0
+
+# enable forwarding
+sudo sysctl net.ipv4.ip_forward=1
+sudo ip netns exec ${NS} sysctl net.ipv4.ip_forward=1
+
+# create veth pair
+sudo ip link add name ${TO_NS} type veth peer name ${TO_DEF} netns ${NS}
+# configure interfaces and routes
+sudo ip addr add 192.168.22.1/30 dev ${TO_NS}
+sudo ip link set ${TO_NS} up
+# sudo ip route add 192.168.22.0/30 dev ${TO_NS}
+sudo ip netns exec ${NS} ip addr add 192.168.22.2/30 dev ${TO_DEF}
+sudo ip netns exec ${NS} ip link set ${TO_DEF} up
+sudo ip netns exec ${NS} ip route add default via 192.168.22.1
+# NAT in LK22
+sudo ip netns exec ${NS} iptables -t nat -F
+sudo ip netns exec ${NS} iptables -t nat -A POSTROUTING -o ${TO_DEF} -j MASQUERADE
+# NAT in default
+sudo iptables -P FORWARD DROP
+sudo iptables -F FORWARD
+# Assuming the host does not have other NAT rules.
+sudo iptables -t nat -F
+sudo iptables -t nat -A POSTROUTING -s 192.168.22.0/30 -o ${OUT_INTF} -j MASQUERADE
+sudo iptables -A FORWARD -i ${OUT_INTF} -o ${TO_NS} -j ACCEPT
+sudo iptables -A FORWARD -i ${TO_NS} -o ${OUT_INTF} -j ACCEPT
