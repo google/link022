@@ -23,7 +23,7 @@ export PATH=$PATH:/usr/local/go/bin
 ```
 Install dependencies.
 ```
-sudo apt-get install python-dev udhcpc bridge-utils hostapd libxml2-dev
+sudo apt-get install udhcpc bridge-utils hostapd
 ```
 
 ### Download Link022 agent
