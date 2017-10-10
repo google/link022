@@ -36,6 +36,24 @@ go get github.com/google/link022/agent
 Download sample certificates from github.com/google/link022/examples/cert/server/.
 Or you can use your own cert.
 
+### Configuring network interfaces of Pi
+Editing the file /etc/network/interfaces on Pi.
+```
+auto lo
+iface lo inet loopback
+
+auto eth0
+iface eth0 inet dhcp
+
+# Disable all WLAN interfaces.
+auto wlan0
+iface wlan0 inet static
+    address 0.0.0.0
+
+# Repeat for other WLAN interfaces.
+```
+Note: Reboot the device to make change take effect.
+
 ### Running Link022 agent
 ```
 export PATH=$PATH:/usr/local/go/bin:$HOME/go/bin
