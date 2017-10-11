@@ -128,8 +128,7 @@ func hostapdConfigFile(radioConfig *ocstruct.WifiOffice_OfficeAp_Radios_Radio_Co
         // Add AUTH configuration.
         if wlanConfig.Opmode == ocstruct.WifiOffice_OfficeAp_Ssids_Ssid_Config_Opmode_WPA2_ENTERPRISE {
             // Add radius configuration.
-            // TODO: Should use address. Use name for now due to a ygot bug.
-            radiusServerAddr := *authServerConfig.Name
+            radiusServerAddr := *authServerConfig.Address
             radiusServerPort := *authServerConfig.AuthPort
             radiusSecret := *authServerConfig.SecretKey
             authConfig := fmt.Sprintf(authConfigTemplate, radiusServerAddr, radiusServerPort, radiusSecret, hostname)
