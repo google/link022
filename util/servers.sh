@@ -30,8 +30,8 @@ sudo ip netns exec ${NS} ip link set dev ${INTF} up
 # Start DHCP
 sudo ip netns exec ${NS} dnsmasq --no-ping -p 0 -k \
  -F set:s0,192.168.11.2,192.168.11.10 \
- -O tag:s0,3,192.168.11.1 -O option:dns-server,8.8.8.8 \
- -l /tmp/link022.leases -8 /tmp/link022.dhcp.log -i ${INTF} --conf-file= &
+ -O tag:s0,3,192.168.11.1 -O option:dns-server,8.8.8.8  -I lo -z \
+ -l /tmp/link022.leases -8 /tmp/link022.dhcp.log -i ${INTF} -a ${GWIP} --conf-file= &
 
 # Get Internet access for link022
 TO_DEF=to_def
@@ -62,3 +62,21 @@ sudo iptables -t nat -F
 sudo iptables -t nat -A POSTROUTING -s 192.168.22.0/30 -o ${OUT_INTF} -j MASQUERADE
 sudo iptables -A FORWARD -i ${OUT_INTF} -o ${TO_NS} -j ACCEPT
 sudo iptables -A FORWARD -i ${TO_NS} -o ${OUT_INTF} -j ACCEPT
+
+########### Adding vlans
+function add_vlan {
+	vlan_name=$1
+	vlan_id=$2
+	vlan_net=$3
+	vlan_gw=${vlan_net}.1
+	sudo ip netns exec ${NS} ip link add link ${INTF} name ${vlan_name} type vlan id ${vlan_id}
+	sudo ip netns exec ${NS} ip addr add ${vlan_gw}/24 dev ${vlan_name}
+	sudo ip netns exec ${NS} ip link set dev ${vlan_name} up
+
+	# Start DHCP
+	sudo ip netns exec ${NS} dnsmasq --no-ping -p 0 -k \
+	 -F set:s0,${vlan_net}.2,${vlan_net}.100 \
+	 -O tag:s0,3,${vlan_gw} -O option:dns-server,8.8.8.8  -I lo -z \
+	 -l /tmp/link022.${vlan_name}.leases -8 /tmp/link022.${vlan_name}.dhcp.log -i ${vlan_name} -a ${vlan_gw} --conf-file= &
+}
+add_vlan guest 200 192.168.33
