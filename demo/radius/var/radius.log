@@ -1,0 +1,144 @@
+including dictionary file /tmp/port_authLsyvZa/freeradius/dictionary
+main {
+	name = "freeradius"
+	prefix = "/usr"
+	localstatedir = "/tmp/port_authLsyvZa/var"
+	sbindir = "/usr/sbin"
+	logdir = "/tmp/port_authLsyvZa/var"
+	run_dir = "/tmp/port_authLsyvZa/var"
+	libdir = "/usr/lib/freeradius"
+	radacctdir = "/tmp/port_authLsyvZa/var"
+	hostname_lookups = no
+	max_request_time = 30
+	cleanup_delay = 5
+	max_requests = 256
+	pidfile = "/tmp/port_authLsyvZa/var/freeradius.pid"
+	checkrad = "/usr/sbin/checkrad"
+	debug_level = 0
+	proxy_requests = yes
+ log {
+	stripped_names = no
+	auth = no
+	auth_badpass = no
+	auth_goodpass = no
+ }
+ security {
+	max_attributes = 0
+	reject_delay = 0
+	status_server = no
+ }
+}
+radiusd: #### Loading Realms and Home Servers ####
+radiusd: #### Loading Clients ####
+ client localhost {
+	ipaddr = 127.0.0.1
+	require_message_authenticator = no
+	secret = "testing123"
+	nastype = "other"
+ }
+ client agent_v {
+	ipaddr = 100.101.24.126
+	require_message_authenticator = no
+	secret = "radiuspwd"
+	nastype = "other"
+ }
+ client agent_v_ap {
+	ipaddr = 10.100.0.0
+	netmask = 24
+	require_message_authenticator = no
+	secret = "radiuspwd"
+	nastype = "other"
+ }
+radiusd: #### Instantiating modules ####
+ instantiate {
+ }
+radiusd: #### Loading Virtual Servers ####
+server { # from file /tmp/port_authLsyvZa/freeradius/radiusd.conf
+ modules {
+ Module: Checking authenticate {...} for more modules to load
+ Module: Linked to module rlm_eap
+ Module: Instantiating module "eap" from file /tmp/port_authLsyvZa/freeradius/eap.conf
+  eap {
+	default_eap_type = "md5"
+	timer_expire = 60
+	ignore_unknown_eap_types = no
+	cisco_accounting_username_bug = no
+	max_sessions = 2048
+  }
+ Module: Linked to sub-module rlm_eap_md5
+ Module: Instantiating eap-md5
+ Module: Linked to sub-module rlm_eap_tls
+ Module: Instantiating eap-tls
+   tls {
+	rsa_key_exchange = no
+	dh_key_exchange = yes
+	rsa_key_length = 512
+	dh_key_length = 512
+	verify_depth = 0
+	pem_file_type = yes
+	private_key_file = "/tmp/port_authLsyvZa/freeradius/certs/server.key"
+	certificate_file = "/tmp/port_authLsyvZa/freeradius/certs/server.pem"
+	CA_file = "/tmp/port_authLsyvZa/freeradius/certs/ca.pem"
+	dh_file = "/tmp/port_authLsyvZa/freeradius/certs/dh"
+	random_file = "/dev/urandom"
+	fragment_size = 1024
+	include_length = yes
+	check_crl = no
+	ecdh_curve = "prime256v1"
+   }
+ Module: Linked to sub-module rlm_eap_ttls
+ Module: Instantiating eap-ttls
+   ttls {
+	default_eap_type = "md5"
+	copy_request_to_tunnel = no
+	use_tunneled_reply = no
+	virtual_server = "inner-tunnel"
+	include_length = yes
+   }
+ Module: Linked to sub-module rlm_eap_peap
+ Module: Instantiating eap-peap
+   peap {
+	default_eap_type = "md5"
+	copy_request_to_tunnel = no
+	use_tunneled_reply = no
+	proxy_tunneled_request_as_eap = yes
+	virtual_server = "inner-tunnel"
+	soh = no
+   }
+ Module: Checking authorize {...} for more modules to load
+ Module: Linked to module rlm_files
+ Module: Instantiating module "macs" from file /tmp/port_authLsyvZa/freeradius/radiusd.conf
+  files macs {
+	usersfile = "/tmp/port_authLsyvZa/freeradius/macs"
+	compat = "no"
+	key = "%{Calling-Station-ID}"
+  }
+ Module: Linked to module rlm_always
+ Module: Instantiating module "reject" from file /tmp/port_authLsyvZa/freeradius/radiusd.conf
+  always reject {
+	rcode = "reject"
+	simulcount = 0
+	mpp = no
+  }
+ Module: Instantiating module "users" from file /tmp/port_authLsyvZa/freeradius/radiusd.conf
+  files users {
+	usersfile = "/tmp/port_authLsyvZa/freeradius/users"
+	compat = "no"
+  }
+ } # modules
+} # server
+server inner-tunnel { # from file /tmp/port_authLsyvZa/freeradius/sites-enabled/inner-tunnel
+ modules {
+ Module: Checking authenticate {...} for more modules to load
+ Module: Checking authorize {...} for more modules to load
+ } # modules
+} # server
+radiusd: #### Opening IP addresses and Ports ####
+listen {
+	type = "auth"
+	ipaddr = *
+	port = 0
+}
+Listening on authentication address * port 1812
+Listening on proxy address * port 1814
+Ready to process requests.

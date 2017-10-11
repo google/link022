@@ -1,0 +1,21 @@
+######################################################################
+#
+#	This is a virtual server that handles *only* inner tunnel
+#	requests for EAP-TTLS and PEAP types.
+#
+#
+######################################################################
+
+server inner-tunnel {
+
+    authorize {
+        eap {
+            ok = return
+        }
+        users
+    }
+
+    authenticate {
+        eap
+    }
+}

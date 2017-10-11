@@ -1,0 +1,7 @@
+host-authed Cleartext-Password := "authedpwd"
+	Tunnel-Type = VLAN,
+	Tunnel-Medium-Type = IEEE-802,
+	Tunnel-Private-Group-Id = "authed",
+	Reply-Message = "welcome-host-authed",
+	Session-Timeout = 3600,
+	Termination-Action = RADIUS-Request
