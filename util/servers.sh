@@ -18,8 +18,8 @@
 # A typical setup is to create a peer to peer ethernet link between link022 and
 # the service machine.
 # Interface connected to the link022 host
+source servers.conf
 INTF=eth0
-NS=lk22
 GWIP=192.168.11.1
 
 sudo ip netns add ${NS}
