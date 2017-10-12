@@ -18,6 +18,7 @@ package gnmi
 import (
     "errors"
     "fmt"
+    "time"
 
     "github.com/google/link022/agent/context"
     "github.com/google/link022/agent/util/ocutil"
@@ -78,6 +79,9 @@ func handleSet(op pb.UpdateResult_Operation, updatedPath *pb.Path, updatedConfig
 
     // Clean up the existing configuration.
     service.CleanupConfig(deviceConfig.ETHINTFName, changedVLANIDs)
+    
+    // Wait for link to be available again.
+    time.Sleep(5 * time.Second)
 
     // Process the incoming configuraiton.
     if err = service.ApplyConfig(officeConfig, resetIntf, deviceConfig.Hostname, deviceConfig.ETHINTFName,
