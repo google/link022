@@ -80,3 +80,7 @@ function add_vlan {
 	 -l /tmp/link022.${vlan_name}.leases -8 /tmp/link022.${vlan_name}.dhcp.log -i ${vlan_name} -a ${vlan_gw} --conf-file= &
 }
 add_vlan guest 200 192.168.33
+add_vlan auth 300 192.168.44
+
+RADIUS_PATH=~/usr/link022/demo/radius/freeradius
+sudo ip netns exec ${NS} freeradius -X -d ${RADIUS_PATH} > /tmp/radius.log &
