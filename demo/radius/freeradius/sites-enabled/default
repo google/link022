@@ -1,0 +1,10 @@
+authorize {
+    eap {
+        ok = return
+    }
+    users
+}
+
+authenticate {
+    eap
+}

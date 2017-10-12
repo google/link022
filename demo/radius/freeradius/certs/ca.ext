@@ -1,0 +1,6 @@
+extensions = x509v3
+
+[ x509v3 ]
+basicConstraints      = CA:true,pathlen:0
+nsCertType            = sslCA,emailCA,objCA
+nsComment             = "Sunnyvale CA"
