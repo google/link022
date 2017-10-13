@@ -18,8 +18,8 @@
 # A typical setup is to create a peer to peer ethernet link between link022 and
 # the service machine.
 # Interface connected to the link022 host
+source servers.conf
 INTF=eth0
-NS=lk22
 GWIP=192.168.11.1
 
 sudo ip netns add ${NS}
@@ -80,3 +80,7 @@ function add_vlan {
 	 -l /tmp/link022.${vlan_name}.leases -8 /tmp/link022.${vlan_name}.dhcp.log -i ${vlan_name} -a ${vlan_gw} --conf-file= &
 }
 add_vlan guest 200 192.168.33
+add_vlan auth 300 192.168.44
+
+RADIUS_PATH=../demo/radius/freeradius
+sudo ip netns exec ${NS} freeradius -X -d ${RADIUS_PATH} > /tmp/radius.log &
