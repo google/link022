@@ -43,7 +43,7 @@
               "gtk-timeout": 1000,
               "hidden": false,
               "multicast-filter": false,
-              "name": "Google-A-Link022",
+              "name": "Auth-Link022",
               "operating-frequency": "FREQ_2_5_GHZ",
               "opmode": "WPA2_ENTERPRISE",
               "ptk-timeout": 1000,
@@ -53,7 +53,7 @@
               ],
               "vlan-id": 250
             },
-            "name": "Google-A-Emu"
+            "name": "Auth-Link022"
           },
           {
             "config": {
@@ -71,7 +71,7 @@
               "gtk-timeout": 1000,
               "hidden": false,
               "multicast-filter": false,
-              "name": "Google-Guest-Link022",
+              "name": "Guest-Link022",
               "operating-frequency": "FREQ_2_5_GHZ",
               "opmode": "OPEN",
               "ptk-timeout": 1000,
@@ -81,7 +81,7 @@
               ],
               "vlan-id": 666
             },
-            "name": "GoogleGuest-Emu"
+            "name": "Guest-Link022"
           }
         ]
       },
