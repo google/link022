@@ -83,7 +83,7 @@ function add_vlan {
 add_vlan guest 200 192.168.33
 add_vlan auth 300 192.168.44
 
-RADIUS_PATH=../demo/radius/freeradius
+RADIUS_PATH=../radius/freeradius
 sudo ip netns exec ${NS} freeradius -X -d ${RADIUS_PATH} > /tmp/radius.log &
 
 ########### Set up controlling machine interface
