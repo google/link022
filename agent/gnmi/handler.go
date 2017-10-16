@@ -27,7 +27,6 @@ import (
     "github.com/google/link022/generated/ocstruct"
     "github.com/openconfig/ygot/ygot"
 
-    pb "github.com/openconfig/gnmi/proto/gnmi"
     log "github.com/golang/glog"
 )
 
@@ -37,8 +36,7 @@ var (
 
 // handleSet is the callback function of the GNMI SET call.
 // It is triggered by the GNMI server.
-func handleSet(op pb.UpdateResult_Operation, updatedPath *pb.Path, updatedConfig interface{},
-               existingConfig ygot.ValidatedGoStruct) error {
+func handleSet(updatedConfig ygot.ValidatedGoStruct, existingConfig ygot.ValidatedGoStruct) error {
     // TODO: Handle delta change. Currently the GNMI server only supports replacing root.
     officeConfig, ok := updatedConfig.(*ocstruct.Office)
     if !ok {
