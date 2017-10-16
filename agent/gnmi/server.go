@@ -61,7 +61,8 @@ func NewServer() (*Server, error) {
     model := gnmi.NewModel(link022ModelData,
         reflect.TypeOf((*ocstruct.Office)(nil)),
         ocstruct.SchemaTree["Office"],
-        ocstruct.Unmarshal)
+        ocstruct.Unmarshal,
+        ocstruct.ΛEnum)
 
     s, err := gnmi.NewServer(model,
         initConfigContent,
