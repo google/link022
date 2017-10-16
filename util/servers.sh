@@ -20,6 +20,8 @@
 # Interface connected to the link022 host
 source servers.conf
 INTF=eth0
+OUT_INTF=wlan0  # Interface to connect to the Internet
+CTRL_INTF=eth1  # Interface to connect to a controlling machine, ssh is enabled here.
 GWIP=192.168.11.1
 
 sudo ip netns add ${NS}
@@ -33,10 +35,9 @@ sudo ip netns exec ${NS} dnsmasq --no-ping -p 0 -k \
  -O tag:s0,3,192.168.11.1 -O option:dns-server,8.8.8.8  -I lo -z \
  -l /tmp/link022.leases -8 /tmp/link022.dhcp.log -i ${INTF} -a ${GWIP} --conf-file= &
 
-# Get Internet access for link022
+########### Get Internet access for link022
 TO_DEF=to_def
 TO_NS=to_${NS}
-OUT_INTF=wlan0
 
 # enable forwarding
 sudo sysctl net.ipv4.ip_forward=1
@@ -84,3 +85,14 @@ add_vlan auth 300 192.168.44
 
 RADIUS_PATH=../demo/radius/freeradius
 sudo ip netns exec ${NS} freeradius -X -d ${RADIUS_PATH} > /tmp/radius.log &
+
+########### Set up controlling machine interface
+CTRL_NET=192.168.55
+CTRL_GW=${CTRL_NET}.1
+sudo ip addr add ${CTRL_GW}/24 dev ${CTRL_INTF}
+sudo ip link set dev ${CTRL_INTF} up
+# Start DHCP
+sudo dnsmasq --no-ping -p 0 -k \
+ -F set:s0,${CTRL_NET}.2,${CTRL_NET}.10 \
+ -O option:dns-server,8.8.8.8  -I lo -z \
+ -l /tmp/link022.ctrl.leases -8 /tmp/link022.dhcp.ctrl.log -i ${CTRL_INTF} -a ${CTRL_GW} --conf-file= &
