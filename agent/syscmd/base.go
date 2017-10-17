@@ -78,9 +78,8 @@ func SaveToFile(folderPath, fileName, content string) error {
 		if err = os.MkdirAll(folderPath, 0755); err != nil {
 			log.Errorf("Creating folder %v failed. Error: %v.", folderPath, err)
 			return err
-		} else {
-			log.Infof("Created folder %v.", folderPath)
 		}
+		log.Infof("Created folder %v.", folderPath)
 	} else if !fileInfo.Mode().IsDir() {
 		log.Errorf("Unable to save content to %v, since %v points an existing file.", fileFullPath, folderPath)
 		return fmt.Errorf("%s points an existing file", folderPath)

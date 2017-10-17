@@ -56,7 +56,7 @@ func GenerateConfig(apNum int, addAuthWLAN bool) *ocstruct.Office {
 	return office
 }
 
-// Test configuraton generator.
+// Test configuration generator.
 
 func addAPs(wifiOWCA *ocstruct.Office, apNum int, addAuthWLAN bool) {
 	if apNum <= 0 {

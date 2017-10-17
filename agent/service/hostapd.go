@@ -145,9 +145,8 @@ func hostapdHardwareMode(opFrequency ocstruct.E_OpenconfigWifiTypes_OPERATING_FR
 	if opFrequency == ocstruct.OpenconfigWifiTypes_OPERATING_FREQUENCY_FREQ_2GHZ ||
 		opFrequency == ocstruct.OpenconfigWifiTypes_OPERATING_FREQUENCY_FREQ_2_5_GHZ {
 		return "g"
-	} else {
-		return "a"
 	}
+	return "a"
 }
 
 func wlanWithOpFreq(apConfig *ocstruct.WifiOffice_OfficeAp,

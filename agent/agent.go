@@ -70,6 +70,9 @@ func main() {
 	pb.RegisterGNMIServer(g, gnmiServer)
 	reflection.Register(g)
 	listen, err := net.Listen("tcp", fmt.Sprintf(":%d", *gnmiPort))
+	if err != nil {
+		log.Exitf("Failed to listen on port %d. Error: %v.", *gnmiPort, err)
+	}
 
 	log.Infof("Running GNMI server. Listen on port %d.", *gnmiPort)
 	if err := g.Serve(listen); err != nil {

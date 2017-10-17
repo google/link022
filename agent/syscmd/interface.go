@@ -89,13 +89,13 @@ func (r *CommandRunner) WipeOutIntfIP(intfName string) error {
 	return nil
 }
 
-// IntfMac returns the MAC address of a certain interface.
+// IntfMAC returns the MAC address of a certain interface.
 func (r *CommandRunner) IntfMAC(intfName string) (string, error) {
 	mac, err := r.ExecCommand(true, "cat", fmt.Sprintf("/sys/class/net/%s/address", intfName))
 	if err != nil {
 		return "", err
 	}
-	mac = mac[0 : len(mac)-1] // The last charactor is '\n'
+	mac = mac[0 : len(mac)-1] // The last character is '\n'
 	log.Infof("MAC address of %v is %v.", intfName, mac)
 	return mac, nil
 }

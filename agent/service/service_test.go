@@ -122,9 +122,8 @@ func executeMockCommand(wait bool, cmd string, args ...string) (string, error) {
 			if intfs, ok := testSystemState.NetworkBRs[brName]; ok {
 				testSystemState.NetworkBRs[brName] = append(intfs, intfName)
 				return "", nil
-			} else {
-				return fmt.Sprintf("Bridge %v not found.\n", brName), &commandError{2}
 			}
+			return fmt.Sprintf("Bridge %v not found.\n", brName), &commandError{2}
 		}
 	case "ifconfig":
 		switch {

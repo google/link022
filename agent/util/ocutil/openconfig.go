@@ -23,6 +23,7 @@ import (
 	"github.com/google/link022/generated/ocstruct"
 )
 
+// VLANChanged checkes whether there is any difference between the given two VLAN ID lists.
 func VLANChanged(existingVLANIDs, updatedVLANIDs []int) bool {
 	sort.Ints(existingVLANIDs)
 	sort.Ints(updatedVLANIDs)
