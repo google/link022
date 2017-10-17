@@ -37,6 +37,7 @@ cd <path to demo folder>
 ```
 6. Setup the gateway.
 ```
+cd util
 ./server.sh
 ```
 This script creates a network namespace (lk22 by default), which has access to the Link022 AP device.
@@ -64,7 +65,7 @@ sudo env PATH=$PATH gnmi_set \
 -replace=/:@ap_config.json
 ```
 After configuration pushed, two WIFI SSIDs should appear.
-  - Auth-Link022: The authenticated network with Radius. Username: host-authed, password: authedpwd.
+  - Auth-Link022: The authenticated network with Radius (username: host-authed, password: authedpwd).
   - Guest-Link022: The open network. No authentication requried.
 
 ### Update AP configuration
@@ -82,7 +83,7 @@ sudo env PATH=$PATH gnmi_set -logtostderr \
 	-update=/office-ap[hostname=raspberrypi]/radios/radio[id=1]/config/channel:6
 ```
 
-Note: Check [gnxi](https://github.com/google/gnxi/tree/master/gnmi_set) for more use cases.
+Note: Check [gnxi set client](https://github.com/google/gnxi/tree/master/gnmi_set) for more use cases.
 ### Fetch AP configuration
 Check the existing configuration on AP device with a specific path.
 ```
@@ -92,7 +93,7 @@ sudo env PATH=$PATH gnmi_get -logtostderr \
 -cert=cert/client/client.crt \
 -key=cert/client/client.key \
 -target_name=www.example.com \
--target_addr=192.168.11.8:8080 \
+-target_addr=link022 AP IP address>:<gnmi port> \
 -xpath="/office-ap[hostname=raspberrypi]/radios/radio[id=1]/config/channel"
 ```
 The output should be similar to:
@@ -132,3 +133,4 @@ notification: <
   >
 >
 ```
+Note: Check [gnxi get client](https://github.com/google/gnxi/tree/master/gnmi_get) for more use cases.
