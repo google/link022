@@ -46,6 +46,7 @@ func GenerateConfig(apNum int, addAuthWLAN bool) *ocstruct.Office {
 
 	office.AuthServerConfig = &ocstruct.WifiOffice_AuthServerConfig{
 		Name:      ygot.String("1.1.1.1"),
+		Address:   ygot.String("1.1.1.1"),
 		AuthPort:  ygot.Uint16(1812),
 		SecretKey: ygot.String("radiuspwd"),
 	}
