@@ -53,7 +53,7 @@ func NewServer() (*Server, error) {
 	// Load existing config
 	initConfigContent, err := loadExistingConfigContent()
 	if err != nil {
-		log.Error("Failed to load the existing configuration. Error: %v.", err)
+		log.Errorf("Failed to load the existing configuration. Error: %v.", err)
 		initConfigContent = nil
 	}
 
