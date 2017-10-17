@@ -10,7 +10,7 @@ The setup has two components, linked directly by an ethernet cable.
   - The other device (such as Raspberry Pi) as the gateway. It provides reqiured services (dhcp, radius and gnmi client).
 
 ### Setup Link022 AP
-On the Link022 AP device, run the commands in this [instruction](../README.md)
+On the Link022 AP device, run the commands in this [instruction](../README.md) with the sample certificates.
 
 ### Setup Gateway
 On the device for gateway follow the steps below.
@@ -51,14 +51,84 @@ sudo ip netns exec lk22 bash
 ```
 
 ### Push the full configuration to AP
+Pushing the entire configuration to AP. It wipes out the existing configuration and applies the incoming one.
+Use the [sample configuration](./ap_config.json) here.
 ```
-Add later
+export PATH=$PATH:/usr/local/go/bin:/home/pi/go/bin
+sudo env PATH=$PATH gnmi_set \
+-ca=cert/client/ca.crt \
+-cert=cert/client/client.crt \
+-key=cert/client/client.key \
+-target_name=www.example.com \
+-target_addr=<link022 AP IP address>:<gnmi port> \
+-replace=/:@ap_config.json
 ```
+After configuration pushed, two WIFI SSIDs should appear.
+  - Auth-Link022: The authenticated network with Radius. Username: host-authed, password: authedpwd.
+  - Guest-Link022: The open network. No authentication requried.
+
 ### Update AP configuration
+Besides replacing the entire configuration, it is also able to update part of the existing configuration.
+
+For example, updating the radio channel.
 ```
-Add later
+export PATH=$PATH:/usr/local/go/bin:/home/pi/go/bin
+sudo env PATH=$PATH gnmi_set -logtostderr \
+	-ca=cert/client/ca.crt \
+	-cert=cert/client/client.crt \
+	-key=cert/client/client.key \
+	-target_name=www.example.com \
+	-target_addr=<link022 AP IP address>:<gnmi port> \
+	-update=/office-ap[hostname=raspberrypi]/radios/radio[id=1]/config/channel:6
 ```
+
+Note: Check [gnxi](https://github.com/google/gnxi/tree/master/gnmi_set) for more use cases.
 ### Fetch AP configuration
+Check the existing configuration on AP device with a specific path.
 ```
-Add later
+export PATH=$PATH:/usr/local/go/bin:/home/pi/go/bin
+sudo env PATH=$PATH gnmi_get -logtostderr \
+-ca=cert/client/ca.crt \
+-cert=cert/client/client.crt \
+-key=cert/client/client.key \
+-target_name=www.example.com \
+-target_addr=192.168.11.8:8080 \
+-xpath="/office-ap[hostname=raspberrypi]/radios/radio[id=1]/config/channel"
+```
+The output should be similar to:
+```
+== getResponse:
+notification: <
+  timestamp: 1508199771543394638
+  update: <
+    path: <
+      elem: <
+        name: "office-ap"
+        key: <
+          key: "hostname"
+          value: "link022-ap"
+        >
+      >
+      elem: <
+        name: "radios"
+      >
+      elem: <
+        name: "radio"
+        key: <
+          key: "id"
+          value: "1"
+        >
+      >
+      elem: <
+        name: "config"
+      >
+      elem: <
+        name: "channel"
+      >
+    >
+    val: <
+      uint_val: 6
+    >
+  >
+>
 ```
