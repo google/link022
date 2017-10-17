@@ -1,0 +1,14 @@
+language: go
+
+go:
+  - master
+  - 1.7.x
+
+notifications:
+  email: false
+
+before_install:
+  - go get -t -v ./...
+
+script:
+  - go test -v -race ./...
