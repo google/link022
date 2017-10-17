@@ -16,17 +16,17 @@ limitations under the License.
 package service
 
 import (
-    "errors"
-    "fmt"
-    "path"
+	"errors"
+	"fmt"
+	"path"
 
-    "github.com/google/link022/agent/syscmd"
-    "github.com/google/link022/generated/ocstruct"
-    log "github.com/golang/glog"
+	log "github.com/golang/glog"
+	"github.com/google/link022/agent/syscmd"
+	"github.com/google/link022/generated/ocstruct"
 )
 
 const (
-    commonConfigTemplate = `
+	commonConfigTemplate = `
 interface=%s
 # Driver; nl80211 is used with all Linux mac80211 drivers.
 driver=nl80211
@@ -35,18 +35,18 @@ channel=%d
 
 `
 
-    bssConfigTemplate = `
+	bssConfigTemplate = `
 # bssid for multiple wlans, the format is like "wlan0_1"
 # For the first wlan, there should be no bssid field, otherwise hostapd
 # will fail to start.
 bss=%s_%d
 `
 
-    wlanConfigTemplate = `ssid=%s
+	wlanConfigTemplate = `ssid=%s
 bridge=%s
 `
 
-    authConfigTemplate = `ieee8021x=1
+	authConfigTemplate = `ieee8021x=1
 auth_algs=1
 wpa=2
 rsn_pairwise=CCMP
@@ -61,114 +61,114 @@ nas_identifier=%s
 
 // configHostapd configures the hostapd program on this device based on the given AP configuration.
 func configHostapd(apConfig *ocstruct.WifiOffice_OfficeAp, authServerConfig *ocstruct.WifiOffice_AuthServerConfig,
-                   wlanINTFName string) error {
-    hostname := *apConfig.Hostname
-    apRadios := apConfig.Radios
-    if apRadios == nil || len(apRadios.Radio) == 0 {
-        log.Error("No radio configuration found.")
-        return errors.New("no radio configuration found")
-    }
+	wlanINTFName string) error {
+	hostname := *apConfig.Hostname
+	apRadios := apConfig.Radios
+	if apRadios == nil || len(apRadios.Radio) == 0 {
+		log.Error("No radio configuration found.")
+		return errors.New("no radio configuration found")
+	}
 
-    if len(apRadios.Radio) > 1 {
-        log.Errorf("Invalid radio number, expected: 1, actual: %d.", len(apRadios.Radio))
-        return errors.New("not supporting multiple radios")
-    }
+	if len(apRadios.Radio) > 1 {
+		log.Errorf("Invalid radio number, expected: 1, actual: %d.", len(apRadios.Radio))
+		return errors.New("not supporting multiple radios")
+	}
 
-    for _, apRadio := range apRadios.Radio {
-        radioConfig := apRadio.Config
-        wlanConfigs := wlanWithOpFreq(apConfig, radioConfig.OperatingFrequency)
+	for _, apRadio := range apRadios.Radio {
+		radioConfig := apRadio.Config
+		wlanConfigs := wlanWithOpFreq(apConfig, radioConfig.OperatingFrequency)
 
-        // Genearte hostapd configuration.
-        hostapdConfig := hostapdConfigFile(radioConfig, authServerConfig, wlanConfigs, wlanINTFName, hostname)
+		// Genearte hostapd configuration.
+		hostapdConfig := hostapdConfigFile(radioConfig, authServerConfig, wlanConfigs, wlanINTFName, hostname)
 
-        // Save the hostapd configuration file.
-        configFileName := hostapdConfFileName(wlanINTFName)
-        if err := syscmd.SaveToFile(runFolder, configFileName, hostapdConfig); err != nil {
-            return err
-        }
+		// Save the hostapd configuration file.
+		configFileName := hostapdConfFileName(wlanINTFName)
+		if err := syscmd.SaveToFile(runFolder, configFileName, hostapdConfig); err != nil {
+			return err
+		}
 
-        // Start hostapd.
-        if err := cmdRunner.StartHostapd(path.Join(runFolder, configFileName)); err != nil {
-            return err
-        }
-    }
+		// Start hostapd.
+		if err := cmdRunner.StartHostapd(path.Join(runFolder, configFileName)); err != nil {
+			return err
+		}
+	}
 
-    return nil
+	return nil
 }
 
 // hostapdConfigFile generates the content of hostapd configuration file based on the given configuration.
 func hostapdConfigFile(radioConfig *ocstruct.WifiOffice_OfficeAp_Radios_Radio_Config,
-                       authServerConfig *ocstruct.WifiOffice_AuthServerConfig,
-                       wlanConfigs []*ocstruct.WifiOffice_OfficeAp_Ssids_Ssid_Config,
-                       wlanINTFName string, hostname string) string {
-    log.Infof("Generating hostapd configuration for radio %v...", *radioConfig.Id)
-    hostapdConfig := ""
+	authServerConfig *ocstruct.WifiOffice_AuthServerConfig,
+	wlanConfigs []*ocstruct.WifiOffice_OfficeAp_Ssids_Ssid_Config,
+	wlanINTFName string, hostname string) string {
+	log.Infof("Generating hostapd configuration for radio %v...", *radioConfig.Id)
+	hostapdConfig := ""
 
-    // Generate common configuration.
-    radioHWMode := hostapdHardwareMode(radioConfig.OperatingFrequency)
-    commonConfig := fmt.Sprintf(commonConfigTemplate, wlanINTFName, radioHWMode, *radioConfig.Channel)
-    hostapdConfig += commonConfig
+	// Generate common configuration.
+	radioHWMode := hostapdHardwareMode(radioConfig.OperatingFrequency)
+	commonConfig := fmt.Sprintf(commonConfigTemplate, wlanINTFName, radioHWMode, *radioConfig.Channel)
+	hostapdConfig += commonConfig
 
-    // Generate wlan configuration.
-    for i, wlanConfig := range wlanConfigs {
-        wlanName := *wlanConfig.Name
-        log.Infof("Adding hostapd configuration for WLAN %v...", wlanName)
+	// Generate wlan configuration.
+	for i, wlanConfig := range wlanConfigs {
+		wlanName := *wlanConfig.Name
+		log.Infof("Adding hostapd configuration for WLAN %v...", wlanName)
 
-        if i > 0 {
-            // Add BSS configuration.
-            bssConfig := fmt.Sprintf(bssConfigTemplate, wlanINTFName, i)
-            hostapdConfig += bssConfig
-        }
+		if i > 0 {
+			// Add BSS configuration.
+			bssConfig := fmt.Sprintf(bssConfigTemplate, wlanINTFName, i)
+			hostapdConfig += bssConfig
+		}
 
-        // Add WLAN configuration.
-        wlanBridgeName := getBridgeName(int(*wlanConfig.VlanId))
-        hostapdWLANConfig := fmt.Sprintf(wlanConfigTemplate, wlanName, wlanBridgeName)
-        hostapdConfig += hostapdWLANConfig
+		// Add WLAN configuration.
+		wlanBridgeName := getBridgeName(int(*wlanConfig.VlanId))
+		hostapdWLANConfig := fmt.Sprintf(wlanConfigTemplate, wlanName, wlanBridgeName)
+		hostapdConfig += hostapdWLANConfig
 
-        // Add AUTH configuration.
-        if wlanConfig.Opmode == ocstruct.WifiOffice_OfficeAp_Ssids_Ssid_Config_Opmode_WPA2_ENTERPRISE {
-            // Add radius configuration.
-            radiusServerAddr := *authServerConfig.Address
-            radiusServerPort := *authServerConfig.AuthPort
-            radiusSecret := *authServerConfig.SecretKey
-            authConfig := fmt.Sprintf(authConfigTemplate, radiusServerAddr, radiusServerPort, radiusSecret, hostname)
-            hostapdConfig += authConfig
-        }
-        // TODO: Add validation to block WPA2_PERSONAL.
-    }
+		// Add AUTH configuration.
+		if wlanConfig.Opmode == ocstruct.WifiOffice_OfficeAp_Ssids_Ssid_Config_Opmode_WPA2_ENTERPRISE {
+			// Add radius configuration.
+			radiusServerAddr := *authServerConfig.Address
+			radiusServerPort := *authServerConfig.AuthPort
+			radiusSecret := *authServerConfig.SecretKey
+			authConfig := fmt.Sprintf(authConfigTemplate, radiusServerAddr, radiusServerPort, radiusSecret, hostname)
+			hostapdConfig += authConfig
+		}
+		// TODO: Add validation to block WPA2_PERSONAL.
+	}
 
-    log.Info("Generated hostapd configuration.")
-    return hostapdConfig
+	log.Info("Generated hostapd configuration.")
+	return hostapdConfig
 }
 
 func hostapdHardwareMode(opFrequency ocstruct.E_OpenconfigWifiTypes_OPERATING_FREQUENCY) string {
-    if (opFrequency == ocstruct.OpenconfigWifiTypes_OPERATING_FREQUENCY_FREQ_2GHZ ||
-        opFrequency == ocstruct.OpenconfigWifiTypes_OPERATING_FREQUENCY_FREQ_2_5_GHZ) {
-            return "g"
-    } else {
-        return "a"
-    }
+	if opFrequency == ocstruct.OpenconfigWifiTypes_OPERATING_FREQUENCY_FREQ_2GHZ ||
+		opFrequency == ocstruct.OpenconfigWifiTypes_OPERATING_FREQUENCY_FREQ_2_5_GHZ {
+		return "g"
+	} else {
+		return "a"
+	}
 }
 
 func wlanWithOpFreq(apConfig *ocstruct.WifiOffice_OfficeAp,
-                    targetFreq ocstruct.E_OpenconfigWifiTypes_OPERATING_FREQUENCY) []*ocstruct.WifiOffice_OfficeAp_Ssids_Ssid_Config {
-    var matchedWLANs []*ocstruct.WifiOffice_OfficeAp_Ssids_Ssid_Config
+	targetFreq ocstruct.E_OpenconfigWifiTypes_OPERATING_FREQUENCY) []*ocstruct.WifiOffice_OfficeAp_Ssids_Ssid_Config {
+	var matchedWLANs []*ocstruct.WifiOffice_OfficeAp_Ssids_Ssid_Config
 
-    wlans := apConfig.Ssids
-    if wlans == nil || len(wlans.Ssid) == 0 {
-        // No WLAN on this AP.
-        return matchedWLANs
-    }
+	wlans := apConfig.Ssids
+	if wlans == nil || len(wlans.Ssid) == 0 {
+		// No WLAN on this AP.
+		return matchedWLANs
+	}
 
-    for _, wlan := range wlans.Ssid {
-        wlanConfig := wlan.Config
-        if (wlanConfig.OperatingFrequency == ocstruct.OpenconfigWifiTypes_OPERATING_FREQUENCY_FREQ_2_5_GHZ ||
-            wlanConfig.OperatingFrequency == targetFreq) {
-            matchedWLANs = append(matchedWLANs, wlanConfig)
-        }
-    }
-    return matchedWLANs
+	for _, wlan := range wlans.Ssid {
+		wlanConfig := wlan.Config
+		if wlanConfig.OperatingFrequency == ocstruct.OpenconfigWifiTypes_OPERATING_FREQUENCY_FREQ_2_5_GHZ ||
+			wlanConfig.OperatingFrequency == targetFreq {
+			matchedWLANs = append(matchedWLANs, wlanConfig)
+		}
+	}
+	return matchedWLANs
 }
 func hostapdConfFileName(wlanINTFName string) string {
-    return fmt.Sprintf("hostapd_%s.conf", wlanINTFName)
+	return fmt.Sprintf("hostapd_%s.conf", wlanINTFName)
 }

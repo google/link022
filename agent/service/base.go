@@ -17,63 +17,64 @@ limitations under the License.
 package service
 
 import (
-    "fmt"
+	"fmt"
 
-    "github.com/google/link022/generated/ocstruct"
-    "github.com/google/link022/agent/syscmd"
-    "github.com/google/link022/agent/util/ocutil"
-    log "github.com/golang/glog"
+	log "github.com/golang/glog"
+	"github.com/google/link022/agent/syscmd"
+	"github.com/google/link022/agent/util/ocutil"
+	"github.com/google/link022/generated/ocstruct"
 )
 
 var (
-    cmdRunner = syscmd.Runner()
-    runFolder = "/var/run/link022"
+	cmdRunner = syscmd.Runner()
+	runFolder = "/var/run/link022"
 )
+
 // ApplyConfig configures this device to a Link022 AP based on the given configuration.
 func ApplyConfig(officeConfig *ocstruct.Office, setupIntf bool, deviceHostname, ethIntfName, wlanINTFName string) error {
-    officeAPs := officeConfig.OfficeAp
-    if _, ok := officeAPs[deviceHostname]; !ok {
-        return fmt.Errorf("not found the configuration for AP %v", deviceHostname)
-    }
+	officeAPs := officeConfig.OfficeAp
+	if _, ok := officeAPs[deviceHostname]; !ok {
+		return fmt.Errorf("not found the configuration for AP %v", deviceHostname)
+	}
 
-    officeAP := officeAPs[deviceHostname]
-    log.Infof("Configuring AP %v...", deviceHostname)
+	officeAP := officeAPs[deviceHostname]
+	log.Infof("Configuring AP %v...", deviceHostname)
 
-    if setupIntf {
-        // Configure eth interface.
-        if err := configEthIntf(ethIntfName, ocutil.VLANIDs(officeConfig)); err != nil {
-            return err
-        }
+	if setupIntf {
+		// Configure eth interface.
+		if err := configEthIntf(ethIntfName, ocutil.VLANIDs(officeConfig)); err != nil {
+			return err
+		}
 
-        //Configure WLAN interface.
-        if err := configWLANIntf(wlanINTFName); err != nil {
-            return err
-        }
-    }
+		//Configure WLAN interface.
+		if err := configWLANIntf(wlanINTFName); err != nil {
+			return err
+		}
+	}
 
-    // Configure hostapd.
-    if err := configHostapd(officeAP, officeConfig.AuthServerConfig, wlanINTFName); err != nil {
-        return err
-    }
+	// Configure hostapd.
+	if err := configHostapd(officeAP, officeConfig.AuthServerConfig, wlanINTFName); err != nil {
+		return err
+	}
 
-    return nil
+	return nil
 }
 
 // CleanupConfig cleans up the current AP configuration on this device.
 // It goes through all cleanup steps even if some failures are detected, and returns all errors.
 func CleanupConfig(ethIntfName string, vlanIDs []int) []error {
-    var errs []error
+	var errs []error
 
-    // Stop hostapd processes.
-    if err := cmdRunner.StopAllHostapd(); err != nil {
-        errs = append(errs, err)
-    }
+	// Stop hostapd processes.
+	if err := cmdRunner.StopAllHostapd(); err != nil {
+		errs = append(errs, err)
+	}
 
-    // Clean up eth interfaces.
-    if len(vlanIDs) > 0 {
-        errs = append(errs, cleanupEthIntf(ethIntfName, vlanIDs)...)
-    }
+	// Clean up eth interfaces.
+	if len(vlanIDs) > 0 {
+		errs = append(errs, cleanupEthIntf(ethIntfName, vlanIDs)...)
+	}
 
-    log.Infof("Cleaned up AP. Number of errors = %d.", len(errs))
-    return errs
+	log.Infof("Cleaned up AP. Number of errors = %d.", len(errs))
+	return errs
 }
