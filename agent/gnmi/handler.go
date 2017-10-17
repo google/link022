@@ -81,7 +81,7 @@ func handleSet(updatedConfig ygot.ValidatedGoStruct, existingConfig ygot.Validat
 	// Wait for link to be available again.
 	time.Sleep(5 * time.Second)
 
-	// Process the incoming configuraiton.
+	// Process the incoming configuration.
 	if err = service.ApplyConfig(officeConfig, resetIntf, deviceConfig.Hostname, deviceConfig.ETHINTFName,
 		deviceConfig.WLANINTFName); err != nil {
 		return err
