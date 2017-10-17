@@ -17,36 +17,36 @@ limitations under the License.
 package ocutil
 
 import (
-    "reflect"
-    "sort"
+	"reflect"
+	"sort"
 
-    "github.com/google/link022/generated/ocstruct"
+	"github.com/google/link022/generated/ocstruct"
 )
 
 func VLANChanged(existingVLANIDs, updatedVLANIDs []int) bool {
-    sort.Ints(existingVLANIDs)
-    sort.Ints(updatedVLANIDs)
-    return !reflect.DeepEqual(existingVLANIDs, updatedVLANIDs)
+	sort.Ints(existingVLANIDs)
+	sort.Ints(updatedVLANIDs)
+	return !reflect.DeepEqual(existingVLANIDs, updatedVLANIDs)
 }
 
 // VLANIDs fetches the ID of all VLANs appears in the given office configuration.
 func VLANIDs(officeConfig *ocstruct.Office) []int {
-    vlanIDs := []int{}
+	vlanIDs := []int{}
 
-    if officeConfig == nil {
-        return vlanIDs
-    }
+	if officeConfig == nil {
+		return vlanIDs
+	}
 
-    for _, ap := range officeConfig.OfficeAp {
-        wlans := ap.Ssids
-        if wlans == nil || len(wlans.Ssid) == 0 {
-            continue
-        }
+	for _, ap := range officeConfig.OfficeAp {
+		wlans := ap.Ssids
+		if wlans == nil || len(wlans.Ssid) == 0 {
+			continue
+		}
 
-        for _, wlan := range wlans.Ssid {
-            vlanIDs = append(vlanIDs, int(*wlan.Config.VlanId))
-        }
-    }
+		for _, wlan := range wlans.Ssid {
+			vlanIDs = append(vlanIDs, int(*wlan.Config.VlanId))
+		}
+	}
 
-    return vlanIDs
+	return vlanIDs
 }

@@ -17,25 +17,25 @@ limitations under the License.
 package context
 
 import (
-    "sync"
+	"sync"
 )
 
 // DeviceConfig contains the configuration specific to this device.
 type DeviceConfig struct {
-    ETHINTFName string
-    WLANINTFName string
-    Hostname string
+	ETHINTFName  string
+	WLANINTFName string
+	Hostname     string
 }
 
 var (
-    deviceConfig *DeviceConfig
-    once      sync.Once
+	deviceConfig *DeviceConfig
+	once         sync.Once
 )
 
 // GetDeviceConfig returns the singleton DeviceConfig object.
 func GetDeviceConfig() *DeviceConfig {
-    once.Do(func() {
-        deviceConfig = &DeviceConfig{}
-    })
-    return deviceConfig
+	once.Do(func() {
+		deviceConfig = &DeviceConfig{}
+	})
+	return deviceConfig
 }

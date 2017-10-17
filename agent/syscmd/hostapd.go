@@ -16,26 +16,25 @@ limitations under the License.
 package syscmd
 
 import (
-    log "github.com/golang/glog"
+	log "github.com/golang/glog"
 )
 
 // StartHostapd starts a hostapd process link to the given WLAN interface.
 func (r *CommandRunner) StartHostapd(configFilePath string) error {
-    log.Infof("Starting hostapd process with config file: %v...", configFilePath)
-    if _, err := r.ExecCommand(false, "hostapd", configFilePath); err != nil {
-        return err
-    }
-    log.Infof("Started a hostapd with config file: %v.", configFilePath)
-    return nil
+	log.Infof("Starting hostapd process with config file: %v...", configFilePath)
+	if _, err := r.ExecCommand(false, "hostapd", configFilePath); err != nil {
+		return err
+	}
+	log.Infof("Started a hostapd with config file: %v.", configFilePath)
+	return nil
 }
 
 // StopAllHostapd kills all running hostapd processes.
 func (r *CommandRunner) StopAllHostapd() error {
-    log.Info("Stopping all hostapd processes...")
-    if _, err := r.ExecCommand(true, "killall", "-q", "hostapd"); err != nil {
-        return err
-    }
-    log.Info("Stopped all hostapd processes.")
-    return nil
+	log.Info("Stopping all hostapd processes...")
+	if _, err := r.ExecCommand(true, "killall", "-q", "hostapd"); err != nil {
+		return err
+	}
+	log.Info("Stopped all hostapd processes.")
+	return nil
 }
-

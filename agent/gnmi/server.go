@@ -17,78 +17,78 @@ limitations under the License.
 package gnmi
 
 import (
-    "io/ioutil"
-    "os"
-    "path"
-    "reflect"
+	"io/ioutil"
+	"os"
+	"path"
+	"reflect"
 
-    "github.com/google/link022/generated/ocstruct"
-    "github.com/google/gnxi/gnmi"
+	"github.com/google/gnxi/gnmi"
+	"github.com/google/link022/generated/ocstruct"
 
-    pb "github.com/openconfig/gnmi/proto/gnmi"
-    log "github.com/golang/glog"
+	log "github.com/golang/glog"
+	pb "github.com/openconfig/gnmi/proto/gnmi"
 )
 
 const (
-    runFolder = "/var/run/link022"
-    apConfigFileName = "link022.conf"
+	runFolder        = "/var/run/link022"
+	apConfigFileName = "link022.conf"
 )
 
 var (
-    // link022ModelData is a list of models supported in this GNMI server.
-    link022ModelData = []*pb.ModelData{{
-        Name:         "wifi-office",
-        Organization: "Google, Inc.",
-        Version:      "0.1.0",
-    }}
+	// link022ModelData is a list of models supported in this GNMI server.
+	link022ModelData = []*pb.ModelData{{
+		Name:         "wifi-office",
+		Organization: "Google, Inc.",
+		Version:      "0.1.0",
+	}}
 )
 
 // Server is a GNMI server.
 type Server struct {
-    *gnmi.Server
+	*gnmi.Server
 }
 
 // NewServer creates a GNMI server.
 func NewServer() (*Server, error) {
-    // Load existing config
-    initConfigContent, err := loadExistingConfigContent()
-    if err != nil {
-        log.Error("Failed to load the existing configuration. Error: %v.", err)
-        initConfigContent = nil
-    }
+	// Load existing config
+	initConfigContent, err := loadExistingConfigContent()
+	if err != nil {
+		log.Error("Failed to load the existing configuration. Error: %v.", err)
+		initConfigContent = nil
+	}
 
-    // Create the GNMI server.
-    model := gnmi.NewModel(link022ModelData,
-        reflect.TypeOf((*ocstruct.Office)(nil)),
-        ocstruct.SchemaTree["Office"],
-        ocstruct.Unmarshal,
-        ocstruct.ΛEnum)
+	// Create the GNMI server.
+	model := gnmi.NewModel(link022ModelData,
+		reflect.TypeOf((*ocstruct.Office)(nil)),
+		ocstruct.SchemaTree["Office"],
+		ocstruct.Unmarshal,
+		ocstruct.ΛEnum)
 
-    s, err := gnmi.NewServer(model,
-        initConfigContent,
-        handleSet)
-    if err != nil {
-        return nil, err
-    }
+	s, err := gnmi.NewServer(model,
+		initConfigContent,
+		handleSet)
+	if err != nil {
+		return nil, err
+	}
 
-    gnmiServer := &Server{s}
-    log.Info("GNMI server created.")
-    return gnmiServer, nil
+	gnmiServer := &Server{s}
+	log.Info("GNMI server created.")
+	return gnmiServer, nil
 }
 
 func loadExistingConfigContent() ([]byte, error) {
-    existingConfigFilePath := path.Join(runFolder, apConfigFileName)
+	existingConfigFilePath := path.Join(runFolder, apConfigFileName)
 
-    if _, err := os.Stat(existingConfigFilePath); os.IsNotExist(err) {
-        log.Info("No existing configuration found.")
-        return nil, nil
-    }
+	if _, err := os.Stat(existingConfigFilePath); os.IsNotExist(err) {
+		log.Info("No existing configuration found.")
+		return nil, nil
+	}
 
-    existingConfigContent, err := ioutil.ReadFile(existingConfigFilePath)
-    if err != nil {
-        return nil, err
-    }
+	existingConfigContent, err := ioutil.ReadFile(existingConfigFilePath)
+	if err != nil {
+		return nil, err
+	}
 
-    log.Info("Loaded existing configuration.")
-    return existingConfigContent, nil
+	log.Info("Loaded existing configuration.")
+	return existingConfigContent, nil
 }

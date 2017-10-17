@@ -19,61 +19,60 @@ limitations under the License.
 package main
 
 import (
-    "fmt"
-    "net"
-    "flag"
-    "os"
+	"flag"
+	"fmt"
+	"net"
+	"os"
 
-    "google.golang.org/grpc"
-    "google.golang.org/grpc/reflection"
-    "github.com/google/link022/agent/context"
-    "github.com/google/link022/agent/gnmi"
-    "github.com/google/gnxi/utils/credentials"
+	"github.com/google/gnxi/utils/credentials"
+	"github.com/google/link022/agent/context"
+	"github.com/google/link022/agent/gnmi"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
 
-    log "github.com/golang/glog"
-    pb "github.com/openconfig/gnmi/proto/gnmi"
+	log "github.com/golang/glog"
+	pb "github.com/openconfig/gnmi/proto/gnmi"
 )
 
 var (
-    ethINTFName = flag.String("eth_intf_name", "eth0", "The management network interface on this device.")
-    wlanINTFName = flag.String("wlan_intf_name", "wlan0", "The WLAN interface on this device for AP radio.")
-    gnmiPort = flag.Int("gnmi_port", 8080, "The port GNMI server listening on.")
+	ethINTFName  = flag.String("eth_intf_name", "eth0", "The management network interface on this device.")
+	wlanINTFName = flag.String("wlan_intf_name", "wlan0", "The WLAN interface on this device for AP radio.")
+	gnmiPort     = flag.Int("gnmi_port", 8080, "The port GNMI server listening on.")
 )
 
 func main() {
-    flag.Parse()
-    log.Info("Link022 agent started.")
+	flag.Parse()
+	log.Info("Link022 agent started.")
 
-    deviceConfig := context.GetDeviceConfig()
-    // Load hostname
-    hostname, err := os.Hostname()
-    if err != nil {
-        log.Exit("Failed to load the device hostname.")
-    }
-    deviceConfig.Hostname = hostname
-    log.Infof("Hostname = %s.", hostname)
+	deviceConfig := context.GetDeviceConfig()
+	// Load hostname
+	hostname, err := os.Hostname()
+	if err != nil {
+		log.Exit("Failed to load the device hostname.")
+	}
+	deviceConfig.Hostname = hostname
+	log.Infof("Hostname = %s.", hostname)
 
-    // Load command-line flags.
-    deviceConfig.ETHINTFName = *ethINTFName
-    deviceConfig.WLANINTFName = *wlanINTFName
-    log.Infof("Eth interface = %s. WLAN interface = %s", *ethINTFName, *wlanINTFName)
+	// Load command-line flags.
+	deviceConfig.ETHINTFName = *ethINTFName
+	deviceConfig.WLANINTFName = *wlanINTFName
+	log.Infof("Eth interface = %s. WLAN interface = %s", *ethINTFName, *wlanINTFName)
 
-    // Create GNMI server.
-    gnmiServer, err := gnmi.NewServer()
-    if err != nil {
-        log.Exitf("Failed to create the GNMI server. Error: %v.", err)
-    }
+	// Create GNMI server.
+	gnmiServer, err := gnmi.NewServer()
+	if err != nil {
+		log.Exitf("Failed to create the GNMI server. Error: %v.", err)
+	}
 
-    // Start the GNMI server.
-    opts := credentials.ServerCredentials()
-    g := grpc.NewServer(opts...)
-    pb.RegisterGNMIServer(g, gnmiServer)
-    reflection.Register(g)
-    listen, err := net.Listen("tcp",  fmt.Sprintf(":%d", *gnmiPort))
+	// Start the GNMI server.
+	opts := credentials.ServerCredentials()
+	g := grpc.NewServer(opts...)
+	pb.RegisterGNMIServer(g, gnmiServer)
+	reflection.Register(g)
+	listen, err := net.Listen("tcp", fmt.Sprintf(":%d", *gnmiPort))
 
-    log.Infof("Running GNMI server. Listen on port %d.", *gnmiPort)
-    if err := g.Serve(listen); err != nil {
-        log.Exitf("Failed to run GNMI server on port %d. Error: %v.", *gnmiPort, err)
-    }
+	log.Infof("Running GNMI server. Listen on port %d.", *gnmiPort)
+	if err := g.Serve(listen); err != nil {
+		log.Exitf("Failed to run GNMI server on port %d. Error: %v.", *gnmiPort, err)
+	}
 }
-

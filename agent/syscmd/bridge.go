@@ -16,35 +16,35 @@ limitations under the License.
 package syscmd
 
 import (
-    log "github.com/golang/glog"
+	log "github.com/golang/glog"
 )
 
 // CreateBridge creates a network bridge with a certain name.
 func (r *CommandRunner) CreateBridge(bridgeName string) error {
-    log.Infof("Creating bridge %v...", bridgeName)
-    if _, err := r.ExecCommand(true, "brctl", "addbr", bridgeName); err != nil {
-        return err
-    }
-    log.Infof("Created bridge %v.", bridgeName)
-    return nil
+	log.Infof("Creating bridge %v...", bridgeName)
+	if _, err := r.ExecCommand(true, "brctl", "addbr", bridgeName); err != nil {
+		return err
+	}
+	log.Infof("Created bridge %v.", bridgeName)
+	return nil
 }
 
 // DeleteBridge deletes a network bridge with a certain name.
 func (r *CommandRunner) DeleteBridge(bridgeName string) error {
-    log.Infof("Deleting bridge %v...", bridgeName)
-    if _, err := r.ExecCommand(true, "brctl", "delbr", bridgeName); err != nil {
-        return err
-    }
-    log.Infof("Deleted bridge %v.", bridgeName)
-    return nil
+	log.Infof("Deleting bridge %v...", bridgeName)
+	if _, err := r.ExecCommand(true, "brctl", "delbr", bridgeName); err != nil {
+		return err
+	}
+	log.Infof("Deleted bridge %v.", bridgeName)
+	return nil
 }
 
 // AddBridgeIntf adds an interface to a network bridge.
 func (r *CommandRunner) AddBridgeIntf(bridgeName, intfName string) error {
-    log.Infof("Adding interface %v to bridge %v...", intfName, bridgeName)
-    if _, err := r.ExecCommand(true, "brctl", "addif", bridgeName, intfName); err != nil {
-        return err
-    }
-    log.Infof("Added interface %v to bridge %v.", intfName, bridgeName)
-    return nil
+	log.Infof("Adding interface %v to bridge %v...", intfName, bridgeName)
+	if _, err := r.ExecCommand(true, "brctl", "addif", bridgeName, intfName); err != nil {
+		return err
+	}
+	log.Infof("Added interface %v to bridge %v.", intfName, bridgeName)
+	return nil
 }
