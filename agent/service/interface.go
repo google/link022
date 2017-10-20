@@ -55,6 +55,11 @@ func configEthIntf(ethIntfName string, vlanIDs []int) error {
 		if err := cmdRunner.AddBridgeIntf(bridgeName, vlanIntfName); err != nil {
 			return err
 		}
+
+		// Bring up bridge
+		if err := cmdRunner.BringUpIntf(bridgeName); err != nil {
+			return err
+		}
 	}
 
 	log.Infof("Configured interface %v.", ethIntfName)
