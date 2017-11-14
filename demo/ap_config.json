@@ -1,9 +1,9 @@
 {
   "auth-server-config": {
-    "name": "",
-    "address": "",
-    "auth-port": 0,
-    "secret-key": ""
+    "name": "freeradius",
+    "address": "192.168.11.1",
+    "auth-port": 1812,
+    "secret-key": "radiuspwd"
   },
   "office-ap": [
     {
@@ -51,7 +51,7 @@
                 "RATE_11MB",
                 "RATE_24MB"
               ],
-              "vlan-id": 250
+              "vlan-id": 300
             },
             "name": "Auth-Link022"
           },
@@ -79,7 +79,7 @@
                 "RATE_11MB",
                 "RATE_24MB"
               ],
-              "vlan-id": 666
+              "vlan-id": 200
             },
             "name": "Guest-Link022"
           }
