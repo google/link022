@@ -51,3 +51,70 @@ func VLANIDs(officeConfig *ocstruct.Office) []int {
 
 	return vlanIDs
 }
+
+// RadiusServers fetches the radius server assigned to the given AP.
+// It returns a SSID -> RadiusServer map.
+func RadiusServers(ap *ocstruct.WifiOffice_OfficeAp) map[string]*ocstruct.WifiOffice_OfficeAp_System_Aaa_ServerGroups_ServerGroup_Servers_Server {
+	wlanRadiusMap := make(map[string]*ocstruct.WifiOffice_OfficeAp_System_Aaa_ServerGroups_ServerGroup_Servers_Server)
+	if ap.Ssids == nil {
+		return wlanRadiusMap
+	}
+
+	apServerGPs := aaaServerGroups(ap)
+	if len(apServerGPs) == 0 {
+		return wlanRadiusMap
+	}
+
+	for wlanName, wlan := range ap.Ssids.Ssid {
+		if wlan.Config.ServerGroup == nil {
+			continue
+		}
+
+		aaaServerGPName := *wlan.Config.ServerGroup
+		if serverGP, ok := apServerGPs[aaaServerGPName]; ok {
+			if radiusServer := aaaRadiusServer(serverGP); radiusServer != nil {
+				wlanRadiusMap[wlanName] = radiusServer
+			}
+		}
+	}
+
+	return wlanRadiusMap
+}
+
+func aaaServerGroups(ap *ocstruct.WifiOffice_OfficeAp) map[string]*ocstruct.WifiOffice_OfficeAp_System_Aaa_ServerGroups_ServerGroup {
+	apSystemInfo := ap.System
+	if apSystemInfo == nil {
+		return nil
+	}
+
+	aaaInfo := apSystemInfo.Aaa
+	if aaaInfo == nil {
+		return nil
+	}
+
+	serverGP := aaaInfo.ServerGroups
+	if serverGP == nil {
+		return nil
+	}
+
+	return serverGP.ServerGroup
+}
+
+func aaaRadiusServer(serverGP *ocstruct.WifiOffice_OfficeAp_System_Aaa_ServerGroups_ServerGroup) *ocstruct.WifiOffice_OfficeAp_System_Aaa_ServerGroups_ServerGroup_Servers_Server {
+	if serverGP == nil || serverGP.Config == nil || serverGP.Config.Type != ocstruct.OpenconfigAaaTypes_AAA_SERVER_TYPE_RADIUS {
+		return nil
+	}
+
+	if serverGP.Servers == nil {
+		return nil
+	}
+
+	for _, radiusServer := range serverGP.Servers.Server {
+		if radiusServer != nil {
+			// Return the first radius server specified.
+			return radiusServer
+		}
+	}
+	// Not found Radius server
+	return nil
+}

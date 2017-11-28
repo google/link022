@@ -24,13 +24,13 @@ var (
 	officeName = "test-office"
 	vendorName = "link022"
 
-	ap1Hostname = "test-pi-1"
-	ap2Hostname = "test-pi-2"
+	apNames = [2]string{"test-pi-1", "test-pi-2"}
 
-	radioID = uint8(1)
+	radiusServerGroupName = "radius-server-group"
+	radiusServerAddr      = "1.1.1.1"
 
-	guestWLANName = "Guest-Emu"
-	authWLANName  = "Auth-Emu"
+	GuestWLANName = "Guest-Emu"
+	AuthWLANName  = "Auth-Emu"
 )
 
 // GenerateConfig generates a office wireless configuration for test.
@@ -44,56 +44,75 @@ func GenerateConfig(apNum int, addAuthWLAN bool) *ocstruct.Office {
 		VendorName: ygot.String(vendorName),
 	}
 
-	office.AuthServerConfig = &ocstruct.WifiOffice_AuthServerConfig{
-		Name:      ygot.String("1.1.1.1"),
-		Address:   ygot.String("1.1.1.1"),
-		AuthPort:  ygot.Uint16(1812),
-		SecretKey: ygot.String("radiuspwd"),
-	}
-
 	// Set up OWCA-AP (vendor neutral).
-	addAPs(office, apNum, addAuthWLAN)
+	office.OfficeAp = make(map[string]*ocstruct.WifiOffice_OfficeAp)
+	for i := 0; i < apNum; i++ {
+		if i > 1 {
+			break
+		}
+
+		apName := apNames[i]
+		office.OfficeAp[apName] = apConfig(apName, addAuthWLAN)
+	}
 
 	return office
 }
 
 // Test configuration generator.
-
-func addAPs(wifiOWCA *ocstruct.Office, apNum int, addAuthWLAN bool) {
-	if apNum <= 0 {
-		return
-	}
-
-	wifiOWCA.OfficeAp = make(map[string]*ocstruct.WifiOffice_OfficeAp)
-
-	// Add AP 1.
-	ap1 := &ocstruct.WifiOffice_OfficeAp{
-		Hostname: ygot.String(ap1Hostname),
+func apConfig(apName string, addAuthWLAN bool) *ocstruct.WifiOffice_OfficeAp {
+	ap := &ocstruct.WifiOffice_OfficeAp{
+		Hostname: ygot.String(apName),
 		Vendor:   ygot.String(vendorName),
 	}
-	wifiOWCA.OfficeAp[ap1Hostname] = ap1
-	addRadios(ap1)
-	addWLANs(ap1, addAuthWLAN)
 
-	if apNum <= 1 {
-		return
+	if addAuthWLAN {
+		ap.System = systemInfo()
 	}
 
-	// Add AP 2.
-	ap2 := &ocstruct.WifiOffice_OfficeAp{
-		Hostname: ygot.String(ap2Hostname),
-		Vendor:   ygot.String(vendorName),
-	}
-	wifiOWCA.OfficeAp[ap2Hostname] = ap2
-	addRadios(ap2)
-	addWLANs(ap2, addAuthWLAN)
+	ap.Radios = radios()
+	ap.Ssids = wlans(addAuthWLAN)
+	return ap
 }
 
-func addRadios(ap *ocstruct.WifiOffice_OfficeAp) {
+func RadiusServer() *ocstruct.WifiOffice_OfficeAp_System_Aaa_ServerGroups_ServerGroup_Servers_Server {
+	return &ocstruct.WifiOffice_OfficeAp_System_Aaa_ServerGroups_ServerGroup_Servers_Server{
+		Address: ygot.String(radiusServerAddr),
+		Radius: &ocstruct.WifiOffice_OfficeAp_System_Aaa_ServerGroups_ServerGroup_Servers_Server_Radius{
+			Config: &ocstruct.WifiOffice_OfficeAp_System_Aaa_ServerGroups_ServerGroup_Servers_Server_Radius_Config{
+				AuthPort:  ygot.Uint16(1812),
+				SecretKey: ygot.String("radiuspwd"),
+			},
+		},
+	}
+}
+
+func systemInfo() *ocstruct.WifiOffice_OfficeAp_System {
+	return &ocstruct.WifiOffice_OfficeAp_System{
+		Aaa: &ocstruct.WifiOffice_OfficeAp_System_Aaa{
+			ServerGroups: &ocstruct.WifiOffice_OfficeAp_System_Aaa_ServerGroups{
+				ServerGroup: map[string]*ocstruct.WifiOffice_OfficeAp_System_Aaa_ServerGroups_ServerGroup{
+					radiusServerGroupName: {
+						Name: ygot.String(radiusServerGroupName),
+						Config: &ocstruct.WifiOffice_OfficeAp_System_Aaa_ServerGroups_ServerGroup_Config{
+							Type: ocstruct.OpenconfigAaaTypes_AAA_SERVER_TYPE_RADIUS,
+						},
+						Servers: &ocstruct.WifiOffice_OfficeAp_System_Aaa_ServerGroups_ServerGroup_Servers{
+							Server: map[string]*ocstruct.WifiOffice_OfficeAp_System_Aaa_ServerGroups_ServerGroup_Servers_Server{
+								radiusServerAddr: RadiusServer(),
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+}
+
+func radios() *ocstruct.WifiOffice_OfficeAp_Radios {
 	radios := &ocstruct.WifiOffice_OfficeAp_Radios{}
 	radios.Radio = make(map[uint8]*ocstruct.WifiOffice_OfficeAp_Radios_Radio)
-	ap.Radios = radios
 
+	radioID := uint8(1)
 	radios.Radio[radioID] = &ocstruct.WifiOffice_OfficeAp_Radios_Radio{
 		Id: ygot.Uint8(radioID),
 		Config: &ocstruct.WifiOffice_OfficeAp_Radios_Radio_Config{
@@ -107,15 +126,27 @@ func addRadios(ap *ocstruct.WifiOffice_OfficeAp) {
 			ScanningInterval:   ygot.Uint8(30),
 		},
 	}
+
+	return radios
 }
 
-func addWLANs(ap *ocstruct.WifiOffice_OfficeAp, addAuthWLAN bool) {
+func wlans(addAuthWLAN bool) *ocstruct.WifiOffice_OfficeAp_Ssids {
 	wlans := &ocstruct.WifiOffice_OfficeAp_Ssids{}
 	wlans.Ssid = make(map[string]*ocstruct.WifiOffice_OfficeAp_Ssids_Ssid)
-	ap.Ssids = wlans
 
-	wlans.Ssid[guestWLANName] = &ocstruct.WifiOffice_OfficeAp_Ssids_Ssid{
-		Name: ygot.String(guestWLANName),
+	wlans.Ssid[GuestWLANName] = guestWLAN()
+
+	// Add auth WLAN.
+	if addAuthWLAN {
+		wlans.Ssid[AuthWLANName] = authWLAN()
+	}
+
+	return wlans
+}
+
+func guestWLAN() *ocstruct.WifiOffice_OfficeAp_Ssids_Ssid {
+	return &ocstruct.WifiOffice_OfficeAp_Ssids_Ssid{
+		Name: ygot.String(GuestWLANName),
 		Config: &ocstruct.WifiOffice_OfficeAp_Ssids_Ssid_Config{
 			AdvertiseApname:    ygot.Bool(false),
 			BasicDataRates:     []ocstruct.E_OpenconfigWifiTypes_DATA_RATE{ocstruct.OpenconfigWifiTypes_DATA_RATE_RATE_11MB, ocstruct.OpenconfigWifiTypes_DATA_RATE_RATE_24MB},
@@ -128,7 +159,7 @@ func addWLANs(ap *ocstruct.WifiOffice_OfficeAp, addAuthWLAN bool) {
 			GtkTimeout:         ygot.Uint16(1000),
 			Hidden:             ygot.Bool(false),
 			MulticastFilter:    ygot.Bool(false),
-			Name:               ygot.String(guestWLANName),
+			Name:               ygot.String(GuestWLANName),
 			OperatingFrequency: ocstruct.OpenconfigWifiTypes_OPERATING_FREQUENCY_FREQ_2_5_GHZ,
 			Opmode:             ocstruct.WifiOffice_OfficeAp_Ssids_Ssid_Config_Opmode_OPEN,
 			PtkTimeout:         ygot.Uint16(1000),
@@ -136,14 +167,11 @@ func addWLANs(ap *ocstruct.WifiOffice_OfficeAp, addAuthWLAN bool) {
 			VlanId:             ygot.Uint16(666),
 		},
 	}
+}
 
-	// Add auth WLAN.
-	if !addAuthWLAN {
-		return
-	}
-
-	wlans.Ssid[authWLANName] = &ocstruct.WifiOffice_OfficeAp_Ssids_Ssid{
-		Name: ygot.String(authWLANName),
+func authWLAN() *ocstruct.WifiOffice_OfficeAp_Ssids_Ssid {
+	return &ocstruct.WifiOffice_OfficeAp_Ssids_Ssid{
+		Name: ygot.String(AuthWLANName),
 		Config: &ocstruct.WifiOffice_OfficeAp_Ssids_Ssid_Config{
 			AdvertiseApname:    ygot.Bool(false),
 			BasicDataRates:     []ocstruct.E_OpenconfigWifiTypes_DATA_RATE{ocstruct.OpenconfigWifiTypes_DATA_RATE_RATE_11MB, ocstruct.OpenconfigWifiTypes_DATA_RATE_RATE_24MB},
@@ -156,9 +184,10 @@ func addWLANs(ap *ocstruct.WifiOffice_OfficeAp, addAuthWLAN bool) {
 			GtkTimeout:         ygot.Uint16(1000),
 			Hidden:             ygot.Bool(false),
 			MulticastFilter:    ygot.Bool(false),
-			Name:               ygot.String(authWLANName),
+			Name:               ygot.String(AuthWLANName),
 			OperatingFrequency: ocstruct.OpenconfigWifiTypes_OPERATING_FREQUENCY_FREQ_2_5_GHZ,
 			Opmode:             ocstruct.WifiOffice_OfficeAp_Ssids_Ssid_Config_Opmode_WPA2_ENTERPRISE,
+			ServerGroup:        ygot.String(radiusServerGroupName),
 			PtkTimeout:         ygot.Uint16(1000),
 			SupportedDataRates: []ocstruct.E_OpenconfigWifiTypes_DATA_RATE{ocstruct.OpenconfigWifiTypes_DATA_RATE_RATE_11MB, ocstruct.OpenconfigWifiTypes_DATA_RATE_RATE_24MB},
 			VlanId:             ygot.Uint16(250),
