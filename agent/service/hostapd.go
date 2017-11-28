@@ -22,6 +22,7 @@ import (
 
 	log "github.com/golang/glog"
 	"github.com/google/link022/agent/syscmd"
+	"github.com/google/link022/agent/util/ocutil"
 	"github.com/google/link022/generated/ocstruct"
 )
 
@@ -60,8 +61,7 @@ nas_identifier=%s
 )
 
 // configHostapd configures the hostapd program on this device based on the given AP configuration.
-func configHostapd(apConfig *ocstruct.WifiOffice_OfficeAp, authServerConfig *ocstruct.WifiOffice_AuthServerConfig,
-	wlanINTFName string) error {
+func configHostapd(apConfig *ocstruct.WifiOffice_OfficeAp, wlanINTFName string) error {
 	hostname := *apConfig.Hostname
 	apRadios := apConfig.Radios
 	if apRadios == nil || len(apRadios.Radio) == 0 {
@@ -74,12 +74,13 @@ func configHostapd(apConfig *ocstruct.WifiOffice_OfficeAp, authServerConfig *ocs
 		return errors.New("not supporting multiple radios")
 	}
 
+	authServerConfigs := ocutil.RadiusServers(apConfig)
 	for _, apRadio := range apRadios.Radio {
 		radioConfig := apRadio.Config
 		wlanConfigs := wlanWithOpFreq(apConfig, radioConfig.OperatingFrequency)
 
 		// Genearte hostapd configuration.
-		hostapdConfig := hostapdConfigFile(radioConfig, authServerConfig, wlanConfigs, wlanINTFName, hostname)
+		hostapdConfig := hostapdConfigFile(radioConfig, authServerConfigs, wlanConfigs, wlanINTFName, hostname)
 
 		// Save the hostapd configuration file.
 		configFileName := hostapdConfFileName(wlanINTFName)
@@ -98,7 +99,7 @@ func configHostapd(apConfig *ocstruct.WifiOffice_OfficeAp, authServerConfig *ocs
 
 // hostapdConfigFile generates the content of hostapd configuration file based on the given configuration.
 func hostapdConfigFile(radioConfig *ocstruct.WifiOffice_OfficeAp_Radios_Radio_Config,
-	authServerConfig *ocstruct.WifiOffice_AuthServerConfig,
+	authServerConfigs map[string]*ocstruct.WifiOffice_OfficeAp_System_Aaa_ServerGroups_ServerGroup_Servers_Server,
 	wlanConfigs []*ocstruct.WifiOffice_OfficeAp_Ssids_Ssid_Config,
 	wlanINTFName string, hostname string) string {
 	log.Infof("Generating hostapd configuration for radio %v...", *radioConfig.Id)
@@ -128,9 +129,11 @@ func hostapdConfigFile(radioConfig *ocstruct.WifiOffice_OfficeAp_Radios_Radio_Co
 		// Add AUTH configuration.
 		if wlanConfig.Opmode == ocstruct.WifiOffice_OfficeAp_Ssids_Ssid_Config_Opmode_WPA2_ENTERPRISE {
 			// Add radius configuration.
+			authServerConfig := authServerConfigs[wlanName]
+			// TODO: Add validation to ensure authServerConfig exists.
 			radiusServerAddr := *authServerConfig.Address
-			radiusServerPort := *authServerConfig.AuthPort
-			radiusSecret := *authServerConfig.SecretKey
+			radiusServerPort := *authServerConfig.Radius.Config.AuthPort
+			radiusSecret := *authServerConfig.Radius.Config.SecretKey
 			authConfig := fmt.Sprintf(authConfigTemplate, radiusServerAddr, radiusServerPort, radiusSecret, hostname)
 			hostapdConfig += authConfig
 		}

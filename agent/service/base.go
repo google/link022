@@ -53,7 +53,7 @@ func ApplyConfig(officeConfig *ocstruct.Office, setupIntf bool, deviceHostname, 
 	}
 
 	// Configure hostapd.
-	if err := configHostapd(officeAP, officeConfig.AuthServerConfig, wlanINTFName); err != nil {
+	if err := configHostapd(officeAP, wlanINTFName); err != nil {
 		return err
 	}
 

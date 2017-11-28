@@ -91,3 +91,29 @@ func TestVLANChanged(t *testing.T) {
 		}
 	}
 }
+
+func TestRadiusServers(t *testing.T) {
+	// Define test cases.
+	tests := []struct {
+		officeConfig  *ocstruct.Office
+		radiusServers map[string]*ocstruct.WifiOffice_OfficeAp_System_Aaa_ServerGroups_ServerGroup_Servers_Server
+	}{{
+		officeConfig:  mock.GenerateConfig(1, false),
+		radiusServers: make(map[string]*ocstruct.WifiOffice_OfficeAp_System_Aaa_ServerGroups_ServerGroup_Servers_Server),
+	}, {
+		officeConfig: mock.GenerateConfig(1, true),
+		radiusServers: map[string]*ocstruct.WifiOffice_OfficeAp_System_Aaa_ServerGroups_ServerGroup_Servers_Server{
+			mock.AuthWLANName: mock.RadiusServer(),
+		},
+	}}
+
+	for _, test := range tests {
+		for _, ap := range test.officeConfig.OfficeAp {
+			got := RadiusServers(ap)
+			want := test.radiusServers
+			if !reflect.DeepEqual(got, want) {
+				t.Errorf("Incorrect result (got: %v, want: %v).", got, want)
+			}
+		}
+	}
+}
