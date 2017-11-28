@@ -18,157 +18,17 @@ limitations under the License.
 package main
 
 import (
+	"flag"
+
 	log "github.com/golang/glog"
+	"github.com/google/link022/agent/util/mock"
 	"github.com/google/link022/generated/ocstruct"
 	"github.com/openconfig/ygot/ygot"
 )
 
-const (
-	officeName = "emulator-office"
-
-	ap1Name = "AP-1"
-	ap2Name = "AP-2"
-
-	vendor = "link022"
-
-	radioID = 1
-
-	guestWLANName = "Guest-Emu"
-	authWLANName  = "Auth-Emu"
-
-	orgIDConfigKey = "org_id"
-	orgID          = "xxxxx-xxxx-xxxx-xxxx-xxxxxxxxx"
-
-	usernameConfigKey = "user_name"
-	username          = "admin"
-)
-
-func addAPs(wifiOffice *ocstruct.Office, apNum int, addAuthWLAN bool) {
-	if apNum <= 0 {
-		return
-	}
-
-	wifiOffice.OfficeAp = make(map[string]*ocstruct.WifiOffice_OfficeAp)
-
-	// Add AP 1.
-	ap1 := &ocstruct.WifiOffice_OfficeAp{
-		Hostname: ygot.String(ap1Name),
-		Vendor:   ygot.String(vendor),
-	}
-	wifiOffice.OfficeAp[ap1Name] = ap1
-	addRadios(ap1)
-	addWLANs(ap1, addAuthWLAN)
-
-	if apNum <= 1 {
-		return
-	}
-
-	// Add AP 2.
-	ap2 := &ocstruct.WifiOffice_OfficeAp{
-		Hostname: ygot.String(ap2Name),
-		Vendor:   ygot.String(vendor),
-	}
-	wifiOffice.OfficeAp[ap2Name] = ap2
-	addRadios(ap2)
-	addWLANs(ap2, addAuthWLAN)
-}
-
-func addRadios(ap *ocstruct.WifiOffice_OfficeAp) {
-	radios := &ocstruct.WifiOffice_OfficeAp_Radios{}
-	radios.Radio = make(map[uint8]*ocstruct.WifiOffice_OfficeAp_Radios_Radio)
-	ap.Radios = radios
-
-	radios.Radio[radioID] = &ocstruct.WifiOffice_OfficeAp_Radios_Radio{
-		Id: ygot.Uint8(radioID),
-		Config: &ocstruct.WifiOffice_OfficeAp_Radios_Radio_Config{
-			Id:                 ygot.Uint8(radioID),
-			Enabled:            ygot.Bool(true),
-			OperatingFrequency: ocstruct.OpenconfigWifiTypes_OPERATING_FREQUENCY_FREQ_2GHZ,
-			TransmitPower:      ygot.Uint8(5),
-			Channel:            ygot.Uint8(8),
-			ChannelWidth:       ygot.Uint8(10),
-			Scanning:           ygot.Bool(true),
-			ScanningInterval:   ygot.Uint8(30),
-		},
-	}
-}
-
-func addWLANs(ap *ocstruct.WifiOffice_OfficeAp, addAuthWLAN bool) {
-	wlans := &ocstruct.WifiOffice_OfficeAp_Ssids{}
-	wlans.Ssid = make(map[string]*ocstruct.WifiOffice_OfficeAp_Ssids_Ssid)
-	ap.Ssids = wlans
-
-	wlans.Ssid[guestWLANName] = &ocstruct.WifiOffice_OfficeAp_Ssids_Ssid{
-		Name: ygot.String(guestWLANName),
-		Config: &ocstruct.WifiOffice_OfficeAp_Ssids_Ssid_Config{
-			AdvertiseApname:    ygot.Bool(false),
-			BasicDataRates:     []ocstruct.E_OpenconfigWifiTypes_DATA_RATE{ocstruct.OpenconfigWifiTypes_DATA_RATE_RATE_11MB, ocstruct.OpenconfigWifiTypes_DATA_RATE_RATE_24MB},
-			BroadcastFilter:    ygot.Bool(false),
-			Csa:                ygot.Bool(false),
-			DhcpRequired:       ygot.Bool(true),
-			Dot11K:             ygot.Bool(false),
-			Dva:                ygot.Bool(false),
-			Enabled:            ygot.Bool(true),
-			GtkTimeout:         ygot.Uint16(1000),
-			Hidden:             ygot.Bool(false),
-			MulticastFilter:    ygot.Bool(false),
-			Name:               ygot.String(guestWLANName),
-			OperatingFrequency: ocstruct.OpenconfigWifiTypes_OPERATING_FREQUENCY_FREQ_2_5_GHZ,
-			Opmode:             ocstruct.WifiOffice_OfficeAp_Ssids_Ssid_Config_Opmode_OPEN,
-			PtkTimeout:         ygot.Uint16(1000),
-			SupportedDataRates: []ocstruct.E_OpenconfigWifiTypes_DATA_RATE{ocstruct.OpenconfigWifiTypes_DATA_RATE_RATE_11MB, ocstruct.OpenconfigWifiTypes_DATA_RATE_RATE_24MB},
-			VlanId:             ygot.Uint16(666),
-		},
-	}
-
-	// Add auth WLAN.
-	if !addAuthWLAN {
-		return
-	}
-
-	wlans.Ssid[authWLANName] = &ocstruct.WifiOffice_OfficeAp_Ssids_Ssid{
-		Name: ygot.String(authWLANName),
-		Config: &ocstruct.WifiOffice_OfficeAp_Ssids_Ssid_Config{
-			AdvertiseApname:    ygot.Bool(false),
-			BasicDataRates:     []ocstruct.E_OpenconfigWifiTypes_DATA_RATE{ocstruct.OpenconfigWifiTypes_DATA_RATE_RATE_11MB, ocstruct.OpenconfigWifiTypes_DATA_RATE_RATE_24MB},
-			BroadcastFilter:    ygot.Bool(false),
-			Csa:                ygot.Bool(false),
-			DhcpRequired:       ygot.Bool(true),
-			Dot11K:             ygot.Bool(false),
-			Dva:                ygot.Bool(false),
-			Enabled:            ygot.Bool(true),
-			GtkTimeout:         ygot.Uint16(1000),
-			Hidden:             ygot.Bool(false),
-			MulticastFilter:    ygot.Bool(false),
-			Name:               ygot.String(authWLANName),
-			OperatingFrequency: ocstruct.OpenconfigWifiTypes_OPERATING_FREQUENCY_FREQ_2_5_GHZ,
-			Opmode:             ocstruct.WifiOffice_OfficeAp_Ssids_Ssid_Config_Opmode_OPEN,
-			PtkTimeout:         ygot.Uint16(1000),
-			SupportedDataRates: []ocstruct.E_OpenconfigWifiTypes_DATA_RATE{ocstruct.OpenconfigWifiTypes_DATA_RATE_RATE_11MB, ocstruct.OpenconfigWifiTypes_DATA_RATE_RATE_24MB},
-			VlanId:             ygot.Uint16(250),
-		},
-	}
-}
-
-func generateConfig(apNum int, addAuthWLAN bool) *ocstruct.Office {
-	// Generate a WIFI configuration for an office.
-	office := &ocstruct.Office{}
-
-	office.OfficeName = ygot.String(officeName)
-	apVendor, err := office.NewVendor(vendor)
-	if err != nil {
-		log.Exitf("Error setting vendor: %v", err)
-	}
-	apVendor.VendorName = ygot.String(vendor)
-
-	// Set up AP (vendor neutral).
-	addAPs(office, apNum, addAuthWLAN)
-
-	return office
-}
-
 func main() {
-	office := generateConfig(1, true)
+	flag.Parse()
+	office := mock.GenerateConfig(1, true)
 
 	jsonString, err := ygot.EmitJSON(office, &ygot.EmitJSONConfig{
 		Format: ygot.RFC7951,
