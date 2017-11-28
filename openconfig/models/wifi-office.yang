@@ -8,10 +8,10 @@ module wifi-office {
   // Assign this module a prefix to be used by other modules, when imported.
   prefix "wifi-office";
 
+  import openconfig-system {prefix oc-sys; }
   import openconfig-wifi-phy { prefix wifi-phy; }
   import openconfig-wifi-mac { prefix wifi-mac; }
   import openconfig-inet-types { prefix oc-inet; }
-  import openconfig-aaa { prefix oc-aaa; }
 
   // meta
   organization "Google, Inc.";
@@ -83,11 +83,6 @@ module wifi-office {
 
     uses supported-vendor;
 
-    container auth-server-config {
-      uses oc-aaa:aaa-server-config;
-      uses oc-aaa:aaa-radius-server-config;
-    }
-
     list office-ap {
       key "hostname";
       description
@@ -105,6 +100,7 @@ module wifi-office {
           "The name of vendor for this AP.";
       }
 
+      uses oc-sys:system-top;
       uses wifi-phy:radio-top;
       uses wifi-mac:ssid-top;
       uses vendor-specific-config;
