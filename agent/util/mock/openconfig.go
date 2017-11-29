@@ -29,8 +29,10 @@ var (
 	radiusServerGroupName = "radius-server-group"
 	radiusServerAddr      = "1.1.1.1"
 
+	// GuestWLANName is the name of a mock guest WLAN.
 	GuestWLANName = "Guest-Emu"
-	AuthWLANName  = "Auth-Emu"
+	// AuthWLANName is the name of a mock authenticated WLAN.
+	AuthWLANName = "Auth-Emu"
 )
 
 // GenerateConfig generates a office wireless configuration for test.
@@ -74,6 +76,7 @@ func apConfig(apName string, addAuthWLAN bool) *ocstruct.WifiOffice_OfficeAp {
 	return ap
 }
 
+// RadiusServer generates a mock RadiusServer configuration.
 func RadiusServer() *ocstruct.WifiOffice_OfficeAp_System_Aaa_ServerGroups_ServerGroup_Servers_Server {
 	return &ocstruct.WifiOffice_OfficeAp_System_Aaa_ServerGroups_ServerGroup_Servers_Server{
 		Address: ygot.String(radiusServerAddr),
