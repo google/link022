@@ -17,9 +17,6 @@
 # Generates the latest version of the OpenConfig textproto schema descriptor and
 # model visualization from the source YANG modules.
 #
-# Download OpenConfig models from https://github.com/openconfig/public
-# Download ietf models from https://github.com/openconfig/yang/tree/master/standard/ietf/RFC
-#
 # To use this, run thr scripts directory:
 #    ./generate_wifi_oc_schema.sh
 
@@ -29,7 +26,9 @@ export GOPATH=$HOME/go
 YANG_CONVERTER=$GOPATH/src/github.com/openconfig/ygot/generator/generator.go
 
 # OpenConfig modules
+# Download OpenConfig models from https://github.com/openconfig/public
 YANG_MODELS=<path to OpenConfig model>/public/release/models
+# Download ietf models from https://github.com/openconfig/yang/tree/master/standard/ietf/RFC
 IETF_MODELS=<path to OpenConfig model>/yang/standard/ietf/RFC
 OWCA_TOP_MODULE=../models/wifi-office.yang
 IGNORED_MODULES=openconfig-wifi-phy,openconfig-wifi-mac,openconfig-system
