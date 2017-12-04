@@ -38,7 +38,7 @@ go get github.com/google/link022/agent
 ```
 
 ### Download certificates
-Download sample certificates from github.com/google/link022/examples/cert/server/.
+Download sample certificates from [the demo directory](demo/cert/server/).
 Or you can use your own cert.
 
 ### Configuring network interfaces of Pi
