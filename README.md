@@ -28,7 +28,7 @@ export PATH=$PATH:/usr/local/go/bin
 ```
 Install dependencies.
 ```
-sudo apt-get install udhcpc bridge-utils hostapd
+sudo apt-get install udhcpc bridge-utils hostapd git
 ```
 
 ### Download Link022 agent
