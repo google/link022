@@ -22,7 +22,7 @@ export PATH=$PATH:/usr/local/go/bin
 ```
 2. Install dependencies.
 ``` 
-sudo apt-get install --no-install-recommends dnsmasq freeradius
+sudo apt-get install --no-install-recommends dnsmasq freeradius git
 ```
 3. Download GNMI clients.
 ```
