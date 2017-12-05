@@ -15,6 +15,9 @@ OpenConfig models.
 *  See [Openconfig documentation](http://www.openconfig.net/).
 
 ## Getting Started
+For documentation on installing a full demo system (with both a gNMI client and link022 access point)
+please see the [full demo documentation](demo/README.md) which explains a fully complete system.
+
 The following instructions will get you a Link022 AP on a Raspberry Pi device.
 
 ### Prerequisites
