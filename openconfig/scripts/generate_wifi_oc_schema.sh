@@ -30,7 +30,7 @@ YANG_CONVERTER=$GOPATH/src/github.com/openconfig/ygot/generator/generator.go
 YANG_MODELS=<path to OpenConfig model>/public/release/models
 # Download ietf models from https://github.com/openconfig/yang/tree/master/standard/ietf/RFC
 IETF_MODELS=<path to OpenConfig model>/yang/standard/ietf/RFC
-OWCA_TOP_MODULE=../models/wifi-office.yang
+OWCA_TOP_MODULE=../models/openconfig-office-ap.yang
 IGNORED_MODULES=openconfig-wifi-phy,openconfig-wifi-mac,openconfig-system
 
 # Output path
@@ -39,7 +39,7 @@ OUTPUT_FILE_PATH=../../generated/$OUTPUT_PACKAGE_NAME/$OUTPUT_PACKAGE_NAME.go
 
 go run $YANG_CONVERTER \
 -path=$YANG_MODELS,$IETF_MODELS \
--generate_fakeroot -fakeroot_name=office \
+-generate_fakeroot -fakeroot_name=device \
 -package_name=ocstruct -compress_paths=false \
 -exclude_modules=$IGNORED_MODULES \
 -output_file=$OUTPUT_FILE_PATH \
