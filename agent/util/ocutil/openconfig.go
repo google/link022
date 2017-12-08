@@ -31,22 +31,20 @@ func VLANChanged(existingVLANIDs, updatedVLANIDs []int) bool {
 }
 
 // VLANIDs fetches the ID of all VLANs appears in the given office configuration.
-func VLANIDs(officeConfig *ocstruct.Office) []int {
+func VLANIDs(apConfig *ocstruct.Device) []int {
 	vlanIDs := []int{}
 
-	if officeConfig == nil {
+	if apConfig == nil {
 		return vlanIDs
 	}
 
-	for _, ap := range officeConfig.OfficeAp {
-		wlans := ap.Ssids
-		if wlans == nil || len(wlans.Ssid) == 0 {
-			continue
-		}
+	wlans := apConfig.Ssids
+	if wlans == nil || len(wlans.Ssid) == 0 {
+		return vlanIDs
+	}
 
-		for _, wlan := range wlans.Ssid {
-			vlanIDs = append(vlanIDs, int(*wlan.Config.VlanId))
-		}
+	for _, wlan := range wlans.Ssid {
+		vlanIDs = append(vlanIDs, int(*wlan.Config.VlanId))
 	}
 
 	return vlanIDs
@@ -54,8 +52,8 @@ func VLANIDs(officeConfig *ocstruct.Office) []int {
 
 // RadiusServers fetches the radius server assigned to the given AP.
 // It returns a SSID -> RadiusServer map.
-func RadiusServers(ap *ocstruct.WifiOffice_OfficeAp) map[string]*ocstruct.WifiOffice_OfficeAp_System_Aaa_ServerGroups_ServerGroup_Servers_Server {
-	wlanRadiusMap := make(map[string]*ocstruct.WifiOffice_OfficeAp_System_Aaa_ServerGroups_ServerGroup_Servers_Server)
+func RadiusServers(ap *ocstruct.Device) map[string]*ocstruct.OpenconfigOfficeAp_System_Aaa_ServerGroups_ServerGroup_Servers_Server {
+	wlanRadiusMap := make(map[string]*ocstruct.OpenconfigOfficeAp_System_Aaa_ServerGroups_ServerGroup_Servers_Server)
 	if ap.Ssids == nil {
 		return wlanRadiusMap
 	}
@@ -81,7 +79,7 @@ func RadiusServers(ap *ocstruct.WifiOffice_OfficeAp) map[string]*ocstruct.WifiOf
 	return wlanRadiusMap
 }
 
-func aaaServerGroups(ap *ocstruct.WifiOffice_OfficeAp) map[string]*ocstruct.WifiOffice_OfficeAp_System_Aaa_ServerGroups_ServerGroup {
+func aaaServerGroups(ap *ocstruct.Device) map[string]*ocstruct.OpenconfigOfficeAp_System_Aaa_ServerGroups_ServerGroup {
 	apSystemInfo := ap.System
 	if apSystemInfo == nil {
 		return nil
@@ -100,7 +98,7 @@ func aaaServerGroups(ap *ocstruct.WifiOffice_OfficeAp) map[string]*ocstruct.Wifi
 	return serverGP.ServerGroup
 }
 
-func aaaRadiusServer(serverGP *ocstruct.WifiOffice_OfficeAp_System_Aaa_ServerGroups_ServerGroup) *ocstruct.WifiOffice_OfficeAp_System_Aaa_ServerGroups_ServerGroup_Servers_Server {
+func aaaRadiusServer(serverGP *ocstruct.OpenconfigOfficeAp_System_Aaa_ServerGroups_ServerGroup) *ocstruct.OpenconfigOfficeAp_System_Aaa_ServerGroups_ServerGroup_Servers_Server {
 	if serverGP == nil || serverGP.Config == nil || serverGP.Config.Type != ocstruct.OpenconfigAaaTypes_AAA_SERVER_TYPE_RADIUS {
 		return nil
 	}

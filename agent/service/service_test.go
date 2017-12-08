@@ -29,7 +29,6 @@ import (
 )
 
 var (
-	testHostname           = "test-pi-1"
 	testETHIntf            = "eth0"
 	testWLANIntf           = "wlan0"
 	testWLANIntfOriginMAC  = "aa:bb:cc:dd:ee:ff"
@@ -177,7 +176,7 @@ func executeMockCommand(wait bool, cmd string, args ...string) (string, error) {
 func TestApplyConfig(t *testing.T) {
 	// Define test cases.
 	type testCase struct {
-		officeConfig        *ocstruct.Office
+		apConfig            *ocstruct.Device
 		expectedSystemState *systemState
 		expectedError       error
 	}
@@ -189,7 +188,7 @@ func TestApplyConfig(t *testing.T) {
 	testWLANHostapdConfigFile := path.Join(tempRunFolder, fmt.Sprintf("hostapd_%s.conf", testWLANIntf))
 	testCases := map[string]*testCase{
 		"TestConfigWithTwoWLANs": {
-			officeConfig: mock.GenerateConfig(1, true),
+			apConfig: mock.GenerateConfig(true),
 			expectedSystemState: &systemState{
 				Intfs: map[string]bool{
 					testETHIntf:  true,
@@ -213,7 +212,7 @@ func TestApplyConfig(t *testing.T) {
 			expectedError: nil,
 		},
 		"TestConfigWithOneWLAN": {
-			officeConfig: mock.GenerateConfig(1, false),
+			apConfig: mock.GenerateConfig(false),
 			expectedSystemState: &systemState{
 				Intfs: map[string]bool{
 					testETHIntf:  true,
@@ -248,7 +247,7 @@ func TestApplyConfig(t *testing.T) {
 		// Clean up the test system state.
 		testSystemState = cleanedSysteState()
 
-		err := ApplyConfig(test.officeConfig, true, testHostname, testETHIntf, testWLANIntf)
+		err := ApplyConfig(test.apConfig, true, testETHIntf, testWLANIntf)
 		checkResult(t, testName, err, test.expectedError)
 		checkResult(t, testName, testSystemState, test.expectedSystemState)
 	}
@@ -257,25 +256,25 @@ func TestApplyConfig(t *testing.T) {
 func TestCleanupConfig(t *testing.T) {
 	// Define test cases.
 	tests := []struct {
-		officeConfig   *ocstruct.Office
+		apConfig       *ocstruct.Device
 		configRequired bool
 		succeeded      bool
 	}{{
-		officeConfig:   mock.GenerateConfig(1, true),
+		apConfig:       mock.GenerateConfig(true),
 		configRequired: true,
 		succeeded:      true,
 	}, {
-		officeConfig:   mock.GenerateConfig(1, false),
+		apConfig:       mock.GenerateConfig(false),
 		configRequired: true,
 		succeeded:      true,
 	}, {
-		officeConfig:   mock.GenerateConfig(0, false),
-		configRequired: false,
-		succeeded:      true,
-	}, {
-		officeConfig:   mock.GenerateConfig(1, false),
+		apConfig:       mock.GenerateConfig(false),
 		configRequired: false,
 		succeeded:      false,
+	}, {
+		apConfig:       nil,
+		configRequired: false,
+		succeeded:      true,
 	}}
 
 	// Start testing.
@@ -298,14 +297,14 @@ func TestCleanupConfig(t *testing.T) {
 		testName := fmt.Sprintf("TestCleanupConfig_%d", i)
 
 		if test.configRequired {
-			if err := ApplyConfig(test.officeConfig, true, testHostname, testETHIntf, testWLANIntf); err != nil {
+			if err := ApplyConfig(test.apConfig, true, testETHIntf, testWLANIntf); err != nil {
 				t.Errorf("[%s] Configuration failed. Error: %v.", testName, err)
 			}
 			// Clean up does not restore the MAC address.
 			cleanedSystemState.IntfMACs[testWLANIntf] = testWLANIntfUpdatedMAC
 		}
 
-		errs := CleanupConfig(testETHIntf, ocutil.VLANIDs(test.officeConfig))
+		errs := CleanupConfig(testETHIntf, ocutil.VLANIDs(test.apConfig))
 		checkResult(t, testName, len(errs) == 0, test.succeeded)
 		checkResult(t, testName, testSystemState, cleanedSystemState)
 	}

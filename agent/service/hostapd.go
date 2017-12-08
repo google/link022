@@ -61,7 +61,7 @@ nas_identifier=%s
 )
 
 // configHostapd configures the hostapd program on this device based on the given AP configuration.
-func configHostapd(apConfig *ocstruct.WifiOffice_OfficeAp, wlanINTFName string) error {
+func configHostapd(apConfig *ocstruct.Device, wlanINTFName string) error {
 	hostname := *apConfig.Hostname
 	apRadios := apConfig.Radios
 	if apRadios == nil || len(apRadios.Radio) == 0 {
@@ -98,9 +98,9 @@ func configHostapd(apConfig *ocstruct.WifiOffice_OfficeAp, wlanINTFName string) 
 }
 
 // hostapdConfigFile generates the content of hostapd configuration file based on the given configuration.
-func hostapdConfigFile(radioConfig *ocstruct.WifiOffice_OfficeAp_Radios_Radio_Config,
-	authServerConfigs map[string]*ocstruct.WifiOffice_OfficeAp_System_Aaa_ServerGroups_ServerGroup_Servers_Server,
-	wlanConfigs []*ocstruct.WifiOffice_OfficeAp_Ssids_Ssid_Config,
+func hostapdConfigFile(radioConfig *ocstruct.OpenconfigOfficeAp_Radios_Radio_Config,
+	authServerConfigs map[string]*ocstruct.OpenconfigOfficeAp_System_Aaa_ServerGroups_ServerGroup_Servers_Server,
+	wlanConfigs []*ocstruct.OpenconfigOfficeAp_Ssids_Ssid_Config,
 	wlanINTFName string, hostname string) string {
 	log.Infof("Generating hostapd configuration for radio %v...", *radioConfig.Id)
 	hostapdConfig := ""
@@ -127,7 +127,7 @@ func hostapdConfigFile(radioConfig *ocstruct.WifiOffice_OfficeAp_Radios_Radio_Co
 		hostapdConfig += hostapdWLANConfig
 
 		// Add AUTH configuration.
-		if wlanConfig.Opmode == ocstruct.WifiOffice_OfficeAp_Ssids_Ssid_Config_Opmode_WPA2_ENTERPRISE {
+		if wlanConfig.Opmode == ocstruct.OpenconfigOfficeAp_Ssids_Ssid_Config_Opmode_WPA2_ENTERPRISE {
 			// Add radius configuration.
 			authServerConfig := authServerConfigs[wlanName]
 			// TODO: Add validation to ensure authServerConfig exists.
@@ -152,9 +152,9 @@ func hostapdHardwareMode(opFrequency ocstruct.E_OpenconfigWifiTypes_OPERATING_FR
 	return "a"
 }
 
-func wlanWithOpFreq(apConfig *ocstruct.WifiOffice_OfficeAp,
-	targetFreq ocstruct.E_OpenconfigWifiTypes_OPERATING_FREQUENCY) []*ocstruct.WifiOffice_OfficeAp_Ssids_Ssid_Config {
-	var matchedWLANs []*ocstruct.WifiOffice_OfficeAp_Ssids_Ssid_Config
+func wlanWithOpFreq(apConfig *ocstruct.Device,
+	targetFreq ocstruct.E_OpenconfigWifiTypes_OPERATING_FREQUENCY) []*ocstruct.OpenconfigOfficeAp_Ssids_Ssid_Config {
+	var matchedWLANs []*ocstruct.OpenconfigOfficeAp_Ssids_Ssid_Config
 
 	wlans := apConfig.Ssids
 	if wlans == nil || len(wlans.Ssid) == 0 {
