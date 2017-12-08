@@ -27,21 +27,21 @@ import (
 func TestVLANIDs(t *testing.T) {
 	// Define test cases.
 	tests := []struct {
-		officeConfig *ocstruct.Office
-		vlanIDs      []int
+		apConfig *ocstruct.Device
+		vlanIDs  []int
 	}{{
-		officeConfig: mock.GenerateConfig(1, true),
-		vlanIDs:      []int{250, 666},
+		apConfig: mock.GenerateConfig(true),
+		vlanIDs:  []int{250, 666},
 	}, {
-		officeConfig: mock.GenerateConfig(1, false),
-		vlanIDs:      []int{666},
+		apConfig: mock.GenerateConfig(false),
+		vlanIDs:  []int{666},
 	}, {
-		officeConfig: mock.GenerateConfig(0, false),
-		vlanIDs:      []int{},
+		apConfig: nil,
+		vlanIDs:  []int{},
 	}}
 
 	for _, test := range tests {
-		got := VLANIDs(test.officeConfig)
+		got := VLANIDs(test.apConfig)
 		want := test.vlanIDs
 		sort.Ints(got)
 		sort.Ints(want)
@@ -54,32 +54,32 @@ func TestVLANIDs(t *testing.T) {
 func TestVLANChanged(t *testing.T) {
 	// Define test cases.
 	tests := []struct {
-		existingConfig      *ocstruct.Office
-		updatedConfigConfig *ocstruct.Office
+		existingConfig      *ocstruct.Device
+		updatedConfigConfig *ocstruct.Device
 		vlanChanged         bool
 	}{{
-		existingConfig:      mock.GenerateConfig(1, true),
-		updatedConfigConfig: mock.GenerateConfig(1, true),
+		existingConfig:      mock.GenerateConfig(true),
+		updatedConfigConfig: mock.GenerateConfig(true),
 		vlanChanged:         false,
 	}, {
-		existingConfig:      mock.GenerateConfig(1, true),
-		updatedConfigConfig: mock.GenerateConfig(1, false),
+		existingConfig:      mock.GenerateConfig(true),
+		updatedConfigConfig: mock.GenerateConfig(false),
 		vlanChanged:         true,
 	}, {
-		existingConfig:      mock.GenerateConfig(1, false),
-		updatedConfigConfig: mock.GenerateConfig(1, true),
+		existingConfig:      mock.GenerateConfig(false),
+		updatedConfigConfig: mock.GenerateConfig(true),
 		vlanChanged:         true,
 	}, {
-		existingConfig:      mock.GenerateConfig(0, true),
-		updatedConfigConfig: mock.GenerateConfig(1, true),
+		existingConfig:      nil,
+		updatedConfigConfig: mock.GenerateConfig(true),
 		vlanChanged:         true,
 	}, {
-		existingConfig:      mock.GenerateConfig(1, true),
-		updatedConfigConfig: mock.GenerateConfig(0, true),
+		existingConfig:      mock.GenerateConfig(true),
+		updatedConfigConfig: nil,
 		vlanChanged:         true,
 	}, {
-		existingConfig:      mock.GenerateConfig(0, true),
-		updatedConfigConfig: mock.GenerateConfig(0, true),
+		existingConfig:      nil,
+		updatedConfigConfig: nil,
 		vlanChanged:         false,
 	}}
 
@@ -95,25 +95,23 @@ func TestVLANChanged(t *testing.T) {
 func TestRadiusServers(t *testing.T) {
 	// Define test cases.
 	tests := []struct {
-		officeConfig  *ocstruct.Office
-		radiusServers map[string]*ocstruct.WifiOffice_OfficeAp_System_Aaa_ServerGroups_ServerGroup_Servers_Server
+		apConfig      *ocstruct.Device
+		radiusServers map[string]*ocstruct.OpenconfigOfficeAp_System_Aaa_ServerGroups_ServerGroup_Servers_Server
 	}{{
-		officeConfig:  mock.GenerateConfig(1, false),
-		radiusServers: make(map[string]*ocstruct.WifiOffice_OfficeAp_System_Aaa_ServerGroups_ServerGroup_Servers_Server),
+		apConfig:      mock.GenerateConfig(false),
+		radiusServers: make(map[string]*ocstruct.OpenconfigOfficeAp_System_Aaa_ServerGroups_ServerGroup_Servers_Server),
 	}, {
-		officeConfig: mock.GenerateConfig(1, true),
-		radiusServers: map[string]*ocstruct.WifiOffice_OfficeAp_System_Aaa_ServerGroups_ServerGroup_Servers_Server{
+		apConfig: mock.GenerateConfig(true),
+		radiusServers: map[string]*ocstruct.OpenconfigOfficeAp_System_Aaa_ServerGroups_ServerGroup_Servers_Server{
 			mock.AuthWLANName: mock.RadiusServer(),
 		},
 	}}
 
 	for _, test := range tests {
-		for _, ap := range test.officeConfig.OfficeAp {
-			got := RadiusServers(ap)
-			want := test.radiusServers
-			if !reflect.DeepEqual(got, want) {
-				t.Errorf("Incorrect result (got: %v, want: %v).", got, want)
-			}
+		got := RadiusServers(test.apConfig)
+		want := test.radiusServers
+		if !reflect.DeepEqual(got, want) {
+			t.Errorf("Incorrect result (got: %v, want: %v).", got, want)
 		}
 	}
 }

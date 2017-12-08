@@ -17,8 +17,6 @@ limitations under the License.
 package service
 
 import (
-	"fmt"
-
 	log "github.com/golang/glog"
 	"github.com/google/link022/agent/syscmd"
 	"github.com/google/link022/agent/util/ocutil"
@@ -31,18 +29,12 @@ var (
 )
 
 // ApplyConfig configures this device to a Link022 AP based on the given configuration.
-func ApplyConfig(officeConfig *ocstruct.Office, setupIntf bool, deviceHostname, ethIntfName, wlanINTFName string) error {
-	officeAPs := officeConfig.OfficeAp
-	if _, ok := officeAPs[deviceHostname]; !ok {
-		return fmt.Errorf("not found the configuration for AP %v", deviceHostname)
-	}
-
-	officeAP := officeAPs[deviceHostname]
-	log.Infof("Configuring AP %v...", deviceHostname)
+func ApplyConfig(officeAP *ocstruct.Device, setupIntf bool, ethIntfName, wlanINTFName string) error {
+	log.Infof("Configuring AP %s...", *officeAP.Hostname)
 
 	if setupIntf {
 		// Configure eth interface.
-		if err := configEthIntf(ethIntfName, ocutil.VLANIDs(officeConfig)); err != nil {
+		if err := configEthIntf(ethIntfName, ocutil.VLANIDs(officeAP)); err != nil {
 			return err
 		}
 

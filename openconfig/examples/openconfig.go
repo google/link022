@@ -28,9 +28,9 @@ import (
 
 func main() {
 	flag.Parse()
-	office := mock.GenerateConfig(1, true)
+	apConfig := mock.GenerateConfig(true)
 
-	jsonString, err := ygot.EmitJSON(office, &ygot.EmitJSONConfig{
+	jsonString, err := ygot.EmitJSON(apConfig, &ygot.EmitJSONConfig{
 		Format: ygot.RFC7951,
 		Indent: "  ",
 		RFC7951Config: &ygot.RFC7951JSONConfig{
@@ -40,15 +40,15 @@ func main() {
 	if err != nil {
 		log.Exitf("Error outputting the configuration to JSON: %v", err)
 	}
-	log.Infof("Original office configJSON output:\n%v\n", jsonString)
+	log.Infof("Original AP configJSON output:\n%v\n", jsonString)
 
-	loadedOffice := &ocstruct.Office{}
-	err = ocstruct.Unmarshal([]byte(jsonString), loadedOffice)
+	loadedAP := &ocstruct.Device{}
+	err = ocstruct.Unmarshal([]byte(jsonString), loadedAP)
 	if err != nil {
 		log.Exitf("Error unmarshal JSON: %v", err)
 	}
 
-	loadedJSONString, err := ygot.EmitJSON(loadedOffice, &ygot.EmitJSONConfig{
+	loadedJSONString, err := ygot.EmitJSON(loadedAP, &ygot.EmitJSONConfig{
 		Format: ygot.RFC7951,
 		Indent: "  ",
 		RFC7951Config: &ygot.RFC7951JSONConfig{

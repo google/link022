@@ -37,7 +37,7 @@ const (
 var (
 	// link022ModelData is a list of models supported in this GNMI server.
 	link022ModelData = []*pb.ModelData{{
-		Name:         "wifi-office",
+		Name:         "office-ap",
 		Organization: "Google, Inc.",
 		Version:      "0.1.0",
 	}}
@@ -59,8 +59,8 @@ func NewServer() (*Server, error) {
 
 	// Create the GNMI server.
 	model := gnmi.NewModel(link022ModelData,
-		reflect.TypeOf((*ocstruct.Office)(nil)),
-		ocstruct.SchemaTree["Office"],
+		reflect.TypeOf((*ocstruct.Device)(nil)),
+		ocstruct.SchemaTree["Device"],
 		ocstruct.Unmarshal,
 		ocstruct.ΛEnum)
 
