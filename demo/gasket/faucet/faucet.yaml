@@ -1,0 +1,22 @@
+version: 2
+vlans:
+    100:
+    200:
+    300:
+dps:
+    faucet-1:
+        dp_id: 0x01
+        hardware: "Open vSwitch"
+        interfaces:
+            1:  
+                native_vlan: 100
+                acl_in: port_faucet-1_1
+                tagged_vlans: [200, 300]
+            2:  
+                native_vlan: 100
+            3:  
+                native_vlan: 100
+                tagged_vlans: [200, 300]
+include:
+    - /etc/ryu/faucet/faucet-acls.yaml
+

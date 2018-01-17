@@ -1,0 +1,29 @@
+rules:
+
+acls:
+    allow-all:
+        _authport_:
+            *allowall
+
+    block-tcp:
+        _authport_:
+        - rule:
+            _name_: _user-name_
+            _mac_: _user-mac_
+            dl_src: _user-mac_
+            dl_type: 0x800
+            ip_proto: 6
+            actions:
+                allow: 0
+
+    block-udp:
+        _authport_:
+        - rule:
+            _name_: _user-name_
+            _mac_: _user-mac_
+            dl_src: _user-mac_
+            dl_type: 0x800
+            ip_proto: 17
+            actions:
+                allow: 0
+
