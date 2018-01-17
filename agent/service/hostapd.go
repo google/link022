@@ -45,6 +45,7 @@ bss=%s_%d
 
 	wlanConfigTemplate = `ssid=%s
 bridge=%s
+ap_isolate=%d
 `
 
 	authConfigTemplate = `ieee8021x=1
@@ -113,7 +114,8 @@ func hostapdConfigFile(radioConfig *ocstruct.OpenconfigOfficeAp_Radios_Radio_Con
 	// Generate wlan configuration.
 	for i, wlanConfig := range wlanConfigs {
 		wlanName := *wlanConfig.Name
-		log.Infof("Adding hostapd configuration for WLAN %v...", wlanName)
+		log.Infof("Adding hostapd configuration for WLAN %v...", wlanName
+
 
 		if i > 0 {
 			// Add BSS configuration.
@@ -123,7 +125,11 @@ func hostapdConfigFile(radioConfig *ocstruct.OpenconfigOfficeAp_Radios_Radio_Con
 
 		// Add WLAN configuration.
 		wlanBridgeName := getBridgeName(int(*wlanConfig.VlanId))
-		hostapdWLANConfig := fmt.Sprintf(wlanConfigTemplate, wlanName, wlanBridgeName)
+		wlanStationIsolation := 0
+		if *wlanConfig.StationIsolation {
+			wlanStationIsolation := 1
+		}
+		hostapdWLANConfig := fmt.Sprintf(wlanConfigTemplate, wlanName, wlanBridgeName, wlanStationIsolation)
 		hostapdConfig += hostapdWLANConfig
 
 		// Add AUTH configuration.
