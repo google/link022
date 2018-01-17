@@ -1,7 +1,7 @@
 # Gasket & [Link022](https://github.com/google/link022)
 
 ## Getting Started
-First *read* over [main readme](README.authentication.md) for a general overview of Gasket's authentication, and the [link022 readme](https://github.com/google/link022).
+First *read* over [Gasket's readme](https://github.com/bairdo/gasket/blob.master/docs/README.authentication.md) for a general overview of Gasket's authentication, and the [link022 readme](./Readme.md).
 
 
 ![alt text](./link022-gasket-diagram.png)
@@ -26,14 +26,14 @@ This provides a default compile configuration, that includes the UDP-remote cont
 
 
 ## Link022 Gateway
-Follow the instructions [here](https://github.com/google/link022/blob/master/demo/README.md) to setup the gateway.
+Follow the instructions [here](./README.md) to setup the gateway.
 
 Two more configurations changes are needed:
 
 1. Add Faucet RADIUS type to 'dictionary', and 'Faucet-ACL-ID' attribute to users in the users file.
-Examples [here](./docs/README.authentication.md#radius-server)
+Examples [here](https://github.com/bairdo/gasket/blob/master/docs/README.authentication.md#radius-server)
 
-2. Add the 'vendor-config' configuration (see below) to the top level of [link022/demo/ap_config.json](https://github.com/google/link022/blob/master/demo/ap_config.json)
+2. Add the 'vendor-config' configuration (see below) to the top level of [demo/ap_config.json](./demo/ap_config.json)
 
 ```json
 {
@@ -65,18 +65,25 @@ Examples [here](./docs/README.authentication.md#radius-server)
 ## Gasket.
 
 At the moment the location (which switch and port) of the AP is hard-coded.
-Change the return statement of _get_dp_name_and_port to "return <switch-name>, <port-number>"
+In gasket/auth_app.py change the return statement of _get_dp_name_and_port to "return <switch-name>, <port-number>"
+
 e.g. "return "faucet-1", 1"
 
-Configure auth.yaml to point to the hostapd on the Link022 AP.
 
-See [base-link022-acls.yaml](../etc/ryu/faucet/gasket/base-link022-acls.yaml) for an example ACL configuration.
+The demo gasket/faucet/... folder provides a good starting configuration for the network in the diagram above.
+
+Configure [auth.yaml](./gasket/faucet/gasket/auth.yaml) to point to the hostapd on the Link022 AP.
+
+See [base-no-authed-acls.yaml](./gasket/faucet/gasket/base-no-authed-acls.yaml) for an example ACL configuration.
 
 
 
-
-Build and run Gasket & Faucet as shown [here](https://github.com/Bairdo/gasket/blob/master/docs/README.authentication.md#faucet--gasket).
-If using a Raspberry pi use [Dockerfile.pi](https://github.com/bairdo/gasket/blob/master/Dockerfile.pi).
+Build and run Gasket & Faucet:
+```bash
+docker build -t bairdo/gasket -f Dockerfile.auth .
+docker run --privileged -v ~/link022/demo/gasket/faucet:/etc/ryu/faucet/ -v <path-to-logging-dir>:/var/log/ryu/faucet/ -p 6663:6663 -p 6653:6653 -p 9244:9244 -ti bairdo/gasket
+```
+If using a Raspberry pi use [Dockerfile.pi](https://github.com/bairdo/gasket/blob/master/Dockerfile.pi) instead of Dockerfile.auth.
 
 
 
