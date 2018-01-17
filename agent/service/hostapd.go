@@ -68,7 +68,7 @@ nas_identifier=%s
 func configHostapd(apConfig *ocstruct.Device, wlanINTFName string) error {
 	hostname := *apConfig.Hostname
 	apRadios := apConfig.Radios
-	ctrlInterface := *apConfig.VendorConfig["ctrl-interface"].ConfigValue
+	ctrlInterface := *apConfig.VendorConfig["ctrl_interface"].ConfigValue
 	radiusAttribute := *apConfig.VendorConfig["radius_auth_access_accept_attr"].ConfigValue
 
 	if apRadios == nil || len(apRadios.Radio) == 0 {
