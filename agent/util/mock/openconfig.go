@@ -68,11 +68,23 @@ func systemInfo() *ocstruct.OpenconfigOfficeAp_System {
 					radiusServerGroupName: {
 						Name: ygot.String(radiusServerGroupName),
 						Config: &ocstruct.OpenconfigOfficeAp_System_Aaa_ServerGroups_ServerGroup_Config{
+							Name: ygot.String(radiusServerGroupName),
 							Type: ocstruct.OpenconfigAaaTypes_AAA_SERVER_TYPE_RADIUS,
 						},
 						Servers: &ocstruct.OpenconfigOfficeAp_System_Aaa_ServerGroups_ServerGroup_Servers{
 							Server: map[string]*ocstruct.OpenconfigOfficeAp_System_Aaa_ServerGroups_ServerGroup_Servers_Server{
-								radiusServerAddr: RadiusServer(),
+								radiusServerAddr: {
+									Config: &ocstruct.OpenconfigOfficeAp_System_Aaa_ServerGroups_ServerGroup_Servers_Server_Config{
+										Address: ygot.String(radiusServerAddr),
+									},
+									Address: ygot.String(radiusServerAddr),
+									Radius: &ocstruct.OpenconfigOfficeAp_System_Aaa_ServerGroups_ServerGroup_Servers_Server_Radius{
+										Config: &ocstruct.OpenconfigOfficeAp_System_Aaa_ServerGroups_ServerGroup_Servers_Server_Radius_Config{
+											AuthPort:  ygot.Uint16(1812),
+											SecretKey: ygot.String("radiuspwd"),
+										},
+									},
+								},
 							},
 						},
 					},
