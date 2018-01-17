@@ -50,6 +50,9 @@ func GenerateConfig(addAuthWLAN bool) *ocstruct.Device {
 // RadiusServer generates a mock RadiusServer configuration.
 func RadiusServer() *ocstruct.OpenconfigOfficeAp_System_Aaa_ServerGroups_ServerGroup_Servers_Server {
 	return &ocstruct.OpenconfigOfficeAp_System_Aaa_ServerGroups_ServerGroup_Servers_Server{
+		Config: &ocstruct.OpenconfigOfficeAp_System_Aaa_ServerGroups_ServerGroup_Servers_Server_Config{
+			Address: ygot.String(radiusServerAddr),
+		},
 		Address: ygot.String(radiusServerAddr),
 		Radius: &ocstruct.OpenconfigOfficeAp_System_Aaa_ServerGroups_ServerGroup_Servers_Server_Radius{
 			Config: &ocstruct.OpenconfigOfficeAp_System_Aaa_ServerGroups_ServerGroup_Servers_Server_Radius_Config{
@@ -73,18 +76,7 @@ func systemInfo() *ocstruct.OpenconfigOfficeAp_System {
 						},
 						Servers: &ocstruct.OpenconfigOfficeAp_System_Aaa_ServerGroups_ServerGroup_Servers{
 							Server: map[string]*ocstruct.OpenconfigOfficeAp_System_Aaa_ServerGroups_ServerGroup_Servers_Server{
-								radiusServerAddr: {
-									Config: &ocstruct.OpenconfigOfficeAp_System_Aaa_ServerGroups_ServerGroup_Servers_Server_Config{
-										Address: ygot.String(radiusServerAddr),
-									},
-									Address: ygot.String(radiusServerAddr),
-									Radius: &ocstruct.OpenconfigOfficeAp_System_Aaa_ServerGroups_ServerGroup_Servers_Server_Radius{
-										Config: &ocstruct.OpenconfigOfficeAp_System_Aaa_ServerGroups_ServerGroup_Servers_Server_Radius_Config{
-											AuthPort:  ygot.Uint16(1812),
-											SecretKey: ygot.String("radiuspwd"),
-										},
-									},
-								},
+								radiusServerAddr: RadiusServer(),
 							},
 						},
 					},
