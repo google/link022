@@ -1,7 +1,7 @@
 # Gasket & [Link022](https://github.com/google/link022)
 
 ## Getting Started
-First *read* over [Gasket's readme](https://github.com/bairdo/gasket/blob/master/docs/README.authentication.md) for a general overview of Gasket's authentication, and the [link022 readme](./Readme.md).
+First *read* over [Gasket's readme](https://github.com/bairdo/gasket/blob/master/docs/README.authentication.md) for a general overview of Gasket's authentication, and the [link022 readme](./README.md).
 
 
 ![alt text](./link022-gasket-diagram.png)
