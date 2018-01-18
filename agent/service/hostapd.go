@@ -114,8 +114,7 @@ func hostapdConfigFile(radioConfig *ocstruct.OpenconfigOfficeAp_Radios_Radio_Con
 	// Generate wlan configuration.
 	for i, wlanConfig := range wlanConfigs {
 		wlanName := *wlanConfig.Name
-		log.Infof("Adding hostapd configuration for WLAN %v...", wlanName
-
+		log.Infof("Adding hostapd configuration for WLAN %v...", wlanName)
 
 		if i > 0 {
 			// Add BSS configuration.
@@ -125,10 +124,16 @@ func hostapdConfigFile(radioConfig *ocstruct.OpenconfigOfficeAp_Radios_Radio_Con
 
 		// Add WLAN configuration.
 		wlanBridgeName := getBridgeName(int(*wlanConfig.VlanId))
+
 		wlanStationIsolation := 0
-		if *wlanConfig.StationIsolation {
-			wlanStationIsolation := 1
+		if wlanConfig.StationIsolation != nil{
+			if *wlanConfig.StationIsolation {
+				wlanStationIsolation = 1
+			} else {
+				wlanStationIsolation = 0
+			}
 		}
+
 		hostapdWLANConfig := fmt.Sprintf(wlanConfigTemplate, wlanName, wlanBridgeName, wlanStationIsolation)
 		hostapdConfig += hostapdWLANConfig
 
