@@ -126,12 +126,8 @@ func hostapdConfigFile(radioConfig *ocstruct.OpenconfigOfficeAp_Radios_Radio_Con
 		wlanBridgeName := getBridgeName(int(*wlanConfig.VlanId))
 
 		wlanStationIsolation := 0
-		if wlanConfig.StationIsolation != nil{
-			if *wlanConfig.StationIsolation {
+		if wlanConfig.StationIsolation != nil && *wlanConfig.StationIsolation{
 				wlanStationIsolation = 1
-			} else {
-				wlanStationIsolation = 0
-			}
 		}
 
 		hostapdWLANConfig := fmt.Sprintf(wlanConfigTemplate, wlanName, wlanBridgeName, wlanStationIsolation)
