@@ -33,7 +33,7 @@ Two more configurations changes are needed:
 1. Add Faucet RADIUS type to 'dictionary', and 'Faucet-ACL-ID' attribute to users in the users file.
 Examples [here](https://github.com/bairdo/gasket/blob/master/docs/README.authentication.md#radius-server)
 
-2. Add the 'vendor-config' configuration (see below) to the top level of [demo/ap_config.json](./demo/ap_config.json)
+2. Add the 'vendor-config' configuration (see below) to the top level of [demo/ap_config.json](./ap_config.json)
 
 ```json
 {
