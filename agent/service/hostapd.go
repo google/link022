@@ -27,6 +27,10 @@ import (
 )
 
 const (
+	ctrlInterfaceConfigTemplate = `ctrl_interface=%s
+`
+	radiusAttributeSaveConfigTemplate = `radius_auth_access_accept_attr=%s
+`
 	commonConfigTemplate = `
 interface=%s
 # Driver; nl80211 is used with all Linux mac80211 drivers.
@@ -65,6 +69,14 @@ nas_identifier=%s
 func configHostapd(apConfig *ocstruct.Device, wlanINTFName string) error {
 	hostname := *apConfig.Hostname
 	apRadios := apConfig.Radios
+	ctrlInterface := ""
+	if apConfig.VendorConfig["ctrl_interface"] != nil {
+		ctrlInterface = *apConfig.VendorConfig["ctrl_interface"].ConfigValue
+	}
+	radiusAttribute := ""
+	if apConfig.VendorConfig["radius_auth_access_accept_attr"] != nil {
+		radiusAttribute = *apConfig.VendorConfig["radius_auth_access_accept_attr"].ConfigValue
+	}
 	if apRadios == nil || len(apRadios.Radio) == 0 {
 		log.Error("No radio configuration found.")
 		return errors.New("no radio configuration found")
@@ -81,7 +93,8 @@ func configHostapd(apConfig *ocstruct.Device, wlanINTFName string) error {
 		wlanConfigs := wlanWithOpFreq(apConfig, radioConfig.OperatingFrequency)
 
 		// Genearte hostapd configuration.
-		hostapdConfig := hostapdConfigFile(radioConfig, authServerConfigs, wlanConfigs, wlanINTFName, hostname)
+		hostapdConfig := hostapdConfigFile(radioConfig, authServerConfigs, wlanConfigs, wlanINTFName, hostname, ctrlInterface, radiusAttribute)
+
 
 		// Save the hostapd configuration file.
 		configFileName := hostapdConfFileName(wlanINTFName)
@@ -102,13 +115,21 @@ func configHostapd(apConfig *ocstruct.Device, wlanINTFName string) error {
 func hostapdConfigFile(radioConfig *ocstruct.OpenconfigOfficeAp_Radios_Radio_Config,
 	authServerConfigs map[string]*ocstruct.OpenconfigOfficeAp_System_Aaa_ServerGroups_ServerGroup_Servers_Server,
 	wlanConfigs []*ocstruct.OpenconfigOfficeAp_Ssids_Ssid_Config,
-	wlanINTFName string, hostname string) string {
+	wlanINTFName string, hostname string, ctrlInterface string, radiusAttribute string) string {
 	log.Infof("Generating hostapd configuration for radio %v...", *radioConfig.Id)
 	hostapdConfig := ""
 
 	// Generate common configuration.
 	radioHWMode := hostapdHardwareMode(radioConfig.OperatingFrequency)
 	commonConfig := fmt.Sprintf(commonConfigTemplate, wlanINTFName, radioHWMode, *radioConfig.Channel)
+
+	if len(ctrlInterface) != 0 {
+		commonConfig += fmt.Sprintf(ctrlInterfaceConfigTemplate, ctrlInterface)
+	}
+	if len(radiusAttribute) != 0 {
+		commonConfig += fmt.Sprintf(radiusAttributeSaveConfigTemplate, radiusAttribute)
+	}
+
 	hostapdConfig += commonConfig
 
 	// Generate wlan configuration.
