@@ -36,7 +36,7 @@ var (
 
 // handleSet is the callback function of the GNMI SET call.
 // It is triggered by the GNMI server.
-func handleSet(updatedConfig ygot.ValidatedGoStruct, existingConfig ygot.ValidatedGoStruct) error {
+func handleSet(updatedConfig ygot.ValidatedGoStruct) error {
 	// TODO: Handle delta change. Currently the GNMI server only supports replacing root.
 	officeAP, ok := updatedConfig.(*ocstruct.Device)
 	if !ok {
