@@ -95,7 +95,6 @@ func configHostapd(apConfig *ocstruct.Device, wlanINTFName string) error {
 		// Genearte hostapd configuration.
 		hostapdConfig := hostapdConfigFile(radioConfig, authServerConfigs, wlanConfigs, wlanINTFName, hostname, ctrlInterface, radiusAttribute)
 
-
 		// Save the hostapd configuration file.
 		configFileName := hostapdConfFileName(wlanINTFName)
 		if err := syscmd.SaveToFile(runFolder, configFileName, hostapdConfig); err != nil {
@@ -147,8 +146,8 @@ func hostapdConfigFile(radioConfig *ocstruct.OpenconfigOfficeAp_Radios_Radio_Con
 		wlanBridgeName := getBridgeName(int(*wlanConfig.VlanId))
 
 		wlanStationIsolation := 0
-		if wlanConfig.StationIsolation != nil && *wlanConfig.StationIsolation{
-				wlanStationIsolation = 1
+		if wlanConfig.StationIsolation != nil && *wlanConfig.StationIsolation {
+			wlanStationIsolation = 1
 		}
 
 		hostapdWLANConfig := fmt.Sprintf(wlanConfigTemplate, wlanName, wlanBridgeName, wlanStationIsolation)
