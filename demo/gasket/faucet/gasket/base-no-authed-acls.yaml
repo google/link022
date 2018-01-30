@@ -1,0 +1,24 @@
+acls:
+    port_faucet-1_2:
+        - authed-rules
+        # drop unauthenticated hosts on the tagged auth  VLAN.
+        # this could possibly be removed, as the AP (hostapd) controls the access.
+        # and if you're on the vlan, you must be allowed.
+        - rule:
+            vlan_vid: 300
+            actions:
+                allow: 0
+        # allow all traffic on the guest VLAN.
+        - rule:
+            vlan_vid: 200
+            actions:
+                allow: 1
+        # Allow the control (RADIUS, hostapd UDP, SSH to AP)
+        - rule:
+            dl_type: 0x800
+            actions:
+                allow: 1
+        - rule:
+            dl_type: 0x806
+            actions:
+                allow: 1

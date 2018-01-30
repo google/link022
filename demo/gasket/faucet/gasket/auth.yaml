@@ -1,0 +1,37 @@
+---
+version: 0
+
+logger_location: /var/log/ryu/faucet/gasket/auth_app.log
+
+faucet:
+    prometheus_port: 9302
+    ip: 127.0.0.1
+
+files:
+    # the location of files. pid should contain the process id (pid) of the main faucet-process (ryu-manager)
+    #  should be obtainable with "ps aux | grep faucet.faucet | head -n1 awk '{print $2}' > /etc/ryu/faucet/contr_pid"
+    controller_pid: /var/run/faucet.pid
+    faucet_config: /etc/ryu/faucet/faucet.yaml
+    acl_config: /etc/ryu/faucet/faucet-acls.yaml
+    base_config: /etc/ryu/faucet/gasket/base-acls.yaml
+
+# rules to be applied for a user once authenticated.
+auth-rules:
+    file: /etc/ryu/faucet/gasket/rules.yaml
+dps:
+    faucet-1:
+        interfaces:
+            1:  
+                auth_mode: access
+
+hostapd:
+    host: 192.168.11.6
+    port: 8888
+    # in hostapd.conf 'ctl_interface...:udp:8888' might be how you specifiy what to do
+    # socket_path: /path/to/hostapd/ctrl/socket # may also be used instead of host & port, when using the unix socket interface
+
+    request_timeout: 4
+    unsolicited_timeout: 4
+    request_socket_type: ping
+    unsolicited_socket_type: ping
+
