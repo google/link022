@@ -26,7 +26,9 @@ import (
 
 	"github.com/google/gnxi/utils/credentials"
 	"github.com/google/link022/agent/context"
+	"github.com/google/link022/agent/controller"
 	"github.com/google/link022/agent/gnmi"
+	"github.com/google/link022/agent/syscmd"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 
@@ -35,9 +37,12 @@ import (
 )
 
 var (
-	ethINTFName  = flag.String("eth_intf_name", "eth0", "The management network interface on this device.")
-	wlanINTFName = flag.String("wlan_intf_name", "wlan0", "The WLAN interface on this device for AP radio.")
-	gnmiPort     = flag.Int("gnmi_port", 8080, "The port GNMI server listening on.")
+	ethINTFName    = flag.String("eth_intf_name", "eth0", "The management network interface on this device.")
+	wlanINTFName   = flag.String("wlan_intf_name", "wlan0", "The WLAN interface on this device for AP radio.")
+	gnmiPort       = flag.Int("gnmi_port", 8080, "The port GNMI server listening on.")
+	controllerAddr = flag.String("controller_address", "", "The WiFi Controller of this device.")
+
+	cmdRunner = syscmd.Runner()
 )
 
 func main() {
@@ -53,10 +58,27 @@ func main() {
 	deviceConfig.Hostname = hostname
 	log.Infof("Hostname = %s.", hostname)
 
-	// Load command-line flags.
+	// Load AP network interface configuration.
 	deviceConfig.ETHINTFName = *ethINTFName
 	deviceConfig.WLANINTFName = *wlanINTFName
-	log.Infof("Eth interface = %s. WLAN interface = %s", *ethINTFName, *wlanINTFName)
+	log.Infof("Eth interface = %s. WLAN interface = %s.", *ethINTFName, *wlanINTFName)
+
+	// Get gNMI server address.
+	deviceIPv4, err := cmdRunner.DeviceIPv4()
+	if err != nil {
+		log.Exit("Failed to load the device IPv4 address.")
+	}
+	gNMIServerAddr := fmt.Sprintf("%s:%d", deviceIPv4, *gnmiPort)
+	deviceConfig.GNMIServerAddr = gNMIServerAddr
+
+	// Load controlle Info.
+	deviceConfig.ControllerAddr = *controllerAddr
+	if *controllerAddr != "" {
+		log.Infof("AP controller = %s", *controllerAddr)
+		go controller.Connect()
+	} else {
+		log.Info("No AP controller assigned.")
+	}
 
 	// Create GNMI server.
 	gnmiServer, err := gnmi.NewServer()
@@ -65,17 +87,21 @@ func main() {
 	}
 
 	// Start the GNMI server.
-	opts := credentials.ServerCredentials()
+	var opts []grpc.ServerOption
+	if *controllerAddr == "" {
+		// Add credential check if no controller specified.
+		opts = credentials.ServerCredentials()
+	}
 	g := grpc.NewServer(opts...)
 	pb.RegisterGNMIServer(g, gnmiServer)
 	reflection.Register(g)
-	listen, err := net.Listen("tcp", fmt.Sprintf(":%d", *gnmiPort))
+	listen, err := net.Listen("tcp", gNMIServerAddr)
 	if err != nil {
-		log.Exitf("Failed to listen on port %d. Error: %v.", *gnmiPort, err)
+		log.Exitf("Failed to listen on %s. Error: %v.", gNMIServerAddr, err)
 	}
 
-	log.Infof("Running GNMI server. Listen on port %d.", *gnmiPort)
+	log.Infof("Running GNMI server. Listen on %s.", gNMIServerAddr)
 	if err := g.Serve(listen); err != nil {
-		log.Exitf("Failed to run GNMI server on port %d. Error: %v.", *gnmiPort, err)
+		log.Exitf("Failed to run GNMI server on %s. Error: %v.", gNMIServerAddr, err)
 	}
 }

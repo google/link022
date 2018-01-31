@@ -22,9 +22,11 @@ import (
 
 // DeviceConfig contains the configuration specific to this device.
 type DeviceConfig struct {
-	ETHINTFName  string
-	WLANINTFName string
-	Hostname     string
+	ETHINTFName    string
+	WLANINTFName   string
+	Hostname       string
+	ControllerAddr string
+	GNMIServerAddr string
 }
 
 var (
