@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// Package controller contains methods that related to AP controller.
+// Package controller contains methods that are related to AP controller.
 package controller
 
 import (

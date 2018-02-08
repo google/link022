@@ -23,7 +23,7 @@ import (
 	log "github.com/golang/glog"
 )
 
-// DeviceIPv4 fetches the IPv4 address of the device.
+// DeviceIPv4 fetches the first IPv4 address of the device.
 func (r *CommandRunner) DeviceIPv4() (string, error) {
 	ipInfo, err := r.ExecCommand(true, "hostname", "-I")
 	if err != nil {
