@@ -23,7 +23,11 @@ def set_flags():
     global FLAGS
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "--target_cmd", help="Command line to start the target")
+        "--target_cmd",
+        help="Command line to start the target. Needed if ext_target is False")
+    parser.add_argument(
+        "--ext_target", action='store_true', default=False,
+        help='Use an external target.')
     parser.add_argument("--gnmi_set", help="Command line for GNMI Set")
     FLAGS = parser.parse_args()
 
@@ -31,6 +35,7 @@ def set_flags():
 TARGET_NAME = 'target'
 CONTROLLER_NAME = 'ctrlr'
 DUMMY_NAME = 'dummy'
+DEFAULT_NS = 'lk022_def'
 
 
 def get_ip_spec(addr, subnet=None):
@@ -63,7 +68,11 @@ class ConfigTest(unittest.TestCase):
     """
     @classmethod
     def setUpClass(cls):
-        cls._start_topo()
+        cls._target_popen = None
+        if FLAGS.ext_target:
+            cls._ctrlr = mininet.node.Node(DEFAULT_NS, inNamespace=False)
+        else:
+            cls._start_topo()
 
     @classmethod
     def _start_topo(cls):
@@ -98,14 +107,15 @@ class ConfigTest(unittest.TestCase):
     def tearDownClass(cls):
         """Test clean up.
         """
-        cls._target_popen.kill()
+        if cls._target_popen:
+            cls._target_popen.kill()
+            cls._target_popen = None
 
     def runTest(self):
         """Run the test
         """
         _, _, code = self._ctrlr.pexec(FLAGS.gnmi_set)
         self.assertEqual(code, 0)
-
 
 
 if __name__ == '__main__':
