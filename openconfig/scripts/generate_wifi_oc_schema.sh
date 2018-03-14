@@ -25,13 +25,16 @@ export GOPATH=$HOME/go
 # Tools
 YANG_CONVERTER=$GOPATH/src/github.com/openconfig/ygot/generator/generator.go
 
-# OpenConfig modules
 # Download OpenConfig models from https://github.com/openconfig/public
-YANG_MODELS=<path to OpenConfig model>/public/release/models
 # Download ietf models from https://github.com/openconfig/yang/tree/master/standard/ietf/RFC
-IETF_MODELS=<path to OpenConfig model>/yang/standard/ietf/RFC
-OWCA_TOP_MODULE=../models/openconfig-office-ap.yang
-IGNORED_MODULES=openconfig-wifi-phy,openconfig-wifi-mac,openconfig-system
+# Move downloaded models to a specific folder.
+OC_FOLDER=<add folder path here>
+
+# OpenConfig modules
+YANG_MODELS=$OC_FOLDER/public/release/models
+IETF_MODELS=$OC_FOLDER/yang/standard/ietf/RFC
+AP_TOP_MODULE=$OC_FOLDER/public/release/models/wifi/access-points/openconfig-access-points.yang
+IGNORED_MODULES=openconfig-wifi-phy,openconfig-wifi-mac,openconfig-system,openconfig-extensions,openconfig-inet-types,openconfig-platform
 
 # Output path
 OUTPUT_PACKAGE_NAME=ocstruct
@@ -43,4 +46,4 @@ go run $YANG_CONVERTER \
 -package_name=ocstruct -compress_paths=false \
 -exclude_modules=$IGNORED_MODULES \
 -output_file=$OUTPUT_FILE_PATH \
-$OWCA_TOP_MODULE
+$AP_TOP_MODULE
