@@ -23,6 +23,20 @@ import (
 	"github.com/google/link022/generated/ocstruct"
 )
 
+// FindAPConfig finds the configuration of the AP with a specific hostname.
+// It returns nil if not matching AP found.
+func FindAPConfig(apConfigs *ocstruct.Device, hostname string) *ocstruct.OpenconfigAccessPoints_AccessPoints_AccessPoint {
+	if apConfigs.AccessPoints == nil {
+		return nil
+	}
+
+	apConfig, ok := apConfigs.AccessPoints.AccessPoint[hostname]
+	if !ok {
+		return nil
+	}
+	return apConfig
+}
+
 // VLANChanged checkes whether there is any difference between the given two VLAN ID lists.
 func VLANChanged(existingVLANIDs, updatedVLANIDs []int) bool {
 	sort.Ints(existingVLANIDs)
@@ -31,7 +45,7 @@ func VLANChanged(existingVLANIDs, updatedVLANIDs []int) bool {
 }
 
 // VLANIDs fetches the ID of all VLANs appears in the given office configuration.
-func VLANIDs(apConfig *ocstruct.Device) []int {
+func VLANIDs(apConfig *ocstruct.OpenconfigAccessPoints_AccessPoints_AccessPoint) []int {
 	vlanIDs := []int{}
 
 	if apConfig == nil {
@@ -52,8 +66,8 @@ func VLANIDs(apConfig *ocstruct.Device) []int {
 
 // RadiusServers fetches the radius server assigned to the given AP.
 // It returns a SSID -> RadiusServer map.
-func RadiusServers(ap *ocstruct.Device) map[string]*ocstruct.OpenconfigOfficeAp_System_Aaa_ServerGroups_ServerGroup_Servers_Server {
-	wlanRadiusMap := make(map[string]*ocstruct.OpenconfigOfficeAp_System_Aaa_ServerGroups_ServerGroup_Servers_Server)
+func RadiusServers(ap *ocstruct.OpenconfigAccessPoints_AccessPoints_AccessPoint) map[string]*ocstruct.OpenconfigAccessPoints_AccessPoints_AccessPoint_System_Aaa_ServerGroups_ServerGroup_Servers_Server {
+	wlanRadiusMap := make(map[string]*ocstruct.OpenconfigAccessPoints_AccessPoints_AccessPoint_System_Aaa_ServerGroups_ServerGroup_Servers_Server)
 	if ap.Ssids == nil {
 		return wlanRadiusMap
 	}
@@ -79,7 +93,7 @@ func RadiusServers(ap *ocstruct.Device) map[string]*ocstruct.OpenconfigOfficeAp_
 	return wlanRadiusMap
 }
 
-func aaaServerGroups(ap *ocstruct.Device) map[string]*ocstruct.OpenconfigOfficeAp_System_Aaa_ServerGroups_ServerGroup {
+func aaaServerGroups(ap *ocstruct.OpenconfigAccessPoints_AccessPoints_AccessPoint) map[string]*ocstruct.OpenconfigAccessPoints_AccessPoints_AccessPoint_System_Aaa_ServerGroups_ServerGroup {
 	apSystemInfo := ap.System
 	if apSystemInfo == nil {
 		return nil
@@ -98,7 +112,7 @@ func aaaServerGroups(ap *ocstruct.Device) map[string]*ocstruct.OpenconfigOfficeA
 	return serverGP.ServerGroup
 }
 
-func aaaRadiusServer(serverGP *ocstruct.OpenconfigOfficeAp_System_Aaa_ServerGroups_ServerGroup) *ocstruct.OpenconfigOfficeAp_System_Aaa_ServerGroups_ServerGroup_Servers_Server {
+func aaaRadiusServer(serverGP *ocstruct.OpenconfigAccessPoints_AccessPoints_AccessPoint_System_Aaa_ServerGroups_ServerGroup) *ocstruct.OpenconfigAccessPoints_AccessPoints_AccessPoint_System_Aaa_ServerGroups_ServerGroup_Servers_Server {
 	if serverGP == nil || serverGP.Config == nil || serverGP.Config.Type != ocstruct.OpenconfigAaaTypes_AAA_SERVER_TYPE_RADIUS {
 		return nil
 	}
