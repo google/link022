@@ -24,16 +24,42 @@ import (
 	"github.com/google/link022/generated/ocstruct"
 )
 
+func TestFindAPConfig(t *testing.T) {
+	// Define test cases.
+	tests := []struct {
+		apConfigs    *ocstruct.Device
+		targetAPName string
+		found        bool
+	}{{
+		apConfigs:    mock.GenerateConfig(true),
+		targetAPName: "fake AP",
+		found:        false,
+	}, {
+		apConfigs:    mock.GenerateConfig(true),
+		targetAPName: "test-pi-1",
+		found:        true,
+	}}
+
+	for _, test := range tests {
+		matchedConfig := FindAPConfig(test.apConfigs, test.targetAPName)
+		foundMatch := matchedConfig != nil
+
+		if foundMatch != test.found {
+			t.Errorf("Incorrect FindAPConfig result (got: %v, want:%v).", foundMatch, test.found)
+		}
+	}
+}
+
 func TestVLANIDs(t *testing.T) {
 	// Define test cases.
 	tests := []struct {
-		apConfig *ocstruct.Device
+		apConfig *ocstruct.OpenconfigAccessPoints_AccessPoints_AccessPoint
 		vlanIDs  []int
 	}{{
-		apConfig: mock.GenerateConfig(true),
+		apConfig: mock.GenerateAPConfig(true),
 		vlanIDs:  []int{250, 666},
 	}, {
-		apConfig: mock.GenerateConfig(false),
+		apConfig: mock.GenerateAPConfig(false),
 		vlanIDs:  []int{666},
 	}, {
 		apConfig: nil,
@@ -54,27 +80,27 @@ func TestVLANIDs(t *testing.T) {
 func TestVLANChanged(t *testing.T) {
 	// Define test cases.
 	tests := []struct {
-		existingConfig      *ocstruct.Device
-		updatedConfigConfig *ocstruct.Device
+		existingConfig      *ocstruct.OpenconfigAccessPoints_AccessPoints_AccessPoint
+		updatedConfigConfig *ocstruct.OpenconfigAccessPoints_AccessPoints_AccessPoint
 		vlanChanged         bool
 	}{{
-		existingConfig:      mock.GenerateConfig(true),
-		updatedConfigConfig: mock.GenerateConfig(true),
+		existingConfig:      mock.GenerateAPConfig(true),
+		updatedConfigConfig: mock.GenerateAPConfig(true),
 		vlanChanged:         false,
 	}, {
-		existingConfig:      mock.GenerateConfig(true),
-		updatedConfigConfig: mock.GenerateConfig(false),
+		existingConfig:      mock.GenerateAPConfig(true),
+		updatedConfigConfig: mock.GenerateAPConfig(false),
 		vlanChanged:         true,
 	}, {
-		existingConfig:      mock.GenerateConfig(false),
-		updatedConfigConfig: mock.GenerateConfig(true),
+		existingConfig:      mock.GenerateAPConfig(false),
+		updatedConfigConfig: mock.GenerateAPConfig(true),
 		vlanChanged:         true,
 	}, {
 		existingConfig:      nil,
-		updatedConfigConfig: mock.GenerateConfig(true),
+		updatedConfigConfig: mock.GenerateAPConfig(true),
 		vlanChanged:         true,
 	}, {
-		existingConfig:      mock.GenerateConfig(true),
+		existingConfig:      mock.GenerateAPConfig(true),
 		updatedConfigConfig: nil,
 		vlanChanged:         true,
 	}, {
@@ -95,14 +121,14 @@ func TestVLANChanged(t *testing.T) {
 func TestRadiusServers(t *testing.T) {
 	// Define test cases.
 	tests := []struct {
-		apConfig      *ocstruct.Device
-		radiusServers map[string]*ocstruct.OpenconfigOfficeAp_System_Aaa_ServerGroups_ServerGroup_Servers_Server
+		apConfig      *ocstruct.OpenconfigAccessPoints_AccessPoints_AccessPoint
+		radiusServers map[string]*ocstruct.OpenconfigAccessPoints_AccessPoints_AccessPoint_System_Aaa_ServerGroups_ServerGroup_Servers_Server
 	}{{
-		apConfig:      mock.GenerateConfig(false),
-		radiusServers: make(map[string]*ocstruct.OpenconfigOfficeAp_System_Aaa_ServerGroups_ServerGroup_Servers_Server),
+		apConfig:      mock.GenerateAPConfig(false),
+		radiusServers: make(map[string]*ocstruct.OpenconfigAccessPoints_AccessPoints_AccessPoint_System_Aaa_ServerGroups_ServerGroup_Servers_Server),
 	}, {
-		apConfig: mock.GenerateConfig(true),
-		radiusServers: map[string]*ocstruct.OpenconfigOfficeAp_System_Aaa_ServerGroups_ServerGroup_Servers_Server{
+		apConfig: mock.GenerateAPConfig(true),
+		radiusServers: map[string]*ocstruct.OpenconfigAccessPoints_AccessPoints_AccessPoint_System_Aaa_ServerGroups_ServerGroup_Servers_Server{
 			mock.AuthWLANName: mock.RadiusServer(),
 		},
 	}}

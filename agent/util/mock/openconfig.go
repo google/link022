@@ -32,8 +32,19 @@ var (
 	AuthWLANName = "Auth-Emu"
 )
 
-// GenerateConfig generates an AP wireless for test.
+// GenerateConfig generates office AP configs for test.
 func GenerateConfig(addAuthWLAN bool) *ocstruct.Device {
+	return &ocstruct.Device{
+		AccessPoints: &ocstruct.OpenconfigAccessPoints_AccessPoints{
+			AccessPoint: map[string]*ocstruct.OpenconfigAccessPoints_AccessPoints_AccessPoint{
+				apName: GenerateAPConfig(addAuthWLAN),
+			},
+		},
+	}
+}
+
+// GenerateAPConfig generates an AP wireless for test.
+func GenerateAPConfig(addAuthWLAN bool) *ocstruct.OpenconfigAccessPoints_AccessPoints_AccessPoint {
 	ap := &ocstruct.OpenconfigAccessPoints_AccessPoints_AccessPoint{
 		Hostname: ygot.String(apName),
 	}
@@ -44,15 +55,7 @@ func GenerateConfig(addAuthWLAN bool) *ocstruct.Device {
 
 	ap.Radios = radios()
 	ap.Ssids = wlans(addAuthWLAN)
-
-	officeAPs := &ocstruct.Device{
-		AccessPoints: &ocstruct.OpenconfigAccessPoints_AccessPoints{
-			AccessPoint: map[string]*ocstruct.OpenconfigAccessPoints_AccessPoints_AccessPoint{
-				apName: ap,
-			},
-		},
-	}
-	return officeAPs
+	return ap
 }
 
 // RadiusServer generates a mock RadiusServer configuration.
