@@ -66,17 +66,19 @@ nas_identifier=%s
 )
 
 // configHostapd configures the hostapd program on this device based on the given AP configuration.
-func configHostapd(apConfig *ocstruct.Device, wlanINTFName string) error {
+func configHostapd(apConfig *ocstruct.OpenconfigAccessPoints_AccessPoints_AccessPoint, wlanINTFName string) error {
 	hostname := *apConfig.Hostname
 	apRadios := apConfig.Radios
+	// TODO(boleifu): Disable loading these two properties, since there is no matching field in the offical OpenConfig access-points model.
+	//                Re-enable them once found the proper fields.
 	ctrlInterface := ""
-	if apConfig.VendorConfig["ctrl_interface"] != nil {
-		ctrlInterface = *apConfig.VendorConfig["ctrl_interface"].ConfigValue
-	}
+	//if apConfig.VendorConfig["ctrl_interface"] != nil {
+	//	ctrlInterface = *apConfig.VendorConfig["ctrl_interface"].ConfigValue
+	//}
 	radiusAttribute := ""
-	if apConfig.VendorConfig["radius_auth_access_accept_attr"] != nil {
-		radiusAttribute = *apConfig.VendorConfig["radius_auth_access_accept_attr"].ConfigValue
-	}
+	//if apConfig.VendorConfig["radius_auth_access_accept_attr"] != nil {
+	//	radiusAttribute = *apConfig.VendorConfig["radius_auth_access_accept_attr"].ConfigValue
+	//}
 	if apRadios == nil || len(apRadios.Radio) == 0 {
 		log.Error("No radio configuration found.")
 		return errors.New("no radio configuration found")
@@ -111,9 +113,9 @@ func configHostapd(apConfig *ocstruct.Device, wlanINTFName string) error {
 }
 
 // hostapdConfigFile generates the content of hostapd configuration file based on the given configuration.
-func hostapdConfigFile(radioConfig *ocstruct.OpenconfigOfficeAp_Radios_Radio_Config,
-	authServerConfigs map[string]*ocstruct.OpenconfigOfficeAp_System_Aaa_ServerGroups_ServerGroup_Servers_Server,
-	wlanConfigs []*ocstruct.OpenconfigOfficeAp_Ssids_Ssid_Config,
+func hostapdConfigFile(radioConfig *ocstruct.OpenconfigAccessPoints_AccessPoints_AccessPoint_Radios_Radio_Config,
+	authServerConfigs map[string]*ocstruct.OpenconfigAccessPoints_AccessPoints_AccessPoint_System_Aaa_ServerGroups_ServerGroup_Servers_Server,
+	wlanConfigs []*ocstruct.OpenconfigAccessPoints_AccessPoints_AccessPoint_Ssids_Ssid_Config,
 	wlanINTFName string, hostname string, ctrlInterface string, radiusAttribute string) string {
 	log.Infof("Generating hostapd configuration for radio %v...", *radioConfig.Id)
 	hostapdConfig := ""
@@ -154,7 +156,7 @@ func hostapdConfigFile(radioConfig *ocstruct.OpenconfigOfficeAp_Radios_Radio_Con
 		hostapdConfig += hostapdWLANConfig
 
 		// Add AUTH configuration.
-		if wlanConfig.Opmode == ocstruct.OpenconfigOfficeAp_Ssids_Ssid_Config_Opmode_WPA2_ENTERPRISE {
+		if wlanConfig.Opmode == ocstruct.OpenconfigAccessPoints_AccessPoints_AccessPoint_Ssids_Ssid_Config_Opmode_WPA2_ENTERPRISE {
 			// Add radius configuration.
 			authServerConfig := authServerConfigs[wlanName]
 			// TODO: Add validation to ensure authServerConfig exists.
@@ -179,9 +181,9 @@ func hostapdHardwareMode(opFrequency ocstruct.E_OpenconfigWifiTypes_OPERATING_FR
 	return "a"
 }
 
-func wlanWithOpFreq(apConfig *ocstruct.Device,
-	targetFreq ocstruct.E_OpenconfigWifiTypes_OPERATING_FREQUENCY) []*ocstruct.OpenconfigOfficeAp_Ssids_Ssid_Config {
-	var matchedWLANs []*ocstruct.OpenconfigOfficeAp_Ssids_Ssid_Config
+func wlanWithOpFreq(apConfig *ocstruct.OpenconfigAccessPoints_AccessPoints_AccessPoint,
+	targetFreq ocstruct.E_OpenconfigWifiTypes_OPERATING_FREQUENCY) []*ocstruct.OpenconfigAccessPoints_AccessPoints_AccessPoint_Ssids_Ssid_Config {
+	var matchedWLANs []*ocstruct.OpenconfigAccessPoints_AccessPoints_AccessPoint_Ssids_Ssid_Config
 
 	wlans := apConfig.Ssids
 	if wlans == nil || len(wlans.Ssid) == 0 {

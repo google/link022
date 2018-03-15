@@ -29,7 +29,7 @@ var (
 )
 
 // ApplyConfig configures this device to a Link022 AP based on the given configuration.
-func ApplyConfig(officeAP *ocstruct.Device, setupIntf bool, ethIntfName, wlanINTFName string) error {
+func ApplyConfig(officeAP *ocstruct.OpenconfigAccessPoints_AccessPoints_AccessPoint, setupIntf bool, ethIntfName, wlanINTFName string) error {
 	log.Infof("Configuring AP %s...", *officeAP.Hostname)
 
 	if setupIntf {
