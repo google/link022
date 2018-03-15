@@ -176,7 +176,7 @@ func executeMockCommand(wait bool, cmd string, args ...string) (string, error) {
 func TestApplyConfig(t *testing.T) {
 	// Define test cases.
 	type testCase struct {
-		apConfig            *ocstruct.Device
+		apConfig            *ocstruct.OpenconfigAccessPoints_AccessPoints_AccessPoint
 		expectedSystemState *systemState
 		expectedError       error
 	}
@@ -188,7 +188,7 @@ func TestApplyConfig(t *testing.T) {
 	testWLANHostapdConfigFile := path.Join(tempRunFolder, fmt.Sprintf("hostapd_%s.conf", testWLANIntf))
 	testCases := map[string]*testCase{
 		"TestConfigWithTwoWLANs": {
-			apConfig: mock.GenerateConfig(true),
+			apConfig: mock.GenerateAPConfig(true),
 			expectedSystemState: &systemState{
 				Intfs: map[string]bool{
 					testETHIntf:  true,
@@ -212,7 +212,7 @@ func TestApplyConfig(t *testing.T) {
 			expectedError: nil,
 		},
 		"TestConfigWithOneWLAN": {
-			apConfig: mock.GenerateConfig(false),
+			apConfig: mock.GenerateAPConfig(false),
 			expectedSystemState: &systemState{
 				Intfs: map[string]bool{
 					testETHIntf:  true,
@@ -256,19 +256,19 @@ func TestApplyConfig(t *testing.T) {
 func TestCleanupConfig(t *testing.T) {
 	// Define test cases.
 	tests := []struct {
-		apConfig       *ocstruct.Device
+		apConfig       *ocstruct.OpenconfigAccessPoints_AccessPoints_AccessPoint
 		configRequired bool
 		succeeded      bool
 	}{{
-		apConfig:       mock.GenerateConfig(true),
+		apConfig:       mock.GenerateAPConfig(true),
 		configRequired: true,
 		succeeded:      true,
 	}, {
-		apConfig:       mock.GenerateConfig(false),
+		apConfig:       mock.GenerateAPConfig(false),
 		configRequired: true,
 		succeeded:      true,
 	}, {
-		apConfig:       mock.GenerateConfig(false),
+		apConfig:       mock.GenerateAPConfig(false),
 		configRequired: false,
 		succeeded:      false,
 	}, {

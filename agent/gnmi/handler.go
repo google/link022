@@ -38,12 +38,12 @@ var (
 // It is triggered by the GNMI server.
 func handleSet(updatedConfig ygot.ValidatedGoStruct) error {
 	// TODO: Handle delta change. Currently the GNMI server only supports replacing root.
-	officeAP, ok := updatedConfig.(*ocstruct.Device)
+	officeAPs, ok := updatedConfig.(*ocstruct.Device)
 	if !ok {
 		return errors.New("new configuration has invalid type")
 	}
 
-	configString, err := ygot.EmitJSON(officeAP, &ygot.EmitJSONConfig{
+	configString, err := ygot.EmitJSON(officeAPs, &ygot.EmitJSONConfig{
 		Format: ygot.RFC7951,
 		Indent: "  ",
 		RFC7951Config: &ygot.RFC7951JSONConfig{
@@ -58,6 +58,12 @@ func handleSet(updatedConfig ygot.ValidatedGoStruct) error {
 	// TODO: Validate the OpenConfig module.
 	deviceConfig := context.GetDeviceConfig()
 
+	// Fetch the target AP configuration.
+	apConfig := ocutil.FindAPConfig(officeAPs, deviceConfig.Hostname)
+	if apConfig == nil {
+		return fmt.Errorf("not found the configuration for this AP (hostname = %s)", deviceConfig.Hostname)
+	}
+
 	// Check and clean up the existing configuration.
 	var changedVLANIDs []int
 	existingVLANIDs, err := cmdRunner.VLANOnIntf(deviceConfig.ETHINTFName)
@@ -66,7 +72,7 @@ func handleSet(updatedConfig ygot.ValidatedGoStruct) error {
 	}
 
 	resetIntf := false
-	newVLANIDs := ocutil.VLANIDs(officeAP)
+	newVLANIDs := ocutil.VLANIDs(apConfig)
 	if ocutil.VLANChanged(existingVLANIDs, newVLANIDs) {
 		log.Infof("VLAN changes (%v -> %v) on interface %s.", existingVLANIDs, newVLANIDs, deviceConfig.ETHINTFName)
 		changedVLANIDs = existingVLANIDs
@@ -82,7 +88,7 @@ func handleSet(updatedConfig ygot.ValidatedGoStruct) error {
 	time.Sleep(5 * time.Second)
 
 	// Process the incoming configuration.
-	if err = service.ApplyConfig(officeAP, resetIntf, deviceConfig.ETHINTFName,
+	if err = service.ApplyConfig(apConfig, resetIntf, deviceConfig.ETHINTFName,
 		deviceConfig.WLANINTFName); err != nil {
 		return err
 	}
