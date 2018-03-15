@@ -34,7 +34,7 @@ var (
 
 // GenerateConfig generates an AP wireless for test.
 func GenerateConfig(addAuthWLAN bool) *ocstruct.Device {
-	ap := &ocstruct.Device{
+	ap := &ocstruct.OpenconfigAccessPoints_AccessPoints_AccessPoint{
 		Hostname: ygot.String(apName),
 	}
 
@@ -44,18 +44,26 @@ func GenerateConfig(addAuthWLAN bool) *ocstruct.Device {
 
 	ap.Radios = radios()
 	ap.Ssids = wlans(addAuthWLAN)
-	return ap
+
+	officeAPs := &ocstruct.Device{
+		AccessPoints: &ocstruct.OpenconfigAccessPoints_AccessPoints{
+			AccessPoint: map[string]*ocstruct.OpenconfigAccessPoints_AccessPoints_AccessPoint{
+				apName: ap,
+			},
+		},
+	}
+	return officeAPs
 }
 
 // RadiusServer generates a mock RadiusServer configuration.
-func RadiusServer() *ocstruct.OpenconfigOfficeAp_System_Aaa_ServerGroups_ServerGroup_Servers_Server {
-	return &ocstruct.OpenconfigOfficeAp_System_Aaa_ServerGroups_ServerGroup_Servers_Server{
-		Config: &ocstruct.OpenconfigOfficeAp_System_Aaa_ServerGroups_ServerGroup_Servers_Server_Config{
+func RadiusServer() *ocstruct.OpenconfigAccessPoints_AccessPoints_AccessPoint_System_Aaa_ServerGroups_ServerGroup_Servers_Server {
+	return &ocstruct.OpenconfigAccessPoints_AccessPoints_AccessPoint_System_Aaa_ServerGroups_ServerGroup_Servers_Server{
+		Config: &ocstruct.OpenconfigAccessPoints_AccessPoints_AccessPoint_System_Aaa_ServerGroups_ServerGroup_Servers_Server_Config{
 			Address: ygot.String(radiusServerAddr),
 		},
 		Address: ygot.String(radiusServerAddr),
-		Radius: &ocstruct.OpenconfigOfficeAp_System_Aaa_ServerGroups_ServerGroup_Servers_Server_Radius{
-			Config: &ocstruct.OpenconfigOfficeAp_System_Aaa_ServerGroups_ServerGroup_Servers_Server_Radius_Config{
+		Radius: &ocstruct.OpenconfigAccessPoints_AccessPoints_AccessPoint_System_Aaa_ServerGroups_ServerGroup_Servers_Server_Radius{
+			Config: &ocstruct.OpenconfigAccessPoints_AccessPoints_AccessPoint_System_Aaa_ServerGroups_ServerGroup_Servers_Server_Radius_Config{
 				AuthPort:  ygot.Uint16(1812),
 				SecretKey: ygot.String("radiuspwd"),
 			},
@@ -63,19 +71,19 @@ func RadiusServer() *ocstruct.OpenconfigOfficeAp_System_Aaa_ServerGroups_ServerG
 	}
 }
 
-func systemInfo() *ocstruct.OpenconfigOfficeAp_System {
-	return &ocstruct.OpenconfigOfficeAp_System{
-		Aaa: &ocstruct.OpenconfigOfficeAp_System_Aaa{
-			ServerGroups: &ocstruct.OpenconfigOfficeAp_System_Aaa_ServerGroups{
-				ServerGroup: map[string]*ocstruct.OpenconfigOfficeAp_System_Aaa_ServerGroups_ServerGroup{
+func systemInfo() *ocstruct.OpenconfigAccessPoints_AccessPoints_AccessPoint_System {
+	return &ocstruct.OpenconfigAccessPoints_AccessPoints_AccessPoint_System{
+		Aaa: &ocstruct.OpenconfigAccessPoints_AccessPoints_AccessPoint_System_Aaa{
+			ServerGroups: &ocstruct.OpenconfigAccessPoints_AccessPoints_AccessPoint_System_Aaa_ServerGroups{
+				ServerGroup: map[string]*ocstruct.OpenconfigAccessPoints_AccessPoints_AccessPoint_System_Aaa_ServerGroups_ServerGroup{
 					radiusServerGroupName: {
 						Name: ygot.String(radiusServerGroupName),
-						Config: &ocstruct.OpenconfigOfficeAp_System_Aaa_ServerGroups_ServerGroup_Config{
+						Config: &ocstruct.OpenconfigAccessPoints_AccessPoints_AccessPoint_System_Aaa_ServerGroups_ServerGroup_Config{
 							Name: ygot.String(radiusServerGroupName),
 							Type: ocstruct.OpenconfigAaaTypes_AAA_SERVER_TYPE_RADIUS,
 						},
-						Servers: &ocstruct.OpenconfigOfficeAp_System_Aaa_ServerGroups_ServerGroup_Servers{
-							Server: map[string]*ocstruct.OpenconfigOfficeAp_System_Aaa_ServerGroups_ServerGroup_Servers_Server{
+						Servers: &ocstruct.OpenconfigAccessPoints_AccessPoints_AccessPoint_System_Aaa_ServerGroups_ServerGroup_Servers{
+							Server: map[string]*ocstruct.OpenconfigAccessPoints_AccessPoints_AccessPoint_System_Aaa_ServerGroups_ServerGroup_Servers_Server{
 								radiusServerAddr: RadiusServer(),
 							},
 						},
@@ -86,14 +94,14 @@ func systemInfo() *ocstruct.OpenconfigOfficeAp_System {
 	}
 }
 
-func radios() *ocstruct.OpenconfigOfficeAp_Radios {
-	radios := &ocstruct.OpenconfigOfficeAp_Radios{}
-	radios.Radio = make(map[uint8]*ocstruct.OpenconfigOfficeAp_Radios_Radio)
+func radios() *ocstruct.OpenconfigAccessPoints_AccessPoints_AccessPoint_Radios {
+	radios := &ocstruct.OpenconfigAccessPoints_AccessPoints_AccessPoint_Radios{}
+	radios.Radio = make(map[uint8]*ocstruct.OpenconfigAccessPoints_AccessPoints_AccessPoint_Radios_Radio)
 
 	radioID := uint8(1)
-	radios.Radio[radioID] = &ocstruct.OpenconfigOfficeAp_Radios_Radio{
+	radios.Radio[radioID] = &ocstruct.OpenconfigAccessPoints_AccessPoints_AccessPoint_Radios_Radio{
 		Id: ygot.Uint8(radioID),
-		Config: &ocstruct.OpenconfigOfficeAp_Radios_Radio_Config{
+		Config: &ocstruct.OpenconfigAccessPoints_AccessPoints_AccessPoint_Radios_Radio_Config{
 			Id:                 ygot.Uint8(radioID),
 			Enabled:            ygot.Bool(true),
 			OperatingFrequency: ocstruct.OpenconfigWifiTypes_OPERATING_FREQUENCY_FREQ_2GHZ,
@@ -108,9 +116,9 @@ func radios() *ocstruct.OpenconfigOfficeAp_Radios {
 	return radios
 }
 
-func wlans(addAuthWLAN bool) *ocstruct.OpenconfigOfficeAp_Ssids {
-	wlans := &ocstruct.OpenconfigOfficeAp_Ssids{}
-	wlans.Ssid = make(map[string]*ocstruct.OpenconfigOfficeAp_Ssids_Ssid)
+func wlans(addAuthWLAN bool) *ocstruct.OpenconfigAccessPoints_AccessPoints_AccessPoint_Ssids {
+	wlans := &ocstruct.OpenconfigAccessPoints_AccessPoints_AccessPoint_Ssids{}
+	wlans.Ssid = make(map[string]*ocstruct.OpenconfigAccessPoints_AccessPoints_AccessPoint_Ssids_Ssid)
 
 	wlans.Ssid[GuestWLANName] = guestWLAN()
 
@@ -122,10 +130,10 @@ func wlans(addAuthWLAN bool) *ocstruct.OpenconfigOfficeAp_Ssids {
 	return wlans
 }
 
-func guestWLAN() *ocstruct.OpenconfigOfficeAp_Ssids_Ssid {
-	return &ocstruct.OpenconfigOfficeAp_Ssids_Ssid{
+func guestWLAN() *ocstruct.OpenconfigAccessPoints_AccessPoints_AccessPoint_Ssids_Ssid {
+	return &ocstruct.OpenconfigAccessPoints_AccessPoints_AccessPoint_Ssids_Ssid{
 		Name: ygot.String(GuestWLANName),
-		Config: &ocstruct.OpenconfigOfficeAp_Ssids_Ssid_Config{
+		Config: &ocstruct.OpenconfigAccessPoints_AccessPoints_AccessPoint_Ssids_Ssid_Config{
 			AdvertiseApname:    ygot.Bool(false),
 			BasicDataRates:     []ocstruct.E_OpenconfigWifiTypes_DATA_RATE{ocstruct.OpenconfigWifiTypes_DATA_RATE_RATE_11MB, ocstruct.OpenconfigWifiTypes_DATA_RATE_RATE_24MB},
 			BroadcastFilter:    ygot.Bool(false),
@@ -139,7 +147,7 @@ func guestWLAN() *ocstruct.OpenconfigOfficeAp_Ssids_Ssid {
 			MulticastFilter:    ygot.Bool(false),
 			Name:               ygot.String(GuestWLANName),
 			OperatingFrequency: ocstruct.OpenconfigWifiTypes_OPERATING_FREQUENCY_FREQ_2_5_GHZ,
-			Opmode:             ocstruct.OpenconfigOfficeAp_Ssids_Ssid_Config_Opmode_OPEN,
+			Opmode:             ocstruct.OpenconfigAccessPoints_AccessPoints_AccessPoint_Ssids_Ssid_Config_Opmode_OPEN,
 			PtkTimeout:         ygot.Uint16(1000),
 			SupportedDataRates: []ocstruct.E_OpenconfigWifiTypes_DATA_RATE{ocstruct.OpenconfigWifiTypes_DATA_RATE_RATE_11MB, ocstruct.OpenconfigWifiTypes_DATA_RATE_RATE_24MB},
 			VlanId:             ygot.Uint16(666),
@@ -147,10 +155,10 @@ func guestWLAN() *ocstruct.OpenconfigOfficeAp_Ssids_Ssid {
 	}
 }
 
-func authWLAN() *ocstruct.OpenconfigOfficeAp_Ssids_Ssid {
-	return &ocstruct.OpenconfigOfficeAp_Ssids_Ssid{
+func authWLAN() *ocstruct.OpenconfigAccessPoints_AccessPoints_AccessPoint_Ssids_Ssid {
+	return &ocstruct.OpenconfigAccessPoints_AccessPoints_AccessPoint_Ssids_Ssid{
 		Name: ygot.String(AuthWLANName),
-		Config: &ocstruct.OpenconfigOfficeAp_Ssids_Ssid_Config{
+		Config: &ocstruct.OpenconfigAccessPoints_AccessPoints_AccessPoint_Ssids_Ssid_Config{
 			AdvertiseApname:    ygot.Bool(false),
 			BasicDataRates:     []ocstruct.E_OpenconfigWifiTypes_DATA_RATE{ocstruct.OpenconfigWifiTypes_DATA_RATE_RATE_11MB, ocstruct.OpenconfigWifiTypes_DATA_RATE_RATE_24MB},
 			BroadcastFilter:    ygot.Bool(false),
@@ -164,7 +172,7 @@ func authWLAN() *ocstruct.OpenconfigOfficeAp_Ssids_Ssid {
 			MulticastFilter:    ygot.Bool(false),
 			Name:               ygot.String(AuthWLANName),
 			OperatingFrequency: ocstruct.OpenconfigWifiTypes_OPERATING_FREQUENCY_FREQ_2_5_GHZ,
-			Opmode:             ocstruct.OpenconfigOfficeAp_Ssids_Ssid_Config_Opmode_WPA2_ENTERPRISE,
+			Opmode:             ocstruct.OpenconfigAccessPoints_AccessPoints_AccessPoint_Ssids_Ssid_Config_Opmode_WPA2_ENTERPRISE,
 			ServerGroup:        ygot.String(radiusServerGroupName),
 			PtkTimeout:         ygot.Uint16(1000),
 			SupportedDataRates: []ocstruct.E_OpenconfigWifiTypes_DATA_RATE{ocstruct.OpenconfigWifiTypes_DATA_RATE_RATE_11MB, ocstruct.OpenconfigWifiTypes_DATA_RATE_RATE_24MB},
