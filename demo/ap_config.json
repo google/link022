@@ -1,119 +1,125 @@
 {
-  "hostname":"raspberrypi",
-  "system":{
-    "aaa":{
-      "server-groups":{
-        "server-group":[
-          {
-            "servers":{
-              "server":[
+  "openconfig-access-points:access-points": {
+    "access-point": [
+      {
+        "hostname": "raspberrypi",
+        "system": {
+          "aaa": {
+            "server-groups": {
+              "server-group": [
                 {
-                  "address":"192.168.11.1",
-                  "config":{
-                    "address":"192.168.11.1",
-                    "timeout":5,
-                    "name":"radius-server"
+                  "servers": {
+                    "server": [
+                      {
+                        "address": "192.168.11.1",
+                        "config": {
+                          "address": "192.168.11.1",
+                          "timeout": 5,
+                          "name": "radius-server"
+                        },
+                        "radius": {
+                          "config": {
+                            "auth-port": 1812,
+                            "secret-key": "radiuspwd"
+                          }
+                        }
+                      }
+                    ]
                   },
-                  "radius":{
-                    "config":{
-                      "auth-port":1812,
-                      "secret-key":"radiuspwd"
-                    }
+                  "name": "freeradius",
+                  "config": {
+                    "name": "freeradius",
+                    "type": "openconfig-aaa:RADIUS"
                   }
                 }
               ]
-            },
-            "name":"freeradius",
-            "config":{
-              "name":"freeradius",
-              "type":"openconfig-aaa:RADIUS"
             }
           }
-        ]
-      }
-    }
-  },
-  "radios":{
-    "radio":[
-      {
-        "config":{
-          "channel":8,
-          "channel-width":10,
-          "enabled":true,
-          "id":1,
-          "operating-frequency":"openconfig-wifi-types:FREQ_2GHZ",
-          "scanning":true,
-          "scanning-interval":30,
-          "transmit-power":5
         },
-        "id":1
-      }
-    ]
-  },
-  "ssids":{
-    "ssid":[
-      {
-        "config":{
-          "qbss-load":true,
-          "dva":true,
-          "gtk-timeout":3600,
-          "station-isolation":true,
-          "multicast-filter":true,
-          "ptk-timeout":28800,
-          "operating-frequency":"openconfig-wifi-types:FREQ_2_5_GHZ",
-          "name":"Auth-Link022",
-          "vlan-id":300,
-          "advertise-apname":true,
-          "ipv6-ndp-filter-timer":300,
-          "dot11k":true,
-          "supported-data-rates":[
-            "RATE_36MB",
-            "RATE_48MB",
-            "RATE_54MB"
-          ],
-          "basic-data-rates":[
-            "RATE_36MB",
-            "RATE_48MB",
-            "RATE_54MB"
-          ],
-          "broadcast-filter":true,
-          "enabled":true,
-          "server-group":"freeradius",
-          "csa":true,
-          "dhcp-required":false,
-          "hidden":false,
-          "opmode":"WPA2_ENTERPRISE",
-          "ipv6-ndp-filter":true
+        "radios": {
+          "radio": [
+            {
+              "config": {
+                "channel": 8,
+                "channel-width": 10,
+                "enabled": true,
+                "id": 1,
+                "operating-frequency": "openconfig-wifi-types:FREQ_2GHZ",
+                "scanning": true,
+                "scanning-interval": 30,
+                "transmit-power": 5
+              },
+              "id": 1
+            }
+          ]
         },
-        "name":"Auth-Link022"
-      },
-      {
-        "config":{
-          "advertise-apname":false,
-          "basic-data-rates":[
-            "RATE_11MB",
-            "RATE_24MB"
-          ],
-          "broadcast-filter":false,
-          "csa":false,
-          "dhcp-required":true,
-          "dot11k":false,
-          "dva":false,
-          "enabled":true,
-          "gtk-timeout":1000,
-          "hidden":false,
-          "multicast-filter":false,
-          "name":"Guest-Link022",
-          "operating-frequency":"openconfig-wifi-types:FREQ_2_5_GHZ",
-          "opmode":"OPEN",
-          "ptk-timeout":1000,
-          "supported-data-rates":[
-            "RATE_11MB",
-            "RATE_24MB"
-          ],
-          "vlan-id":200
-        },
-        "name":"Guest-Link022"
+        "ssids": {
+          "ssid": [
+            {
+              "config": {
+                "qbss-load": true,
+                "dva": true,
+                "gtk-timeout": 3600,
+                "station-isolation": true,
+                "multicast-filter": true,
+                "ptk-timeout": 28800,
+                "operating-frequency": "openconfig-wifi-types:FREQ_2_5_GHZ",
+                "name": "Auth-Link022",
+                "vlan-id": 300,
+                "advertise-apname": true,
+                "ipv6-ndp-filter-timer": 300,
+                "dot11k": true,
+                "supported-data-rates": [
+                  "RATE_36MB",
+                  "RATE_48MB",
+                  "RATE_54MB"
+                ],
+                "basic-data-rates": [
+                  "RATE_36MB",
+                  "RATE_48MB",
+                  "RATE_54MB"
+                ],
+                "broadcast-filter": true,
+                "enabled": true,
+                "server-group": "freeradius",
+                "csa": true,
+                "dhcp-required": false,
+                "hidden": false,
+                "opmode": "WPA2_ENTERPRISE",
+                "ipv6-ndp-filter": true
+              },
+              "name": "Auth-Link022"
+            },
+            {
+              "config": {
+                "advertise-apname": false,
+                "basic-data-rates": [
+                  "RATE_11MB",
+                  "RATE_24MB"
+                ],
+                "broadcast-filter": false,
+                "csa": false,
+                "dhcp-required": true,
+                "dot11k": false,
+                "dva": false,
+                "enabled": true,
+                "gtk-timeout": 1000,
+                "hidden": false,
+                "multicast-filter": false,
+                "name": "Guest-Link022",
+                "operating-frequency": "openconfig-wifi-types:FREQ_2_5_GHZ",
+                "opmode": "OPEN",
+                "ptk-timeout": 1000,
+                "supported-data-rates": [
+                  "RATE_11MB",
+                  "RATE_24MB"
+                ],
+                "vlan-id": 200
+              },
+              "name": "Guest-Link022"
+            }
+          ]
+        }
       }
     ]
   }
