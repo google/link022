@@ -80,7 +80,7 @@ sudo env PATH=$PATH gnmi_set -logtostderr \
 	-key=cert/client/client.key \
 	-target_name=www.example.com \
 	-target_addr=<link022 AP IP address>:<gnmi port> \
-	-update=/office-ap[hostname=raspberrypi]/radios/radio[id=1]/config/channel:6
+	-update=/access-points/access-point[hostname=link022-pi-ap]/radios/radio[id=1]/config/channel:6
 ```
 
 Note: Check [gnxi set client](https://github.com/google/gnxi/tree/master/gnmi_set) for more use cases.
@@ -94,20 +94,23 @@ sudo env PATH=$PATH gnmi_get -logtostderr \
 -key=cert/client/client.key \
 -target_name=www.example.com \
 -target_addr=link022 AP IP address>:<gnmi port> \
--xpath="/office-ap[hostname=raspberrypi]/radios/radio[id=1]/config/channel"
+-xpath="/access-points/access-point[hostname=link022-pi-ap]/radios/radio[id=1]/config/channel"
 ```
 The output should be similar to:
 ```
 == getResponse:
 notification: <
-  timestamp: 1508199771543394638
+  timestamp: 1521145574058185274
   update: <
     path: <
       elem: <
-        name: "office-ap"
+        name: "access-points"
+      >
+      elem: <
+        name: "access-point"
         key: <
           key: "hostname"
-          value: "link022-ap"
+          value: "link022-pi-ap"
         >
       >
       elem: <
@@ -128,7 +131,7 @@ notification: <
       >
     >
     val: <
-      uint_val: 6
+      uint_val: 8
     >
   >
 >
