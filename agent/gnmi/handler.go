@@ -88,7 +88,7 @@ func handleSet(updatedConfig ygot.ValidatedGoStruct) error {
 	time.Sleep(5 * time.Second)
 
 	// Process the incoming configuration.
-	if err = service.ApplyConfig(apConfig, resetIntf, deviceConfig.ETHINTFName,
+	if err = service.ApplyConfig(apConfig, officeAPs.Gasket, resetIntf, deviceConfig.ETHINTFName,
 		deviceConfig.WLANINTFName); err != nil {
 		return err
 	}

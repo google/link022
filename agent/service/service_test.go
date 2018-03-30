@@ -247,7 +247,7 @@ func TestApplyConfig(t *testing.T) {
 		// Clean up the test system state.
 		testSystemState = cleanedSysteState()
 
-		err := ApplyConfig(test.apConfig, true, testETHIntf, testWLANIntf)
+		err := ApplyConfig(test.apConfig, nil, true, testETHIntf, testWLANIntf)
 		checkResult(t, testName, err, test.expectedError)
 		checkResult(t, testName, testSystemState, test.expectedSystemState)
 	}
@@ -297,7 +297,7 @@ func TestCleanupConfig(t *testing.T) {
 		testName := fmt.Sprintf("TestCleanupConfig_%d", i)
 
 		if test.configRequired {
-			if err := ApplyConfig(test.apConfig, true, testETHIntf, testWLANIntf); err != nil {
+			if err := ApplyConfig(test.apConfig, nil, true, testETHIntf, testWLANIntf); err != nil {
 				t.Errorf("[%s] Configuration failed. Error: %v.", testName, err)
 			}
 			// Clean up does not restore the MAC address.

@@ -29,7 +29,7 @@ var (
 )
 
 // ApplyConfig configures this device to a Link022 AP based on the given configuration.
-func ApplyConfig(officeAP *ocstruct.OpenconfigAccessPoints_AccessPoints_AccessPoint, setupIntf bool, ethIntfName, wlanINTFName string) error {
+func ApplyConfig(officeAP *ocstruct.OpenconfigAccessPoints_AccessPoints_AccessPoint, gasketConfig *ocstruct.OpenconfigGasket_Gasket, setupIntf bool, ethIntfName, wlanINTFName string) error {
 	log.Infof("Configuring AP %s...", *officeAP.Hostname)
 
 	if setupIntf {
@@ -45,7 +45,7 @@ func ApplyConfig(officeAP *ocstruct.OpenconfigAccessPoints_AccessPoints_AccessPo
 	}
 
 	// Configure hostapd.
-	return configHostapd(officeAP, wlanINTFName)
+	return configHostapd(officeAP, gasketConfig, wlanINTFName)
 }
 
 // CleanupConfig cleans up the current AP configuration on this device.

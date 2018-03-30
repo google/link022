@@ -66,19 +66,17 @@ nas_identifier=%s
 )
 
 // configHostapd configures the hostapd program on this device based on the given AP configuration.
-func configHostapd(apConfig *ocstruct.OpenconfigAccessPoints_AccessPoints_AccessPoint, wlanINTFName string) error {
+func configHostapd(apConfig *ocstruct.OpenconfigAccessPoints_AccessPoints_AccessPoint, gasketConfig *ocstruct.OpenconfigGasket_Gasket, wlanINTFName string) error {
 	hostname := *apConfig.Hostname
 	apRadios := apConfig.Radios
-	// TODO(boleifu): Disable loading these two properties, since there is no matching field in the offical OpenConfig access-points model.
-	//                Re-enable them once found the proper fields.
 	ctrlInterface := ""
-	//if apConfig.VendorConfig["ctrl_interface"] != nil {
-	//	ctrlInterface = *apConfig.VendorConfig["ctrl_interface"].ConfigValue
-	//}
+	if gasketConfig != nil && gasketConfig.CtrlInterface != nil {
+		ctrlInterface = *gasketConfig.CtrlInterface
+	}
 	radiusAttribute := ""
-	//if apConfig.VendorConfig["radius_auth_access_accept_attr"] != nil {
-	//	radiusAttribute = *apConfig.VendorConfig["radius_auth_access_accept_attr"].ConfigValue
-	//}
+	if gasketConfig != nil && gasketConfig.RadiusAttribute != nil {
+		radiusAttribute = *gasketConfig.RadiusAttribute
+	}
 	if apRadios == nil || len(apRadios.Radio) == 0 {
 		log.Error("No radio configuration found.")
 		return errors.New("no radio configuration found")
