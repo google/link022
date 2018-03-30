@@ -37,27 +37,30 @@ Examples [here](https://github.com/bairdo/gasket/blob/master/docs/README.authent
 
 ```json
 {
-  "vendor-config": [
-        {
-          "config-key": "ctrl_interface",
-          "config-value": "udp:8888"
-        },
-        { 
-          "config-key": "radius_auth_access_accept_attr",
-          "config-value": "26:12345:1:s"
-        }
-      ],
+  "openconfig-gasket": {
+    "ctrl-interface": "udp:8888",
+    "radius-attribute": "26:12345:1:s"
+  },
 
   ###### Rest of standard link022 config.
-  "hostname": "raspberrypi",
-  "system":{
-    "aaa":{
-      "server-groups":{
-        "server-group":[
-          {
-            "config":{
-              "type":"openconfig-aaa:RADIUS"
-            },
+  "openconfig-access-points:access-points": {
+    "access-point": [
+      {
+        "hostname": "raspberrypi",
+        "system": {
+          "aaa": {
+            "server-groups": {
+              "server-group": [
+                {
+                  "servers": {
+                    "server": [
+                      {
+                        "address": "192.168.11.1",
+                        "config": {
+                          "address": "192.168.11.1",
+                          "timeout": 5,
+                          "name": "radius-server"
+                        },
 
 ```
 
