@@ -35,15 +35,16 @@ YANG_MODELS=$OC_FOLDER/public/release/models
 IETF_MODELS=$OC_FOLDER/yang/standard/ietf/RFC
 AP_TOP_MODULE=$OC_FOLDER/public/release/models/wifi/access-points/openconfig-access-points.yang
 IGNORED_MODULES=openconfig-wifi-phy,openconfig-wifi-mac,openconfig-system,openconfig-extensions,openconfig-inet-types,openconfig-platform
+GASKET_MODULES=../models/gasket.yang
 
 # Output path
 OUTPUT_PACKAGE_NAME=ocstruct
 OUTPUT_FILE_PATH=../../generated/$OUTPUT_PACKAGE_NAME/$OUTPUT_PACKAGE_NAME.go
 
 go run $YANG_CONVERTER \
--path=$YANG_MODELS,$IETF_MODELS \
+-path=$YANG_MODELS,$IETF_MODELS,$GASKET_MODULES \
 -generate_fakeroot -fakeroot_name=device \
 -package_name=ocstruct -compress_paths=false \
 -exclude_modules=$IGNORED_MODULES \
 -output_file=$OUTPUT_FILE_PATH \
-$AP_TOP_MODULE
+$AP_TOP_MODULE $GASKET_MODULES
