@@ -1,0 +1,52 @@
+module openconfig-gasket {
+
+  yang-version "1";
+
+  // namespace
+  namespace "http://google.com/yang/gasket";
+
+  // Assign this module a prefix to be used by other modules, when imported.
+  prefix "gasket";
+
+  // meta
+  organization "Google, Inc.";
+
+  contact
+    "Google, Inc.
+    1600 Amphitheatre Pkway
+    Mountain View, CA 94043
+    www.google.com";
+
+  description
+    "This module defines the top level Gasket Configurations.";
+
+  revision "2018-03-30" {
+    description
+      "Initial version";
+    reference "0.1.0";
+  }
+
+  grouping gasket-top {
+    description
+      "Top-level grouping for Gasket configuration data.";
+
+    container gasket {
+      description
+        "Top most container for configuration data for Gasket.";
+
+      leaf ctrl-interface {
+        type string;
+        description
+          "The interface for separate hostapd control prgram.";
+      }
+
+      leaf radius-attribute {
+        type string;
+        description
+          "The gasket related radius attributes.";
+      }
+    }
+  }
+
+  uses gasket-top;
+}
