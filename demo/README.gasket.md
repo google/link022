@@ -37,7 +37,7 @@ Examples [here](https://github.com/bairdo/gasket/blob/master/docs/README.authent
 
 ```json
 {
-  "openconfig-gasket": {
+  "openconfig-gasket:gasket": {
     "ctrl-interface": "udp:8888",
     "radius-attribute": "26:12345:1:s"
   },
