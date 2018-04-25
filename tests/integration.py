@@ -6,6 +6,9 @@ Refer to the README.md file for instructions on running the tests.
 
 import argparse
 import netaddr
+import re
+import logging
+import sys
 import time
 import unittest
 
@@ -15,6 +18,8 @@ import mininet.cli
 
 
 FLAGS = None
+logging.basicConfig(stream=sys.stdout, level=logging.INFO)
+logger = logging.getLogger()
 
 
 def set_flags():
@@ -28,7 +33,16 @@ def set_flags():
     parser.add_argument(
         "--ext_target", action='store_true', default=False,
         help='Use an external target.')
-    parser.add_argument("--gnmi_set", help="Command line for GNMI Set")
+    parser.add_argument(
+        "--emulator", action='store_true', default=False,
+        help='Start the emulator and run no tests.')
+    parser.add_argument("--gnmi_set", help="Path to the gnmi_set command")
+    parser.add_argument("--ca", help="CA Certificate")
+    parser.add_argument("--cert", help="Client Certificate")
+    parser.add_argument("--key", help="Client key")
+    parser.add_argument("--target_name", help="Target name for cert verification")
+    parser.add_argument("--target_addr", help="Target IP:port")
+    parser.add_argument("--json_conf", help="File name of JSON config")
     FLAGS = parser.parse_args()
 
 
@@ -99,9 +113,14 @@ class ConfigTest(unittest.TestCase):
         cls._ctrlr = cls._net[CONTROLLER_NAME]
 
         cls._net.start()
+        logger.info('Running target command: %s', FLAGS.target_cmd)
         cls._target_popen = cls._target.popen(FLAGS.target_cmd)
-        # Wait for the agent to start up
-        time.sleep(20)
+
+        if FLAGS.emulator:
+            mininet.cli.CLI(cls._net)
+        else:
+          # Wait for the agent to start up
+          time.sleep(20)
 
     @classmethod
     def tearDownClass(cls):
@@ -114,7 +133,20 @@ class ConfigTest(unittest.TestCase):
     def runTest(self):
         """Run the test
         """
-        _, _, code = self._ctrlr.pexec(FLAGS.gnmi_set)
+        if FLAGS.emulator:
+          self.skipTest('Skip the test in emulator mode.')
+        gnmi_set_cmd_list = (
+            FLAGS.gnmi_set,
+            '-ca=' + FLAGS.ca,
+            '-cert=' + FLAGS.cert,
+            '-key=' + FLAGS.key,
+            '-target_name=' + FLAGS.target_name,
+            '-target_addr=' + FLAGS.target_addr,
+            '-replace=' + '/:@' + FLAGS.json_conf)
+        gnmi_set_cmd = ' '.join(gnmi_set_cmd_list)
+
+        logger.info('Running gnmi_set command: %s', gnmi_set_cmd)
+        _, _, code = self._ctrlr.pexec(gnmi_set_cmd)
         self.assertEqual(code, 0)
 
 

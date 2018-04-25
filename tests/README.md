@@ -21,25 +21,25 @@ sudo python integration.py \
   -cert ${LINK022}/demo/cert/server/server.crt \
   -key ${LINK022}/demo/cert/server/server.key -eth_intf_name target-eth1 \
   -wlan_intf_name target-eth2" \
-  --gnmi_set "${GOPATH}/bin/gnmi_set \
-  -ca=${LINK022}/demo/cert/client/ca.crt \
-  -cert=${LINK022}/demo/cert/client/client.crt \
-  -key=${LINK022}/demo/cert/client/client.key \
-  -target_name=www.example.com \
-  -target_addr=10.0.0.1:8080 \
-  -replace=/:@${LINK022}/demo/ap_config.json"
+  --gnmi_set ${GOPATH}/bin/gnmi_set \
+  --ca ${LINK022}/demo/cert/client/ca.crt \
+  --cert ${LINK022}/demo/cert/client/client.crt \
+  --key ${LINK022}/demo/cert/client/client.key \
+  --target_name www.example.com \
+  --target_addr 10.0.0.1:8080 \
+  --json_conf ${LINK022}/demo/ap_config.json
 
 ```
   - Run the tests with an external target
 ```
 sudo python integration.py \
   --ext_target \
-  --gnmi_set "${GOPATH}/bin/gnmi_set \
-  -ca=${LINK022}/demo/cert/client/ca.crt \
-  -cert=${LINK022}/demo/cert/client/client.crt \
-  -key=${LINK022}/demo/cert/client/client.key \
-  -target_name=www.example.com \
-  -target_addr=10.0.0.1:8080 \
-  -replace=/:@${LINK022}/demo/ap_config.json"
+  --gnmi_set ${GOPATH}/bin/gnmi_set \
+  --ca ${LINK022}/demo/cert/client/ca.crt \
+  --cert ${LINK022}/demo/cert/client/client.crt \
+  --key ${LINK022}/demo/cert/client/client.key \
+  --target_name www.example.com \
+  --target_addr 10.0.0.1:8080 \
+  --json_conf ${LINK022}/demo/ap_config.json
 
 ```
