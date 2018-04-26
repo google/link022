@@ -5,11 +5,13 @@ Refer to the README.md file for instructions on running the tests.
 """
 
 import argparse
+import json
 import netaddr
-import re
 import logging
+import platform
 import sys
 import time
+import tempfile
 import unittest
 
 import mininet.net
@@ -40,7 +42,8 @@ def set_flags():
     parser.add_argument("--ca", help="CA Certificate")
     parser.add_argument("--cert", help="Client Certificate")
     parser.add_argument("--key", help="Client key")
-    parser.add_argument("--target_name", help="Target name for cert verification")
+    parser.add_argument(
+        "--target_name", help="Target name for cert verification")
     parser.add_argument("--target_addr", help="Target IP:port")
     parser.add_argument("--json_conf", help="File name of JSON config")
     FLAGS = parser.parse_args()
@@ -119,8 +122,8 @@ class ConfigTest(unittest.TestCase):
         if FLAGS.emulator:
             mininet.cli.CLI(cls._net)
         else:
-          # Wait for the agent to start up
-          time.sleep(20)
+            # Wait for the agent to start up
+            time.sleep(20)
 
     @classmethod
     def tearDownClass(cls):
@@ -134,7 +137,17 @@ class ConfigTest(unittest.TestCase):
         """Run the test
         """
         if FLAGS.emulator:
-          self.skipTest('Skip the test in emulator mode.')
+            self.skipTest('Skip the test in emulator mode.')
+        ap_conf_file = FLAGS.json_conf
+        if not FLAGS.ext_target:
+            # Rewrite the hostname for emulator based tests.
+            ap_conf = json.load(open(ap_conf_file, 'r'))
+            for ap in ap_conf['openconfig-access-points:access-points']['access-point']:
+                ap['hostname'] = platform.node()
+            json_h = tempfile.NamedTemporaryFile()
+            json.dump(ap_conf, json_h)
+            json_h.flush()
+            ap_conf_file = json_h.name
         gnmi_set_cmd_list = (
             FLAGS.gnmi_set,
             '-ca=' + FLAGS.ca,
@@ -142,12 +155,14 @@ class ConfigTest(unittest.TestCase):
             '-key=' + FLAGS.key,
             '-target_name=' + FLAGS.target_name,
             '-target_addr=' + FLAGS.target_addr,
-            '-replace=' + '/:@' + FLAGS.json_conf)
+            '-replace=' + '/:@' + ap_conf_file)
         gnmi_set_cmd = ' '.join(gnmi_set_cmd_list)
 
         logger.info('Running gnmi_set command: %s', gnmi_set_cmd)
         _, _, code = self._ctrlr.pexec(gnmi_set_cmd)
         self.assertEqual(code, 0)
+        if not FLAGS.ext_target:
+            json_h.close()
 
 
 if __name__ == '__main__':
