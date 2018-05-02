@@ -40,14 +40,27 @@
           "radio": [
             {
               "config": {
-                "channel": 8,
-                "channel-width": 10,
-                "enabled": true,
-                "id": 1,
+                "operating-frequency": "openconfig-wifi-types:FREQ_5GHZ",
+                "channel-width": 40,
+                "dca": false,
+                "dtp": false,
+                "transmit-power": 3,
+                "scanning": false,
+                "id": 0,
+                "channel": 44
+              },
+              "id": 0
+            },
+            {
+              "config": {
                 "operating-frequency": "openconfig-wifi-types:FREQ_2GHZ",
-                "scanning": true,
-                "scanning-interval": 30,
-                "transmit-power": 5
+                "channel-width": 20,
+                "dca": false,
+                "dtp": false,
+                "transmit-power": 3,
+                "id": 1,
+                "scanning": false,
+                "channel": 6
               },
               "id": 1
             }
@@ -92,12 +105,12 @@
             },
             {
               "config": {
-                "advertise-apname": false,
+                "advertise-apname": true,
                 "basic-data-rates": [
                   "RATE_11MB",
                   "RATE_24MB"
                 ],
-                "broadcast-filter": false,
+                "broadcast-filter": true,
                 "csa": false,
                 "dhcp-required": true,
                 "dot11k": false,
