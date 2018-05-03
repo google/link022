@@ -2,7 +2,7 @@
   "openconfig-access-points:access-points": {
     "access-point": [
       {
-        "hostname": "raspberrypi",
+        "hostname": "link022-pi-ap",
         "system": {
           "aaa": {
             "server-groups": {
