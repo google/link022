@@ -43,3 +43,4 @@ sudo python integration.py \
   --json_conf ${LINK022}/demo/ap_config.json
 
 ```
+If your target device doesn't support multiple radios, Please replace /demo/ap_config.json with /tests/ap_config.json.
