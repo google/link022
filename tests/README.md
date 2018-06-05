@@ -8,7 +8,7 @@ apt-get install python python-netaddr mininet
 ```
 
 ## Compiling Link022 binaries
-Follow the [instructions](../README.md) to compile the Link022 binary and set up the certificates.
+Follow the [instructions](../agent/README.md) to compile the Link022 binary and set up the certificates.
 
 ## Run the tests
   - Set up the required paths

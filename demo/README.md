@@ -10,7 +10,7 @@ The setup has two components, linked directly by an ethernet cable.
   - The other device (such as Raspberry Pi) as the gateway. It provides reqiured services (dhcp, radius and gnmi client).
 
 ### Setup Link022 AP
-On the Link022 AP device, run the commands in this [instruction](../README.md) with the sample certificates.
+On the Link022 AP device, run the commands in this [instruction](../agent/README.md) with the sample certificates.
 
 ### Setup Gateway
 On the device for gateway follow the steps below.
