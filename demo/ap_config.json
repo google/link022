@@ -29,7 +29,7 @@
                   "name": "freeradius",
                   "config": {
                     "name": "freeradius",
-                    "type": "openconfig-aaa:RADIUS"
+                    "type": "openconfig-aaa-radius:RADIUS"
                   }
                 }
               ]
@@ -83,14 +83,14 @@
                 "ipv6-ndp-filter-timer": 300,
                 "dot11k": true,
                 "supported-data-rates": [
-                  "RATE_36MB",
-                  "RATE_48MB",
-                  "RATE_54MB"
+                  "openconfig-wifi-types:RATE_36MB",
+                  "openconfig-wifi-types:RATE_48MB",
+                  "openconfig-wifi-types:RATE_54MB"
                 ],
                 "basic-data-rates": [
-                  "RATE_36MB",
-                  "RATE_48MB",
-                  "RATE_54MB"
+                  "openconfig-wifi-types:RATE_36MB",
+                  "openconfig-wifi-types:RATE_48MB",
+                  "openconfig-wifi-types:RATE_54MB"
                 ],
                 "broadcast-filter": true,
                 "enabled": true,
@@ -124,8 +124,8 @@
                 "opmode": "OPEN",
                 "ptk-timeout": 1000,
                 "supported-data-rates": [
-                  "RATE_11MB",
-                  "RATE_24MB"
+                  "openconfig-wifi-types:RATE_11MB",
+                  "openconfig-wifi-types:RATE_24MB"
                 ],
                 "vlan-id": 200
               },
