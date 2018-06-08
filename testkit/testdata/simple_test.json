@@ -1,0 +1,32 @@
+{
+  "name":"Simple Test",
+  "description":"This is an example of gNMI test.",
+  "config_tests":[
+    {
+      "name":"Push entire config",
+      "description":"Push the entire configuration to AP device.",
+      "ops":[
+        {
+          "type":"replace",
+          "path":"/",
+          "val":"@../tests/ap_config.json"
+        }
+      ]
+    },
+    {
+      "name":"Update Radio Config",
+      "ops":[
+        {
+          "type":"update",
+          "path":"/access-points/access-point[hostname=link022-pi-ap]/radios/radio[id=1]/config/channel",
+          "val": "6"
+        },
+        {
+          "type":"update",
+          "path":"/access-points/access-point[hostname=link022-pi-ap]/radios/radio[id=1]/config/channel-width",
+          "val": "15"
+        }
+      ]
+    }
+  ]
+}
