@@ -48,7 +48,7 @@ func (i *arrayFlags) Set(value string) error {
 var (
 	gnmiTests  arrayFlags
 	targetAddr = flag.String("target_addr", "localhost:10161", "The target address in the format of host:port")
-	targetName = flag.String("target_name", "hostname.com", "The target name use to verify the hostname returned by TLS handshake")
+	targetName = flag.String("target_name", "hostname.com", "The target name used to verify the hostname returned by TLS handshake")
 	timeout    = flag.Duration("time_out", 30*time.Second, "Timeout for each request, 30 seconds by default")
 )
 

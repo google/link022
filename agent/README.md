@@ -7,10 +7,10 @@ Link022 Pi AP.
 For documentation on installing a full demo system (with both a gNMI client and link022 access point)
 please see the [full demo documentation](../demo/README.md) which explains a fully complete system.
 
-The following instructions will get you a Link022 AP on a Unix-based device.
+The following instructions will get you a Link022 AP on a Linux-based device.
 
 ### Prerequisites
-Have a device set up. (Tested with Raspbian)
+Have a device set up. (Tested with Raspian Stretch)
 
 Install Golang.
 ```
@@ -40,7 +40,7 @@ go get github.com/google/link022/agent
 
 ### Download certificates
 Download sample certificates from [the demo directory](../demo/cert/server/).
-Or you can use your own cert.
+Or you can use your own cert. Sample commands to generate certificates can be found [here](../demo/cert/generate_cert.sh).
 
 ### Configuring network interfaces of device
 Editing the file /etc/network/interfaces on device.
