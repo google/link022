@@ -134,7 +134,7 @@ Note: "state_tests" is not implemented yet.
 
 ### Sample test file
 
-One sampel test file:
+One sample test file:
 ```
 {
   "name":"Simple Test",

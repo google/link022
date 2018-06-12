@@ -27,7 +27,6 @@ import (
 	"strconv"
 	"time"
 
-	log "github.com/golang/glog"
 	"golang.org/x/net/context"
 
 	"github.com/google/gnxi/utils/xpath"
@@ -331,8 +330,6 @@ func valEqual(gnmiPath *pb.Path, actual *pb.TypedValue, expected *pb.TypedValue)
 			return fmt.Errorf("invalid value %v: %v", string(expectedJsonValue.JsonIetfVal), err)
 		}
 		if !reflect.DeepEqual(actualJson, expectedJson) {
-			log.Errorf("actual=\n%v", string(actualJsonValue.JsonIetfVal))
-			log.Errorf("expected=\n%v", string(expectedJsonValue.JsonIetfVal))
 			return fmt.Errorf("incorrect json config value on %v, actual = %v, expected = %v", gnmiPath, string(actualJsonValue.JsonIetfVal), string(expectedJsonValue.JsonIetfVal))
 		}
 		return nil

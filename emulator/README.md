@@ -48,7 +48,7 @@ ctrlr dummy target
 There are three nodes in mininet.
 * ctrlr: where gNMI client runs on.
 * target: where Link022 agent runs on.
-* dummy: a dummy host connects to the emulated Link022 AP.
+* dummy: a dummy host to contain the emulated eth and wlan interfaces.
 
 ### Check Link022 agent
 
