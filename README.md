@@ -24,13 +24,13 @@ It supports gNMI "SET" and "GET" opertions for AP configuration.
 To run the agent on a Raspberry Pi device, see the [start guide](agent/README.md).
 
 ### Link022 demo
-A demo for configuring Link022 AP though gNMI. [Demo guide](demo/README.md)
+A demo for configuring Link022 AP though gNMI. [demo guide](demo/README.md)
 
 ### Link022 emulator
-An emulator that runs Link022 agent inside a Linux namespace.
+An emulator that runs Link022 agent inside a Linux namespace. [start guide](emulator/README.md)
 
 ### gNMI test kit.
-In progress.
+A tool to test the gNMI functionality of an AP device. [start guide](testkit/README.md)
 
 ## Disclaimer
 *  This is not an official Google product.
