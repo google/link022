@@ -2,6 +2,7 @@
 [![GoDoc](https://godoc.org/github.com/google/link022?status.svg)](https://godoc.org/github.com/google/link022)
 [![Go Report Card](https://goreportcard.com/badge/github.com/google/link022)](https://goreportcard.com/report/github.com/google/link022)
 [![Build Status](https://travis-ci.org/google/link022.svg?branch=master)](https://travis-ci.org/google/link022)
+[![codecov](https://codecov.io/gh/google/link022/branch/master/graph/badge.svg)](https://codecov.io/gh/google/link022)
 
 # Link022: an open WiFi access point
 Link022 is an open reference implementation and experimental platform for an OpenConfig and gNMI
