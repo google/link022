@@ -213,9 +213,6 @@ func gnmiFullPath(prefix, path *pb.Path) *pb.Path {
 	}
 
 	fullPath := &pb.Path{Origin: path.Origin}
-	if path.GetElement() != nil {
-		fullPath.Element = append(prefix.GetElement(), path.GetElement()...)
-	}
 	if path.GetElem() != nil {
 		fullPath.Elem = append(prefix.GetElem(), path.GetElem()...)
 	}
@@ -250,9 +247,25 @@ func verifySetResponse(setResponse *pb.SetResponse, expectedVals map[*pb.Path]*p
 	return nil
 }
 
+func gNMIPathEquals(actual, expected *pb.Path) bool {
+	if len(actual.Elem) != len(expected.Elem) {
+		return false
+	}
+
+	for i := 0; i < len(actual.Elem); i++ {
+		actualElem := actual.Elem[i]
+		expectedElem := expected.Elem[i]
+		if actualElem.Name != expectedElem.Name || !reflect.DeepEqual(actualElem.Key, expectedElem.Key) {
+			return false
+		}
+	}
+
+	return true
+}
+
 func fetchVal(expectedVals map[*pb.Path]*pb.TypedValue, targetPath *pb.Path) (*pb.TypedValue, bool) {
 	for gnmiPath, expectedVal := range expectedVals {
-		if reflect.DeepEqual(targetPath, gnmiPath) {
+		if gNMIPathEquals(targetPath, gnmiPath) {
 			return expectedVal, true
 		}
 	}
@@ -307,7 +320,7 @@ func verifyGetResponse(getResponse *pb.GetResponse, gnmiPath *pb.Path, expectedV
 
 	update := notification.Update[0]
 	updatedPath := gnmiFullPath(notification.Prefix, update.Path)
-	if !reflect.DeepEqual(updatedPath, gnmiPath) {
+	if !gNMIPathEquals(updatedPath, gnmiPath) {
 		return fmt.Errorf("incorrect gnmi path in GetResponse, actual = %v, expected = %v", updatedPath, gnmiPath)
 	}
 
