@@ -8,6 +8,11 @@ Follow steps below to set up a testing environment.
 
 ### Prerequisites
 Install golang 1.7+ (get it from: https://golang.org/doc/install#install)
+Install dependencies:
+```
+go get github.com/golang/glog
+go get github.com/google/gnxi/utils/credentials
+```
 
 ### 1. Download Link022 repository
 Download the entire [repository](../).
@@ -52,6 +57,8 @@ The simplist way to check whether the test kit works is running it against an em
 
 ### 1. Start the Link022 emulator
 Follow the [detailed instruction](../emulator/README.md#start-emulator) to run a Link022 emulator.
+
+Note, return here after you've completed Step 4 (verify the setup), but before Step 5.
 An emulated Link022 AP should run inside mininet node "target".
 * management interface IP: 10.0.0.1
 * gNMI port: 8080
@@ -62,6 +69,8 @@ Note: The default log file location:
 
 ### 2. Start the test kit
 Run the test kit with sample gNMI test on mininet node "ctrlr", setting the target to the emulated Link022 AP.
+
+Note, if testing agianst the Link022 emulator, be sure the hostname of the machine running the emulator matches the hostname in 'tests/ap_config.json'. For example, "link022-pi-ap".
 ```
 mininet> ctrlr {path to testkit binary} -logtostderr \
 -ca ../demo/cert/client/ca.crt \

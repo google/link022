@@ -3,23 +3,25 @@ This doc contains steps to run a Link022 emulator.
 
 The emulator builds a local testing environment with Link022 agent running inside a mininet node.
 
-## Download Link022 repository
-Download the entire [repository](../).
+### Prerequisites
+Download the Link022 [repository](../).
 
-## Setup environment
+### 1. Setup environment
 The setup needs Python 2.7 environment and some additional packages.
 ```
-apt-get install python python-netaddr mininet
+apt-get install python python-netaddr mininet udhcpc bridge-utils hostapd
+go get github.com/openconfig/goyang/pkg/yang
+go get github.com/openconfig/ygot/experimental/ygotutils
 ```
 
-## Compile Link022 agent
+### 2. Compile Link022 agent
 Run the [build script](../build.sh) to compile the Link022 agent.
 It stores output binary file in the "binary" folder.
 ```
 ./build.sh
 ```
 
-## Start emulator
+### 3. Start emulator
 Run the following command to start the emulator:
 ```
 cd emulator
@@ -36,7 +38,7 @@ The mininet CLI should appear after emulator started.
 mininet>
 ```
 
-## Verify the setup
+### 4. Verify the setup
 
 ### Check mininet nodes
 ```
@@ -99,7 +101,7 @@ root      28499  0.0  0.0 777732 14664 ?        Ssl  16:08   0:00 ../binary/link
 
 The link022 log is "/tmp/link022_agent.INFO" by default.
 
-## Config Link022 AP
+### 5. Config Link022 AP
 All gNMI requests working on a physical Link022 AP should also work on the emulated one.
 Run gNMI client in "ctrlr" node.
 
