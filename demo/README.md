@@ -15,10 +15,16 @@ On the Link022 AP device, run the commands in this [instruction](../agent/README
 ### Setup Gateway
 On the device for gateway follow the steps below.
 1. Install Golang.
+
+To install manually on ARM architecture:
 ```
 wget https://storage.googleapis.com/golang/go1.7.linux-armv6l.tar.gz
 sudo tar -C /usr/local -xzf go1.7.linux-armv6l.tar.gz
 export PATH=$PATH:/usr/local/go/bin
+```
+To install automatically on Debian based systems:
+```
+sudo apt-get install golang-go
 ```
 2. Install dependencies.
 ``` 
