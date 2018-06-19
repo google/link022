@@ -103,13 +103,11 @@
                 "dot11k": false,
                 "dva": false,
                 "enabled": true,
-                "gtk-timeout": 1000,
                 "hidden": false,
                 "multicast-filter": false,
                 "name": "Guest-Link022",
                 "operating-frequency": "openconfig-wifi-types:FREQ_2_5_GHZ",
                 "opmode": "OPEN",
-                "ptk-timeout": 1000,
                 "supported-data-rates": [
                   "openconfig-wifi-types:RATE_11MB",
                   "openconfig-wifi-types:RATE_24MB"
