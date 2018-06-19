@@ -59,6 +59,7 @@ The simplist way to check whether the test kit works is running it against an em
 Follow the [detailed instruction](../emulator/README.md#start-emulator) to run a Link022 emulator.
 
 Note, return here after you've completed Step 4 (verify the setup), but before Step 5.
+
 An emulated Link022 AP should run inside mininet node "target".
 * management interface IP: 10.0.0.1
 * gNMI port: 8080
