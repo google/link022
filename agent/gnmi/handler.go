@@ -36,7 +36,18 @@ var (
 
 // handleSet is the callback function of the GNMI SET call.
 // It is triggered by the GNMI server.
-func handleSet(updatedConfig ygot.ValidatedGoStruct) error {
+func handleSet(updatedConfig ygot.ValidatedGoStruct) (err error) {
+	// Recover the panic and return error.
+	defer func() {
+		if r := recover(); r != nil {
+			err = fmt.Errorf("panic detected when handling updated config: %v", r)
+		}
+	}()
+
+	return handleSetInternal(updatedConfig)
+}
+
+func handleSetInternal(updatedConfig ygot.ValidatedGoStruct) error {
 	// TODO: Handle delta change. Currently the GNMI server only supports replacing root.
 	officeAPs, ok := updatedConfig.(*ocstruct.Device)
 	if !ok {

@@ -2,7 +2,7 @@
   "openconfig-access-points:access-points": {
     "access-point": [
       {
-        "hostname": "link022-pi-ap",
+        "hostname": "link022-ap",
         "system": {
           "aaa": {
             "server-groups": {
@@ -38,19 +38,6 @@
         },
         "radios": {
           "radio": [
-            {
-              "config": {
-                "operating-frequency": "openconfig-wifi-types:FREQ_5GHZ",
-                "channel-width": 40,
-                "dca": false,
-                "dtp": false,
-                "transmit-power": 3,
-                "scanning": false,
-                "id": 0,
-                "channel": 44
-              },
-              "id": 0
-            },
             {
               "config": {
                 "operating-frequency": "openconfig-wifi-types:FREQ_2GHZ",
@@ -107,8 +94,8 @@
               "config": {
                 "advertise-apname": true,
                 "basic-data-rates": [
-                  "RATE_11MB",
-                  "RATE_24MB"
+                  "openconfig-wifi-types:RATE_11MB",
+                  "openconfig-wifi-types:RATE_24MB"
                 ],
                 "broadcast-filter": true,
                 "csa": false,
