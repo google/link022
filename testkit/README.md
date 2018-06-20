@@ -172,11 +172,11 @@ One sample test file:
         {
           "type":"update",
           "path":"/access-points/access-point[hostname=link022-pi-ap]/radios/radio[id=1]/config/channel-width",
-          "val": "15"
+          "val": "20"
         }
       ]
     }
   ]
 }
 ```
-
+For more examples, see [testdata directory](./testdata)

@@ -1,0 +1,78 @@
+{
+  "openconfig-access-points:access-points": {
+    "access-point": [
+      {
+        "hostname": "link022-pi-ap",
+        "system": {
+          "aaa": {
+            "server-groups": {
+              "server-group": [
+                {
+                  "servers": {
+                    "server": [
+                      {
+                        "address": "192.168.11.1",
+                        "config": {
+                          "address": "192.168.11.1",
+                          "timeout": 5,
+                          "name": "radius-server"
+                        },
+                        "radius": {
+                          "config": {
+                            "auth-port": 1812,
+                            "secret-key": "radiuspwd"
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  "name": "freeradius",
+                  "config": {
+                    "name": "freeradius",
+                    "type": "openconfig-aaa-radius:RADIUS"
+                  }
+                }
+              ]
+            }
+          }
+        },
+        "radios": {
+          "radio": [
+            {
+              "config": {
+                "operating-frequency": "openconfig-wifi-types:FREQ_2GHZ",
+                "channel-width": 20,
+                "transmit-power": 3,
+                "id": 0,
+                "channel": 6
+              },
+              "id": 0
+            }
+          ]
+        },
+        "ssids": {
+          "ssid": [
+            {
+              "dot11r": {
+                "config": {
+                  "dot11r-domainid": 5,
+                  "dot11r-method": "OVA",
+                  "dot11r": true
+                }
+              },
+              "config": {
+                "operating-frequency": "openconfig-wifi-types:FREQ_2GHZ",
+                "name": "Auth-Link022",
+                "vlan-id": 300,
+                "enabled": true,
+                "server-group": "freeradius",
+                "opmode": "WPA2_ENTERPRISE"
+              },
+              "name": "Auth-Link022"
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

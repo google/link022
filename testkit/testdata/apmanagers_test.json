@@ -1,0 +1,27 @@
+{
+  "name":"Assign AP Managers",
+  "description":"Enable and configure AP Managers.",
+  "config_tests":[
+    {
+      "name":"Push AP Managers.",
+      "description":"Push assigned-ap-managers to AP device.",
+      "ops":[
+        {
+          "type":"replace",
+          "path":"/",
+          "val":"@../tests/ap_apmanagers.json"
+        }
+      ]
+    },
+    {
+      "name":"Change secondary AP Manager to tertiary.",
+      "ops":[
+        {
+          "type":"update",
+          "path":"/access-points/access-point[hostname=link022-pi-ap]/assigned-ap-managers/ap-manager[id=secondary]/config/fqdn",
+          "val": "tertiary-manager.example.com"
+        }
+      ]
+    }
+  ]
+}
