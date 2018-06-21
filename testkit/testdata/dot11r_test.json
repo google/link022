@@ -1,7 +1,7 @@
 {
   "name":"Enable 802.11r",
   "description":"Enable and configure 802.11r.",
-  "config_tests":[
+  "test_cases":[
     {
       "name":"Push 802.11r.",
       "description":"Push only 802.11r related configuration to AP device.",

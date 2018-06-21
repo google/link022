@@ -1,7 +1,7 @@
 {
   "name":"Simple Test",
   "description":"This is an example of gNMI test.",
-  "config_tests":[
+  "test_cases":[
     {
       "name":"Push entire config",
       "description":"Push the entire configuration to AP device.",
@@ -25,6 +25,21 @@
           "type":"update",
           "path":"/access-points/access-point[hostname=link022-pi-ap]/radios/radio[id=1]/config/channel-width",
           "val": "20"
+        }
+      ]
+    },
+    {
+      "name":"Fetch SSID Config",
+      "ops":[
+        {
+          "type":"get",
+          "path":"/access-points/access-point[hostname=link022-pi-ap]/ssids/ssid[name=Auth-Link022]/config/vlan-id",
+          "val": "300"
+        },
+        {
+          "type":"get",
+          "path":"/access-points/access-point[hostname=link022-pi-ap]/ssids/ssid[name=Guest-Link022]/config/vlan-id",
+          "val": "200"
         }
       ]
     }
