@@ -14,12 +14,12 @@
       ]
     },
     {
-      "name":"Change secondary AP Manager to tertiary.",
+      "name":"Change secondary AP Manager IPv4 address.",
       "ops":[
         {
           "type":"update",
-          "path":"/access-points/access-point[hostname=link022-pi-ap]/assigned-ap-managers/ap-manager[id=secondary]/config/fqdn",
-          "val": "tertiary-manager.example.com"
+          "path":"/access-points/access-point[hostname=link022-pi-ap]/assigned-ap-managers/ap-manager[id=secondary]/config/ap-manager-ipv4-address",
+          "val": "192.168.3.100"
         }
       ]
     }

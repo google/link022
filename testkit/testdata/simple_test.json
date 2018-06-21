@@ -14,17 +14,77 @@
       ]
     },
     {
-      "name":"Update Radio Config",
+      "name":"Update Radio Channel.",
       "ops":[
         {
           "type":"update",
           "path":"/access-points/access-point[hostname=link022-pi-ap]/radios/radio[id=1]/config/channel",
-          "val": "6"
+          "val": "11"
         },
         {
           "type":"update",
           "path":"/access-points/access-point[hostname=link022-pi-ap]/radios/radio[id=1]/config/channel-width",
           "val": "20"
+        }
+      ]
+    },
+    {
+      "name":"Update Radio frequency.",
+      "ops":[
+        {
+          "type":"update",
+          "path":"/access-points/access-point[hostname=link022-pi-ap]/radios/radio[id=1]/config/operating-frequency",
+          "val": "FREQ_5GHZ"
+        }
+      ]
+    },
+    {
+      "name":"Update Radio channel-width.",
+      "ops":[
+        {
+          "type":"update",
+          "path":"/access-points/access-point[hostname=link022-pi-ap]/radios/radio[id=1]/config/channel-width",
+          "val": "40"
+        }
+      ]
+    },
+    {
+      "name":"Disable scanning on the Radio.",
+      "ops":[
+        {
+          "type":"update",
+          "path":"/access-points/access-point[hostname=link022-pi-ap]/radios/radio[id=1]/config/scanning",
+          "val": "false"
+        }
+      ]
+    },
+    {
+      "name":"Enable multicast filter on Guest SSID.",
+      "ops":[
+        {
+          "type":"update",
+          "path":"/access-points/access-point[hostname=link022-pi-ap]/ssids/ssid[name=Guest-Link022]/config/multicast-filter",
+          "val": "true"
+        }
+      ]
+    },
+    {
+      "name":"Change opmode of Guest SSID to WPA-Personal.",
+      "ops":[
+        {
+          "type":"update",
+          "path":"/access-points/access-point[hostname=link022-pi-ap]/ssids/ssid[name=Guest-Link022]/config/opmode",
+          "val": "WPA2_PERSONAL"
+        }
+      ]
+    },
+    {
+      "name":"Set a PSK for the Guest SSID.",
+      "ops":[
+        {
+          "type":"update",
+          "path":"/access-points/access-point[hostname=link022-pi-ap]/ssids/ssid[name=Guest-Link022]/config/wpa2-psk",
+          "val": "testing123"
         }
       ]
     }
