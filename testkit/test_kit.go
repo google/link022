@@ -29,7 +29,7 @@ import (
 	"github.com/google/gnxi/utils/credentials"
 
 	"github.com/google/link022/testkit/common"
-	"github.com/google/link022/testkit/gnmiconfig"
+	"github.com/google/link022/testkit/gnmitest"
 
 	pb "github.com/openconfig/gnmi/proto/gnmi"
 )
@@ -75,18 +75,18 @@ func runTest(client pb.GNMIClient, gNMITest *common.GNMITest, timeout time.Durat
 	// Run gNMI config tests.
 	log.Infof("Running [%s].", gNMITest.Name)
 	var passedNum, failedNum int
-	for _, configTest := range gNMITest.ConfigTests {
-		err := gnmiconfig.RunTest(client, configTest, timeout)
+	for _, testcase := range gNMITest.GNMITestCase {
+		err := gnmitest.RunTest(client, testcase, timeout)
 		if err != nil {
 			failedNum += 1
-			log.Errorf("[%s] failed: %v.", configTest.Name, err)
+			log.Errorf("[%s] failed: %v.", testcase.Name, err)
 		} else {
 			passedNum += 1
-			log.Infof("[%s] succeeded.", configTest.Name)
+			log.Infof("[%s] succeeded.", testcase.Name)
 		}
 
 		result := &common.TestCaseResult{
-			Name: configTest.Name,
+			Name: testcase.Name,
 			Err:  err,
 		}
 		testCaseResults = append(testCaseResults, result)

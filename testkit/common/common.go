@@ -16,7 +16,7 @@ limitations under the License.
 // Package common contains functions and models shared by all components.
 package common
 
-// OPType is the type of gNMI SET operation.
+// OPType is the type of gNMI operation.
 type OPType string
 
 const (
@@ -26,6 +26,10 @@ const (
 	OPUpdate OPType = "update"
 	// OPDelete is the gNMI delete operation.
 	OPDelete OPType = "delete"
+	// OPGet is the gNMI get operation.
+	OPGet OPType = "get"
+	// OPSubscribe is the gNMI subscribe operation.
+	OPSubscribe OPType = "subscribe"
 )
 
 // GNMITest is top-level model of gNMI test.
@@ -34,20 +38,18 @@ type GNMITest struct {
 	Name string `json:"name"`
 	// Description is the detail description of this test.
 	Description string `json:"description"`
-	// ConfigTests is the list of config-related test cases to run in this test.
-	ConfigTests []*TestCase `json:"config_tests"`
-
-	// TODO: Add state-related test cases.
+	// GNMITestCase is the list of test cases to run in this test.
+	GNMITestCase []*TestCase `json:"test_cases"`
 }
 
-// TestCase describes a config-related gNMI test cases.
+// TestCase describes a gNMI test cases.
 type TestCase struct {
 	// Name is the test case name.
 	Name string `json:"name"`
 	// Description is the detail description of this test case.
 	Description string `json:"description"`
 	// OPs contains a list of operations need to be processed in this test case.
-	// All operations are processed in one single gNMI SetRequest.
+	// All operations are processed in one single gNMI message.
 	OPs []*Operation `json:"ops"`
 }
 
