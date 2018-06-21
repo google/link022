@@ -17,9 +17,12 @@ limitations under the License.
 package gnmiutil
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"reflect"
+	"strconv"
 
 	pb "github.com/openconfig/gnmi/proto/gnmi"
 )
@@ -35,6 +38,67 @@ func GNMIFullPath(prefix, path *pb.Path) *pb.Path {
 		fullPath.Elem = append(prefix.GetElem(), path.GetElem()...)
 	}
 	return fullPath
+}
+
+// ToPbVal convert string to TypedValue defined in gNMI proto.
+// Supported types:
+//     Integer: "1", "2"
+//     Float: "1.5", "2.4"
+//     String: "abc", "defg"
+//     Boolean: "true", "false"
+//     IETF JSON from file: "@ap_config.json"
+func ToPbVal(stringVal string) (*pb.TypedValue, error) {
+	if stringVal[0] == '@' {
+		jsonFile := stringVal[1:]
+		jsonConfig, err := ioutil.ReadFile(jsonFile)
+		if err != nil {
+			return nil, fmt.Errorf("cannot read data from file %v: %v", jsonFile, err)
+		}
+		jsonConfig = bytes.Trim(jsonConfig, " \r\n\t")
+		return &pb.TypedValue{
+			Value: &pb.TypedValue_JsonIetfVal{
+				JsonIetfVal: jsonConfig,
+			},
+		}, nil
+	}
+
+	if strVal, err := strconv.Unquote(stringVal); err == nil {
+		return &pb.TypedValue{
+			Value: &pb.TypedValue_StringVal{
+				StringVal: strVal,
+			},
+		}, nil
+	}
+
+	if intVal, err := strconv.ParseInt(stringVal, 10, 64); err == nil {
+		return &pb.TypedValue{
+			Value: &pb.TypedValue_IntVal{
+				IntVal: intVal,
+			},
+		}, nil
+	}
+
+	if floatVal, err := strconv.ParseFloat(stringVal, 32); err == nil {
+		return &pb.TypedValue{
+			Value: &pb.TypedValue_FloatVal{
+				FloatVal: float32(floatVal),
+			},
+		}, nil
+	}
+
+	if boolVal, err := strconv.ParseBool(stringVal); err == nil {
+		return &pb.TypedValue{
+			Value: &pb.TypedValue_BoolVal{
+				BoolVal: boolVal,
+			},
+		}, nil
+	}
+
+	return &pb.TypedValue{
+		Value: &pb.TypedValue_StringVal{
+			StringVal: stringVal,
+		},
+	}, nil
 }
 
 // GNMIPathEquals checks whether the two given gNMI path equal to each other.

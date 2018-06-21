@@ -18,11 +18,8 @@ limitations under the License.
 package gnmitest
 
 import (
-	"bytes"
 	"errors"
 	"fmt"
-	"io/ioutil"
-	"strconv"
 	"time"
 
 	"golang.org/x/net/context"
@@ -91,8 +88,44 @@ func runConfigTest(client pb.GNMIClient, testCase *common.TestCase, timeout time
 }
 
 func runStateTest(client pb.GNMIClient, testCase *common.TestCase, timeout time.Duration) error {
-	// TODO: Add implementation.
-	return errors.New("state test is not implemented yet")
+	var desiredPaths []*pb.Path
+	expectedVals := make(map[*pb.Path]*pb.TypedValue)
+	for _, op := range testCase.OPs {
+		if op.Type != common.OPGet {
+			return fmt.Errorf("invalid operation type %s in gNMI tests, only allow %s", op.Type, common.OPGet)
+		}
+		pbPath, err := xpath.ToGNMIPath(op.Path)
+		if err != nil {
+			return err
+		}
+		pbVal, err := gnmiutil.ToPbVal(op.Val)
+		if err != nil {
+			return err
+		}
+		desiredPaths = append(desiredPaths, pbPath)
+		expectedVals[pbPath] = pbVal
+	}
+
+	// Generate the gNMI GetRequest containing all desired paths.
+	getRequest := &pb.GetRequest{
+		Path:     desiredPaths,
+		Encoding: pb.Encoding_JSON_IETF,
+		UseModels: []*pb.ModelData{{
+			Name:         "office-ap",
+			Organization: "Google, Inc.",
+			Version:      "0.1.0",
+		}},
+	}
+
+	// Send gNMI GetRequest.
+	ctx, _ := context.WithTimeout(context.Background(), timeout)
+	getResponse, err := client.Get(ctx, getRequest)
+	if err != nil {
+		return err
+	}
+
+	// Check the response.
+	return verifyGetResponse(getResponse, expectedVals)
 }
 
 func buildGNMISetRequest(ops []*common.Operation) (*pb.SetRequest, map[*pb.Path]*pb.TypedValue, error) {
@@ -101,26 +134,26 @@ func buildGNMISetRequest(ops []*common.Operation) (*pb.SetRequest, map[*pb.Path]
 	expectedVals := make(map[*pb.Path]*pb.TypedValue)
 
 	for _, op := range ops {
+		pbPath, err := xpath.ToGNMIPath(op.Path)
+		if err != nil {
+			return nil, nil, err
+		}
 		switch op.Type {
 		case common.OPReplace:
-			pbUpdate, err := buildPbUpdate(op)
+			pbVal, err := gnmiutil.ToPbVal(op.Val)
 			if err != nil {
 				return nil, nil, err
 			}
-			replaceList = append(replaceList, pbUpdate)
-			expectedVals[pbUpdate.Path] = pbUpdate.Val
+			replaceList = append(replaceList, &pb.Update{Path: pbPath, Val: pbVal})
+			expectedVals[pbPath] = pbVal
 		case common.OPUpdate:
-			pbUpdate, err := buildPbUpdate(op)
+			pbVal, err := gnmiutil.ToPbVal(op.Val)
 			if err != nil {
 				return nil, nil, err
 			}
-			updateList = append(updateList, pbUpdate)
-			expectedVals[pbUpdate.Path] = pbUpdate.Val
+			updateList = append(updateList, &pb.Update{Path: pbPath, Val: pbVal})
+			expectedVals[pbPath] = pbVal
 		case common.OPDelete:
-			pbPath, err := xpath.ToGNMIPath(op.Path)
-			if err != nil {
-				return nil, nil, err
-			}
 			deleteList = append(deleteList, pbPath)
 			expectedVals[pbPath] = nil
 		default:
@@ -133,63 +166,6 @@ func buildGNMISetRequest(ops []*common.Operation) (*pb.SetRequest, map[*pb.Path]
 		Replace: replaceList,
 		Update:  updateList,
 	}, expectedVals, nil
-}
-
-func buildPbUpdate(op *common.Operation) (*pb.Update, error) {
-	pbPath, err := xpath.ToGNMIPath(op.Path)
-	if err != nil {
-		return nil, err
-	}
-
-	var pbVal *pb.TypedValue
-	if op.Val[0] == '@' {
-		jsonFile := op.Val[1:]
-		jsonConfig, err := ioutil.ReadFile(jsonFile)
-		if err != nil {
-			return nil, fmt.Errorf("cannot read data from file %v: %v", jsonFile, err)
-		}
-		jsonConfig = bytes.Trim(jsonConfig, " \r\n\t")
-		pbVal = &pb.TypedValue{
-			Value: &pb.TypedValue_JsonIetfVal{
-				JsonIetfVal: jsonConfig,
-			},
-		}
-	} else {
-		if strVal, err := strconv.Unquote(op.Val); err == nil {
-			pbVal = &pb.TypedValue{
-				Value: &pb.TypedValue_StringVal{
-					StringVal: strVal,
-				},
-			}
-		} else {
-			if intVal, err := strconv.ParseInt(op.Val, 10, 64); err == nil {
-				pbVal = &pb.TypedValue{
-					Value: &pb.TypedValue_IntVal{
-						IntVal: intVal,
-					},
-				}
-			} else if floatVal, err := strconv.ParseFloat(op.Val, 32); err == nil {
-				pbVal = &pb.TypedValue{
-					Value: &pb.TypedValue_FloatVal{
-						FloatVal: float32(floatVal),
-					},
-				}
-			} else if boolVal, err := strconv.ParseBool(op.Val); err == nil {
-				pbVal = &pb.TypedValue{
-					Value: &pb.TypedValue_BoolVal{
-						BoolVal: boolVal,
-					},
-				}
-			} else {
-				pbVal = &pb.TypedValue{
-					Value: &pb.TypedValue_StringVal{
-						StringVal: op.Val,
-					},
-				}
-			}
-		}
-	}
-	return &pb.Update{Path: pbPath, Val: pbVal}, nil
 }
 
 func verifySetResponse(setResponse *pb.SetResponse, expectedVals map[*pb.Path]*pb.TypedValue) error {
@@ -254,7 +230,7 @@ func verifyConfiguration(client pb.GNMIClient, expectedVals map[*pb.Path]*pb.Typ
 		}
 
 		// Check updated config is correct.
-		if err := verifyGetResponse(getResponse, gnmiPath, expectedVal); err != nil {
+		if err := verifyGetResponse(getResponse, map[*pb.Path]*pb.TypedValue{gnmiPath: expectedVal}); err != nil {
 			return err
 		}
 	}
@@ -262,24 +238,29 @@ func verifyConfiguration(client pb.GNMIClient, expectedVals map[*pb.Path]*pb.Typ
 	return nil
 }
 
-func verifyGetResponse(getResponse *pb.GetResponse, gnmiPath *pb.Path, expectedVal *pb.TypedValue) error {
-	if len(getResponse.Notification) != 1 {
-		return fmt.Errorf("incorrect notification number in GetResponse, actual = %d, expected = 1", len(getResponse.Notification))
+func verifyGetResponse(getResponse *pb.GetResponse, expectedVals map[*pb.Path]*pb.TypedValue) error {
+	if len(getResponse.Notification) != len(expectedVals) {
+		return fmt.Errorf("incorrect notification number in GetResponse, actual = %d, expected = %d", len(getResponse.Notification), len(expectedVals))
 	}
 
-	notification := getResponse.Notification[0]
-	if len(notification.Delete) != 0 {
-		return fmt.Errorf("incorrect Delete number in GetResponse, actual = %d, expected = 0", len(notification.Delete))
-	}
-	if len(notification.Update) != 1 {
-		return fmt.Errorf("incorrect Update number in GetResponse, actual = %d, expected = 1", len(notification.Update))
+	for _, notification := range getResponse.Notification {
+		if len(notification.Delete) != 0 {
+			return fmt.Errorf("incorrect Delete number in GetResponse, actual = %d, expected = 0", len(notification.Delete))
+		}
+		if len(notification.Update) != 1 {
+			return fmt.Errorf("incorrect Update number in GetResponse, actual = %d, expected = 1", len(notification.Update))
+		}
+
+		update := notification.Update[0]
+		updatedPath := gnmiutil.GNMIFullPath(notification.Prefix, update.Path)
+		expectedVal, ok := fetchVal(expectedVals, updatedPath)
+		if !ok {
+			return fmt.Errorf("unexpected path %v in GetResponse, waiting for %v", updatedPath, expectedVals)
+		}
+		if err := gnmiutil.ValEqual(updatedPath, update.Val, expectedVal); err != nil {
+			return err
+		}
 	}
 
-	update := notification.Update[0]
-	updatedPath := gnmiutil.GNMIFullPath(notification.Prefix, update.Path)
-	if !gnmiutil.GNMIPathEquals(updatedPath, gnmiPath) {
-		return fmt.Errorf("incorrect gnmi path in GetResponse, actual = %v, expected = %v", updatedPath, gnmiPath)
-	}
-
-	return gnmiutil.ValEqual(gnmiPath, update.Val, expectedVal)
+	return nil
 }
