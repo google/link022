@@ -30,47 +30,10 @@ import (
 	"golang.org/x/net/context"
 
 	"github.com/google/gnxi/utils/xpath"
+	"github.com/google/link022/testkit/common"
 
 	pb "github.com/openconfig/gnmi/proto/gnmi"
 )
-
-// OPType is the type of gNMI SET operation.
-type OPType string
-
-const (
-	// OPReplace is the gNMI replace operation.
-	OPReplace OPType = "replace"
-	// OPUpdate is the gNMI update operation.
-	OPUpdate OPType = "update"
-	// OPDelete is the gNMI delete operation.
-	OPDelete OPType = "delete"
-)
-
-// TestCase describes a config-related gNMI test cases.
-type TestCase struct {
-	// Name is the test case name.
-	Name string `json:"name"`
-	// Description is the detail description of this test case.
-	Description string `json:"description"`
-	// OPs contains a list of operations need to be processed in this test case.
-	// All operations are processed in one single gNMI SetRequest.
-	OPs []*operation `json:"ops"`
-}
-
-type operation struct {
-	// Type is the gNMI SET operation type.
-	Type OPType `json:"type"`
-	// Path is the xPath of the target field/branch.
-	Path string `json:"path"`
-	// Val is the string format of the desired value.
-	// Supported types:
-	//     Integer: "1", "2"
-	//     Float: "1.5", "2.4"
-	//     String: "abc", "defg"
-	//     Boolean: "true", "false"
-	//     IETF JSON from file: "@ap_config.json"
-	Val string `json:"val"`
-}
 
 // RunTest runs one gNMI-config test case.
 // Args:
@@ -79,7 +42,7 @@ type operation struct {
 //   timeout: The timeout for each gNMI request. The test case failes if hitting timeout.
 // Returns:
 //   nil if test case passed. Otherwise, return the error with failure details.
-func RunTest(client pb.GNMIClient, testCase *TestCase, timeout time.Duration) error {
+func RunTest(client pb.GNMIClient, testCase *common.TestCase, timeout time.Duration) error {
 	if client == nil {
 		return errors.New("gNMI client is not available")
 	}
@@ -109,28 +72,28 @@ func RunTest(client pb.GNMIClient, testCase *TestCase, timeout time.Duration) er
 	return verifyConfiguration(client, expectedVals, timeout)
 }
 
-func buildGNMISetRequest(ops []*operation) (*pb.SetRequest, map[*pb.Path]*pb.TypedValue, error) {
+func buildGNMISetRequest(ops []*common.Operation) (*pb.SetRequest, map[*pb.Path]*pb.TypedValue, error) {
 	var deleteList []*pb.Path
 	var replaceList, updateList []*pb.Update
 	expectedVals := make(map[*pb.Path]*pb.TypedValue)
 
 	for _, op := range ops {
 		switch op.Type {
-		case OPReplace:
+		case common.OPReplace:
 			pbUpdate, err := buildPbUpdate(op)
 			if err != nil {
 				return nil, nil, err
 			}
 			replaceList = append(replaceList, pbUpdate)
 			expectedVals[pbUpdate.Path] = pbUpdate.Val
-		case OPUpdate:
+		case common.OPUpdate:
 			pbUpdate, err := buildPbUpdate(op)
 			if err != nil {
 				return nil, nil, err
 			}
 			updateList = append(updateList, pbUpdate)
 			expectedVals[pbUpdate.Path] = pbUpdate.Val
-		case OPDelete:
+		case common.OPDelete:
 			pbPath, err := xpath.ToGNMIPath(op.Path)
 			if err != nil {
 				return nil, nil, err
@@ -138,7 +101,7 @@ func buildGNMISetRequest(ops []*operation) (*pb.SetRequest, map[*pb.Path]*pb.Typ
 			deleteList = append(deleteList, pbPath)
 			expectedVals[pbPath] = nil
 		default:
-			return nil, nil, fmt.Errorf("unknown operation type %s", op.Type)
+			return nil, nil, fmt.Errorf("invalid operation type %s for SET operation", op.Type)
 		}
 	}
 
@@ -149,7 +112,7 @@ func buildGNMISetRequest(ops []*operation) (*pb.SetRequest, map[*pb.Path]*pb.Typ
 	}, expectedVals, nil
 }
 
-func buildPbUpdate(op *operation) (*pb.Update, error) {
+func buildPbUpdate(op *common.Operation) (*pb.Update, error) {
 	pbPath, err := xpath.ToGNMIPath(op.Path)
 	if err != nil {
 		return nil, err
