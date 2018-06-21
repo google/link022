@@ -19,11 +19,9 @@ package gnmiconfig
 
 import (
 	"bytes"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io/ioutil"
-	"reflect"
 	"strconv"
 	"time"
 
@@ -31,6 +29,7 @@ import (
 
 	"github.com/google/gnxi/utils/xpath"
 	"github.com/google/link022/testkit/common"
+	"github.com/google/link022/testkit/util/gnmiutil"
 
 	pb "github.com/openconfig/gnmi/proto/gnmi"
 )
@@ -169,19 +168,6 @@ func buildPbUpdate(op *common.Operation) (*pb.Update, error) {
 	return &pb.Update{Path: pbPath, Val: pbVal}, nil
 }
 
-// gnmiFullPath builds the full path from the prefix and path.
-func gnmiFullPath(prefix, path *pb.Path) *pb.Path {
-	if prefix == nil {
-		return path
-	}
-
-	fullPath := &pb.Path{Origin: path.Origin}
-	if path.GetElem() != nil {
-		fullPath.Elem = append(prefix.GetElem(), path.GetElem()...)
-	}
-	return fullPath
-}
-
 func verifySetResponse(setResponse *pb.SetResponse, expectedVals map[*pb.Path]*pb.TypedValue) error {
 	if len(setResponse.Response) != len(expectedVals) {
 		return fmt.Errorf("incorrect response number in SetResponse, actual = %d, expected = %d", len(setResponse.Response), len(expectedVals))
@@ -189,7 +175,7 @@ func verifySetResponse(setResponse *pb.SetResponse, expectedVals map[*pb.Path]*p
 
 	prefix := setResponse.Prefix
 	for _, updateResp := range setResponse.Response {
-		targetFullPath := gnmiFullPath(prefix, updateResp.Path)
+		targetFullPath := gnmiutil.GNMIFullPath(prefix, updateResp.Path)
 		expectedVal, ok := fetchVal(expectedVals, targetFullPath)
 		if !ok {
 			return fmt.Errorf("unexpected path %v in SetResponse, waiting for %v", targetFullPath, expectedVals)
@@ -210,25 +196,9 @@ func verifySetResponse(setResponse *pb.SetResponse, expectedVals map[*pb.Path]*p
 	return nil
 }
 
-func gNMIPathEquals(actual, expected *pb.Path) bool {
-	if len(actual.Elem) != len(expected.Elem) {
-		return false
-	}
-
-	for i := 0; i < len(actual.Elem); i++ {
-		actualElem := actual.Elem[i]
-		expectedElem := expected.Elem[i]
-		if actualElem.Name != expectedElem.Name || !reflect.DeepEqual(actualElem.Key, expectedElem.Key) {
-			return false
-		}
-	}
-
-	return true
-}
-
 func fetchVal(expectedVals map[*pb.Path]*pb.TypedValue, targetPath *pb.Path) (*pb.TypedValue, bool) {
 	for gnmiPath, expectedVal := range expectedVals {
-		if gNMIPathEquals(targetPath, gnmiPath) {
+		if gnmiutil.GNMIPathEquals(targetPath, gnmiPath) {
 			return expectedVal, true
 		}
 	}
@@ -282,45 +252,10 @@ func verifyGetResponse(getResponse *pb.GetResponse, gnmiPath *pb.Path, expectedV
 	}
 
 	update := notification.Update[0]
-	updatedPath := gnmiFullPath(notification.Prefix, update.Path)
-	if !gNMIPathEquals(updatedPath, gnmiPath) {
+	updatedPath := gnmiutil.GNMIFullPath(notification.Prefix, update.Path)
+	if !gnmiutil.GNMIPathEquals(updatedPath, gnmiPath) {
 		return fmt.Errorf("incorrect gnmi path in GetResponse, actual = %v, expected = %v", updatedPath, gnmiPath)
 	}
 
-	return valEqual(gnmiPath, update.Val, expectedVal)
-}
-
-func valEqual(gnmiPath *pb.Path, actual *pb.TypedValue, expected *pb.TypedValue) error {
-	actualValue := actual.Value
-	expectedValue := expected.Value
-
-	// JSON value.
-	actualJsonValue, okA := actualValue.(*pb.TypedValue_JsonIetfVal)
-	expectedJsonValue, okE := expectedValue.(*pb.TypedValue_JsonIetfVal)
-	if okA && okE {
-		var actualJson, expectedJson interface{}
-		if err := json.Unmarshal(actualJsonValue.JsonIetfVal, &actualJson); err != nil {
-			return fmt.Errorf("invalid value %v: %v", string(actualJsonValue.JsonIetfVal), err)
-		}
-		if err := json.Unmarshal(expectedJsonValue.JsonIetfVal, &expectedJson); err != nil {
-			return fmt.Errorf("invalid value %v: %v", string(expectedJsonValue.JsonIetfVal), err)
-		}
-		if !reflect.DeepEqual(actualJson, expectedJson) {
-			return fmt.Errorf("incorrect json config value on %v, actual = %v, expected = %v", gnmiPath, string(actualJsonValue.JsonIetfVal), string(expectedJsonValue.JsonIetfVal))
-		}
-		return nil
-	}
-
-	// Other value types.
-
-	// No need to check uint64/int64 type matching.
-	if uintValue, ok := actualValue.(*pb.TypedValue_UintVal); ok {
-		actualValue = &pb.TypedValue_IntVal{
-			IntVal: int64(uintValue.UintVal),
-		}
-	}
-	if !reflect.DeepEqual(actualValue, expectedValue) {
-		return fmt.Errorf("incorrect config on %v, actual = %v, expected = %v", gnmiPath, actualValue, expectedValue)
-	}
-	return nil
+	return gnmiutil.ValEqual(gnmiPath, update.Val, expectedVal)
 }
