@@ -55,7 +55,7 @@ type TestCase struct {
 
 // Operation represents a gNMI operation.
 type Operation struct {
-	// Type is the gNMI SET operation type.
+	// Type is the gNMI operation type.
 	Type OPType `json:"type"`
 	// Path is the xPath of the target field/branch.
 	Path string `json:"path"`
