@@ -13,9 +13,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// Package gnmiconfig contains functions related to gNMI config.
-// They test the functionalities of configuring AP devices through gNMI.
-package gnmiconfig
+// Package gnmitest contains functions related to gNMI tests.
+// They test the functionalities of configuring or fetching telemetry data from AP devices through gNMI.
+package gnmitest
 
 import (
 	"bytes"
@@ -34,7 +34,7 @@ import (
 	pb "github.com/openconfig/gnmi/proto/gnmi"
 )
 
-// RunTest runs one gNMI-config test case.
+// RunTest runs one gNMI test case.
 // Args:
 //   client: A gNMI client. It is used to send gNMI requests.
 //   testCase: The target test case to run.
@@ -48,7 +48,26 @@ func RunTest(client pb.GNMIClient, testCase *common.TestCase, timeout time.Durat
 	if testCase == nil {
 		return errors.New("empty test case")
 	}
+	if len(testCase.OPs) == 0 {
+		// Succeed if no operation specified in this test case.
+		return nil
+	}
+	// Determine the test case type.
+	switch testCase.OPs[0].Type {
+	case common.OPReplace, common.OPUpdate, common.OPDelete:
+		// This is a config test.
+		return runConfigTest(client, testCase, timeout)
+	case common.OPGet:
+		// This is a state fetching test.
+		return runStateTest(client, testCase, timeout)
+	case common.OPSubscribe:
+		return errors.New("not support telemetry streaming test cases")
+	default:
+		return fmt.Errorf("invalid operation type %s", testCase.OPs[0].Type)
+	}
+}
 
+func runConfigTest(client pb.GNMIClient, testCase *common.TestCase, timeout time.Duration) error {
 	// Generate the gNMI SetRequest containing all desired operations.
 	setRequest, expectedVals, err := buildGNMISetRequest(testCase.OPs)
 	if err != nil {
@@ -69,6 +88,11 @@ func RunTest(client pb.GNMIClient, testCase *common.TestCase, timeout time.Durat
 
 	// Check the pushed configuration updates are on device.
 	return verifyConfiguration(client, expectedVals, timeout)
+}
+
+func runStateTest(client pb.GNMIClient, testCase *common.TestCase, timeout time.Duration) error {
+	// TODO: Add implementation.
+	return errors.New("state test is not implemented yet")
 }
 
 func buildGNMISetRequest(ops []*common.Operation) (*pb.SetRequest, map[*pb.Path]*pb.TypedValue, error) {
