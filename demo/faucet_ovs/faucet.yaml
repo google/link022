@@ -1,0 +1,33 @@
+vlans:
+    vlan100:
+        vid: 100
+    vlan200:
+        vid: 200
+    vlan300:
+        vid: 300
+dps:
+    sw1:
+        dp_id: 0x1
+        hardware: "Open vSwitch"
+        interfaces:
+            1:
+                name: "gw"
+                description: "gw for dhcp and dnsmasq"
+                tagged_vlans: [vlan200,vlan300]
+                native_vlan: vlan100
+            2:
+                name: "host2"
+                tagged_vlans: [vlan200,vlan300]
+                native_vlan: vlan100
+            3:
+                name: "host3"
+                tagged_vlans: [vlan200,vlan300]
+                native_vlan: vlan100
+            4:
+                name: "host4"
+                tagged_vlans: [vlan200,vlan300]
+                native_vlan: vlan100
+            5:
+                name: "host5"
+                tagged_vlans: [vlan200,vlan300]
+                native_vlan: vlan100
