@@ -1,7 +1,7 @@
 {
   "name":"Assign AP Managers",
   "description":"Enable and configure AP Managers.",
-  "config_tests":[
+  "test_cases":[
     {
       "name":"Push AP Managers.",
       "description":"Push assigned-ap-managers to AP device.",

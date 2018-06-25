@@ -89,33 +89,35 @@ The output should be similar to:
 [PASS] Simple Test
 |-[PASS] Push entire config
 |-[PASS] Update Radio Config
+|-[PASS] Fetch SSID Config
 --------------------
-[PASS] [Simple Test] Passed - 2, Failed - 0
+[PASS] [Simple Test] Passed - 3, Failed - 0
 ```
 
 ## Create custom test cases
 One test file contains one JSON blob. It represents a single gNMI test, with following properties.
 * name: test name
 * description: detail description of this test
-* config_tests: a list of config-related test cases to run in this test
-* state_tests: a list of state-related test cases to run in this test (This is not supported yet.)
+* test_cases: a list of gNMI test cases to run in this test
 
-### config_tests
-"config_tests" is a list of config-related test cases. It is defined as the following:
+### Test Case
+"test_cases" is a list of gNMI test cases. It is defined as the following:
 ```
-// TestCase describes a config-related gNMI test cases.
+// TestCase describes a gNMI test cases.
 type TestCase struct {
     // Name is the test case name.
     Name string `json:"name"`
     // Description is the detail description of this test case.
     Description string `json:"description"`
     // OPs contains a list of operations need to be processed in this test case.
-    // All operations are processed in one single gNMI SetRequest.
-    OPs []*operation `json:"ops"`
+    // All operations are processed in one single gNMI message.
+    OPs []*Operation `json:"ops"`
 }
 
-type operation struct {
-    // Type is the gNMI SET operation type.
+// Operation represents a gNMI operation.
+type Operation struct {
+    // Type is the gNMI operation type.
+    // Available types: [replace, update, delete, get, subscribe].
     Type OPType `json:"type"`
     // Path is the xPath of the target field/branch.
     Path string `json:"path"`
@@ -130,17 +132,16 @@ type operation struct {
 }
 ```
 
-For each test case, the test kit sends one gNMI SetRequest to target, containing all specified operations. Then, it verifies the received SetResponse. If gNMI Set succeeds, it also checks whether the updated configuraiton presents on target (through gNMI Get method).
-A test case fails if either the gNMI Set operation fails or the desired configuraiton is not present on target.
+There are three categories of test cases, based on the operations specified:
+1. config test: A test case that contains only gNMI SET operation (replace, update, delete).
+2. state fetching test: A test case that contains only gNMI GET operation.
+3. telemetry streaming test: A test case that contains only gNMI SUBSCRIBE operation.
 
-### state_tests
-"state_tests" is a list of state-related test cases.
-For each test case, the test kit fetches a branch/leaf from target (though gNMI Get/Subscribe method), comparing it with the provided value. A test case fails if the fetched value does not match the desired one.
+Note: Test cases with combined operation types are invalid.
 
-Note: "state_tests" runs after "config_tests".
-
-Note: "state_tests" is not implemented yet.
-
+When running one test case, the test kit sends one gNMI message to target (containing all given operations), and verifies the received response.
+For config-related test cases, it also checks whether the updated configuraiton presents on target (through gNMI Get method).
+A test case fails if any error detected while executing.
 
 ### Sample test file
 
@@ -149,7 +150,7 @@ One sample test file:
 {
   "name":"Simple Test",
   "description":"This is an example of gNMI test.",
-  "config_tests":[
+  "test_cases":[
     {
       "name":"Push entire config",
       "description":"Push the entire configuration to AP device.",
@@ -173,6 +174,21 @@ One sample test file:
           "type":"update",
           "path":"/access-points/access-point[hostname=link022-pi-ap]/radios/radio[id=1]/config/channel-width",
           "val": "20"
+        }
+      ]
+    },
+    {
+      "name":"Fetch SSID Config",
+      "ops":[
+        {
+          "type":"get",
+          "path":"/access-points/access-point[hostname=link022-pi-ap]/ssids/ssid[name=Auth-Link022]/config/vlan-id",
+          "val": "300"
+        },
+        {
+          "type":"get",
+          "path":"/access-points/access-point[hostname=link022-pi-ap]/ssids/ssid[name=Guest-Link022]/config/vlan-id",
+          "val": "200"
         }
       ]
     }
