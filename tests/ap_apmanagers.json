@@ -53,13 +53,6 @@
         "ssids": {
           "ssid": [
             {
-              "dot11r": {
-                "config": {
-                  "dot11r-domainid": 5,
-                  "dot11r-method": "OVA",
-                  "dot11r": true
-                }
-              },
               "config": {
                 "operating-frequency": "openconfig-wifi-types:FREQ_2GHZ",
                 "name": "Auth-Link022",

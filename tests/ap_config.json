@@ -46,7 +46,6 @@
                 "dtp": false,
                 "transmit-power": 3,
                 "id": 1,
-                "scanning": false,
                 "channel": 6
               },
               "id": 1
@@ -59,15 +58,10 @@
               "config": {
                 "qbss-load": true,
                 "dva": true,
-                "gtk-timeout": 3600,
                 "station-isolation": true,
-                "multicast-filter": true,
-                "ptk-timeout": 28800,
                 "operating-frequency": "openconfig-wifi-types:FREQ_2_5_GHZ",
                 "name": "Auth-Link022",
                 "vlan-id": 300,
-                "advertise-apname": true,
-                "ipv6-ndp-filter-timer": 300,
                 "dot11k": true,
                 "supported-data-rates": [
                   "openconfig-wifi-types:RATE_36MB",
@@ -83,10 +77,8 @@
                 "enabled": true,
                 "server-group": "freeradius",
                 "csa": true,
-                "dhcp-required": false,
                 "hidden": false,
                 "opmode": "WPA2_ENTERPRISE",
-                "ipv6-ndp-filter": true
               },
               "name": "Auth-Link022"
             },
@@ -99,12 +91,10 @@
                 ],
                 "broadcast-filter": true,
                 "csa": false,
-                "dhcp-required": true,
                 "dot11k": false,
                 "dva": false,
                 "enabled": true,
                 "hidden": false,
-                "multicast-filter": false,
                 "name": "Guest-Link022",
                 "operating-frequency": "openconfig-wifi-types:FREQ_2_5_GHZ",
                 "opmode": "OPEN",
