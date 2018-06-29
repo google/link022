@@ -17,10 +17,12 @@ limitations under the License.
 package main
 
 import (
+	"bufio"
 	"encoding/json"
 	"flag"
 	"fmt"
 	"io/ioutil"
+	"os"
 	"time"
 
 	log "github.com/golang/glog"
@@ -50,6 +52,7 @@ var (
 	targetAddr = flag.String("target_addr", "localhost:10161", "The target address in the format of host:port")
 	targetName = flag.String("target_name", "hostname.com", "The target name used to verify the hostname returned by TLS handshake")
 	timeout    = flag.Duration("time_out", 30*time.Second, "Timeout for each request, 30 seconds by default")
+	pauseMode  = flag.Bool("pause_mode", false, "Pause after each test case")
 )
 
 func loadTests(testFiles []string) ([]*common.GNMITest, error) {
@@ -75,14 +78,16 @@ func runTest(client pb.GNMIClient, gNMITest *common.GNMITest, timeout time.Durat
 	// Run gNMI config tests.
 	log.Infof("Running [%s].", gNMITest.Name)
 	var passedNum, failedNum int
-	for _, testcase := range gNMITest.GNMITestCase {
+	totalNum := len(gNMITest.GNMITestCase)
+	for i, testcase := range gNMITest.GNMITestCase {
+		log.Infof("Started [%s].", testcase.Name)
 		err := gnmitest.RunTest(client, testcase, timeout)
 		if err != nil {
 			failedNum += 1
-			log.Errorf("[%s] failed: %v.", testcase.Name, err)
+			log.Errorf("[%d/%d] [%s] failed: %v.", i+1, totalNum, testcase.Name, err)
 		} else {
 			passedNum += 1
-			log.Infof("[%s] succeeded.", testcase.Name)
+			log.Infof("[%d/%d] [%s] succeeded.", i+1, totalNum, testcase.Name)
 		}
 
 		result := &common.TestCaseResult{
@@ -90,9 +95,14 @@ func runTest(client pb.GNMIClient, gNMITest *common.GNMITest, timeout time.Durat
 			Err:  err,
 		}
 		testCaseResults = append(testCaseResults, result)
-	}
 
-	// TODO: Run gNMI state-related tests.
+		if *pauseMode && i < totalNum {
+			reader := bufio.NewReader(os.Stdin)
+			// Pause until user triggers next test case manually.
+			fmt.Println("Press ENTER to start the next test case.")
+			_, _ = reader.ReadString('\n')
+		}
+	}
 
 	if failedNum > 0 {
 		log.Errorf("[%s] failed.", gNMITest.Name)
