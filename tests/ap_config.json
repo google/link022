@@ -78,7 +78,7 @@
                 "server-group": "freeradius",
                 "csa": true,
                 "hidden": false,
-                "opmode": "WPA2_ENTERPRISE",
+                "opmode": "WPA2_ENTERPRISE"
               },
               "name": "Auth-Link022"
             },
