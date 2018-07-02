@@ -35,10 +35,12 @@ Run the test kit binary. It takes three categories of input parameters:
 3. target test cases:
     * test_file: the file containing gNMI test
     Note: To run mulitple tests in one single run, specifying multiple "-test_file" parameters in input.
+4. mode selection:
+    * pause_mode: if enabled, the test kit pauses after each test case. Disabled by default.
 
 Here is one example:
 ```
-./test_kit -logtostderr \
+./test_kit -alsologtostderr \
 -ca ../demo/cert/client/ca.crt \
 -cert ../demo/cert/client/client.crt \
 -key ../demo/cert/client/client.key \
