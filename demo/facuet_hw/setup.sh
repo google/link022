@@ -123,6 +123,7 @@ sudo ip netns exec ${NS} ip addr add ${HW_DATA_GW_IP}/24 dev ${HW_DATA_INTF}
 sudo ip netns exec ${NS} dnsmasq --no-ping -p 0 -k \
  -F set:s0,${HW_DATA_GW}.2,${HW_DATA_GW}.10 \
  -O tag:s0,3,${HW_DATA_GW_IP} -O option:dns-server,8.8.8.8  -I lo -z \
+ --dhcp-option-force=vendor:vendorclass,102,1.2.3.4 \
  -l /tmp/hw_data.leases -8 /tmp/hw_data.dhcp.log -i ${HW_DATA_INTF} -a ${HW_DATA_GW_IP} --conf-file= &
 sudo ip netns exec ${NS} ip link set dev ${HW_DATA_INTF} up
 add_vlan guesthw 200 192.168.55 ${HW_DATA_INTF}
