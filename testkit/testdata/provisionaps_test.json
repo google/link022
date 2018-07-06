@@ -1,0 +1,17 @@
+{
+  "name":"Assign hostname to a MAC & set it's country-code.",
+  "description":"Day 0 provisioning.",
+  "test_cases":[
+    {
+      "name":"Push Hostname & CC.",
+      "description":"Initial assignment of hostname & CC.",
+      "ops":[
+        {
+          "type":"replace",
+          "path":"/",
+          "val":"@../tests/ap_provision.json"
+        }
+      ]
+    }
+  ]
+}
