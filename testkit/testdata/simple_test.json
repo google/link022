@@ -29,6 +29,21 @@
       ]
     },
     {
+      "name":"Update Radio Transmit Power.",
+      "ops":[
+        {
+          "type":"update",
+          "path":"/access-points/access-point[hostname=link022-pi-ap]/radios/radio[id=1]/config/transmit-power",
+          "val": "9"
+        },
+        {
+          "type":"update",
+          "path":"/access-points/access-point[hostname=link022-pi-ap]/radios/radio[id=1]/config/channel-width",
+          "val": "20"
+        }
+      ]
+    },
+    {
       "name":"Update Radio frequency.",
       "ops":[
         {
@@ -59,12 +74,22 @@
       ]
     },
     {
-      "name":"Enable multicast filter on Guest SSID.",
+      "name":"Disable broadcast filter on Guest SSID.",
       "ops":[
         {
           "type":"update",
-          "path":"/access-points/access-point[hostname=link022-pi-ap]/ssids/ssid[name=Guest-Link022]/config/multicast-filter",
-          "val": "true"
+          "path":"/access-points/access-point[hostname=link022-pi-ap]/ssids/ssid[name=Guest-Link022]/config/broadcast-filter",
+          "val": "false"
+        }
+      ]
+    },
+    {
+      "name":"Disable station-isolation on Guest SSID.",
+      "ops":[
+        {
+          "type":"update",
+          "path":"/access-points/access-point[hostname=link022-pi-ap]/ssids/ssid[name=Guest-Link022]/config/station-isolation",
+          "val": "false"
         }
       ]
     },
