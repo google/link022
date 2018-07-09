@@ -8,7 +8,7 @@
       "ops":[
         {
           "type":"replace",
-          "path":"/",
+          "path":"/provision-aps",
           "val":"@../tests/ap_provision.json"
         }
       ]

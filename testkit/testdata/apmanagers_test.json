@@ -8,7 +8,7 @@
       "ops":[
         {
           "type":"replace",
-          "path":"/",
+          "path":"/access-points/access-point[hostname=link022-pi-ap]",
           "val":"@../tests/ap_apmanagers.json"
         }
       ]
