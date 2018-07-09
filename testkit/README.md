@@ -37,6 +37,7 @@ Run the test kit binary. It takes three categories of input parameters:
     Note: To run mulitple tests in one single run, specifying multiple "-test_file" parameters in input.
 4. mode selection:
     * pause_mode: if enabled, the test kit pauses after each test case. Disabled by default.
+    * insecure: if enabled, gNMI client skips TLS validation. (May also need to [disable TLS validation](https://golang.org/pkg/crypto/tls/#ClientAuthType) on target side.)
 
 Here is one example:
 ```
@@ -44,6 +45,15 @@ Here is one example:
 -ca ../demo/cert/client/ca.crt \
 -cert ../demo/cert/client/client.crt \
 -key ../demo/cert/client/client.key \
+-target_name www.example.com \
+-target_addr 127.0.0.1:8080 \
+-test_file=testdata/simple_test.json
+
+insecure mode on:
+
+./test_kit \
+-alsologtostderr \
+-insecure \
 -target_name www.example.com \
 -target_addr 127.0.0.1:8080 \
 -test_file=testdata/simple_test.json
