@@ -1,5 +1,5 @@
 {
-  "openconfig-access-points:hostname":"boleifu.n.corp.google.com",
+  "openconfig-access-points:hostname":"link022-pi-ap",
   "openconfig-access-points:system":{
     "aaa":{
       "server-groups":{
