@@ -14,3 +14,6 @@ script:
   - go test -v -race ./...
   - go vet ./...
   - go build -o binary/link022_agent agent/agent.go
+
+after_success:
+  - bash <(curl -s https://codecov.io/bash)

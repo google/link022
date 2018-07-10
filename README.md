@@ -2,6 +2,7 @@
 [![GoDoc](https://godoc.org/github.com/google/link022?status.svg)](https://godoc.org/github.com/google/link022)
 [![Go Report Card](https://goreportcard.com/badge/github.com/google/link022)](https://goreportcard.com/report/github.com/google/link022)
 [![Build Status](https://travis-ci.org/google/link022.svg?branch=master)](https://travis-ci.org/google/link022)
+[![codecov](https://codecov.io/gh/google/link022/branch/master/graph/badge.svg)](https://codecov.io/gh/google/link022)
 
 # Link022: an open WiFi access point
 Link022 is an open reference implementation and experimental platform for an OpenConfig and gNMI
@@ -14,61 +15,23 @@ OpenConfig models.
 *  See [gNMI Protocol documentation](https://github.com/openconfig/reference/tree/master/rpc/gnmi).
 *  See [Openconfig documentation](http://www.openconfig.net/).
 
-## Getting Started
-For documentation on installing a full demo system (with both a gNMI client and link022 access point)
-please see the [full demo documentation](demo/README.md) which explains a fully complete system.
+## Get Started
+This repository contains following components.
 
-The following instructions will get you a Link022 AP on a Raspberry Pi device.
+### Link022 agent
+A WiFi management component that runs on a Link022 AP, with OpenConfig and gNMI implemented.
+It supports gNMI "SET" and "GET" opertions for AP configuration.
 
-### Prerequisites
-Have a Raspberry Pi device set up. (Tested with Raspbian)
+To run the agent on a Raspberry Pi device, see the [start guide](agent/README.md).
 
-Install Golang on Raspberry Pi.
-```
-wget https://storage.googleapis.com/golang/go1.7.linux-armv6l.tar.gz
-sudo tar -C /usr/local -xzf go1.7.linux-armv6l.tar.gz
-export PATH=$PATH:/usr/local/go/bin
-```
-Install dependencies.
-```
-sudo apt-get install udhcpc bridge-utils hostapd git
-```
+### Link022 demo
+A demo for configuring Link022 AP though gNMI. [demo guide](demo/README.md)
 
-### Download Link022 agent
-```
-export GOPATH=$HOME/go
-go get github.com/google/link022/agent
-```
+### Link022 emulator
+An emulator that runs Link022 agent inside a Linux namespace. [start guide](emulator/README.md)
 
-### Download certificates
-Download sample certificates from [the demo directory](demo/cert/server/).
-Or you can use your own cert.
-
-### Configuring network interfaces of Pi
-Editing the file /etc/network/interfaces on Pi.
-```
-auto lo
-iface lo inet loopback
-
-auto eth0
-iface eth0 inet dhcp
-
-# Disable all WLAN interfaces.
-auto wlan0
-iface wlan0 inet static
-    address 0.0.0.0
-
-# Repeat for other WLAN interfaces.
-```
-Note: Reboot the device to make change take effect.
-
-### Running Link022 agent
-```
-export PATH=$PATH:/usr/local/go/bin:$HOME/go/bin
-sudo env PATH=$PATH agent -ca=<path to ca.crt> -cert=<path to server.crt> -key=<path to server.key> -eth_intf_name=<the eth interface> -wlan_intf_name=<the wlan interface for AP radio> -gnmi_port=<port number>
-```
-Note: Make sure the chosen wireless device supports AP mode and has enough
-capability.
+### gNMI test kit.
+A tool to test the gNMI functionality of an AP device. [start guide](testkit/README.md)
 
 ## Disclaimer
 *  This is not an official Google product.

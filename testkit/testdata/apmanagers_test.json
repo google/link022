@@ -1,0 +1,27 @@
+{
+  "name":"Assign AP Managers",
+  "description":"Enable and configure AP Managers.",
+  "test_cases":[
+    {
+      "name":"Push AP Managers.",
+      "description":"Push assigned-ap-managers to AP device.",
+      "ops":[
+        {
+          "type":"replace",
+          "path":"/access-points/access-point[hostname=link022-pi-ap]",
+          "val":"@../tests/ap_apmanagers.json"
+        }
+      ]
+    },
+    {
+      "name":"Change secondary AP Manager IPv4 address.",
+      "ops":[
+        {
+          "type":"update",
+          "path":"/access-points/access-point[hostname=link022-pi-ap]/assigned-ap-managers/ap-manager[id=secondary]/config/ap-manager-ipv4-address",
+          "val": "192.168.3.100"
+        }
+      ]
+    }
+  ]
+}

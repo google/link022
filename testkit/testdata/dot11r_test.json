@@ -1,0 +1,27 @@
+{
+  "name":"Enable 802.11r",
+  "description":"Enable and configure 802.11r.",
+  "test_cases":[
+    {
+      "name":"Push 802.11r.",
+      "description":"Push only 802.11r related configuration to AP device.",
+      "ops":[
+        {
+          "type":"replace",
+          "path":"/access-points/access-point[hostname=link022-pi-ap]",
+          "val":"@../tests/ap_dot11r.json"
+        }
+      ]
+    },
+    {
+      "name":"Update 802.11r Method",
+      "ops":[
+        {
+          "type":"update",
+          "path":"/access-points/access-point[hostname=link022-pi-ap]/ssids/ssid[name=Auth-Link022]/dot11r/config/dot11r-method",
+          "val": "ODS"
+        }
+      ]
+    }
+  ]
+}
