@@ -1,4 +1,4 @@
-package prometheusexporter
+package main
 
 import (
 	"context"
@@ -11,9 +11,9 @@ import (
 )
 
 var (
-	targetAddr = flag.String("target-address", "localhost:10161", "The target address in the format of host:port")
+	targetAddr = flag.String("target_addr", "localhost:10161", "The target address in the format of host:port")
 	targetName = flag.String("target_name", "hostname.com", "The target name use to verify the hostname returned by TLS handshake")
-	listenAddr = flag.String("listen-address", ":8080", "The address to listen on for HTTP requests.")
+	listenAddr = flag.String("listen_addr", "localhost:8080", "The address to listen on for HTTP requests.")
 )
 
 func main() {

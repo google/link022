@@ -1,7 +1,8 @@
-package prometheusexporter
+package main
 
 import (
 	"context"
+	"fmt"
 	"strings"
 	"sync"
 	"time"
@@ -19,18 +20,10 @@ import (
 )
 
 const (
-	apStatsExportingDelay = 15 * time.Second
+	apStatsExportingDelay = 5 * time.Second
 	timeOut               = 10 * time.Second
 	encodingName          = "JSON_IETF"
 	statusPath            = "/"
-)
-
-var (
-	link022ModelData = []*gpb.ModelData{{
-		Name:         "office-ap",
-		Organization: "Google, Inc.",
-		Version:      "0.1.0",
-	}}
 )
 
 // TargetState contain current state of the assigned ap device
@@ -63,8 +56,6 @@ func monitoringAPStats(ctx context.Context, targetAddress string, targetName str
 	defer conn.Close()
 
 	cli := gpb.NewGNMIClient(conn)
-	ctx, cancel := context.WithTimeout(context.Background(), timeOut)
-	defer cancel()
 
 	encoding, ok := gpb.Encoding_value[encodingName]
 	if !ok {
@@ -78,11 +69,12 @@ func monitoringAPStats(ctx context.Context, targetAddress string, targetName str
 
 	for {
 		select {
-		case <-ctx.Done():
+		case msg := <-ctx.Done():
+			fmt.Println("Done", msg, ctx.Err())
 			return
 		case <-time.After(apStatsExportingDelay):
+			fmt.Println("time after")
 		}
-
 		var pathList []*gpb.Path
 		gpbPath, err := xpath.ToGNMIPath(statusPath)
 		pathList = append(pathList, gpbPath)
@@ -90,11 +82,6 @@ func monitoringAPStats(ctx context.Context, targetAddress string, targetName str
 		getRequest := &gpb.GetRequest{
 			Path:     pathList,
 			Encoding: gpb.Encoding(encoding),
-			UseModels: []*gpb.ModelData{{
-				Name:         "office-ap",
-				Organization: "Google, Inc.",
-				Version:      "0.1.0",
-			}},
 		}
 
 		getResponse, err := cli.Get(ctx, getRequest)
@@ -145,10 +132,14 @@ func gNMIPathtoString(in *gpb.Path) (string, map[string]string) {
 	}
 	path := ""
 	labels := make(map[string]string)
-	for _, ele := range in.Elem {
+	for idx, ele := range in.Elem {
 		elementName := strings.Replace(ele.Name, "-", "_", -1)
 		elementName = strings.Replace(elementName, "/", ":", -1)
-		path += ":" + elementName
+		if idx == 0 {
+			path += elementName
+		} else {
+			path += ":" + elementName
+		}
 		for k, v := range ele.Key {
 			k = strings.Replace(k, "-", "_", -1)
 			k = strings.Replace(k, "/", "_", -1)
@@ -162,8 +153,8 @@ func gNMIPathtoString(in *gpb.Path) (string, map[string]string) {
 // metrics are dynamic, they shouldn't be described here.
 func (collector *APStateCollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- prometheus.NewDesc(
-		"gNMI-Prometheus Collector on",
-		"This metric shows wheather the collector is working",
+		"GNMI_Prometheus_Collector",
+		"This metric will not be collected, it only used to initial the collector",
 		nil,
 		nil,
 	)
