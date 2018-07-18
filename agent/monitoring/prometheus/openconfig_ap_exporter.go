@@ -20,7 +20,7 @@ import (
 )
 
 const (
-	apStatsExportingDelay = 5 * time.Second
+	apStatsExportingDelay = 15 * time.Second
 	timeOut               = 10 * time.Second
 	encodingName          = "JSON_IETF"
 	statusPath            = "/"
@@ -69,11 +69,9 @@ func monitoringAPStats(ctx context.Context, targetAddress string, targetName str
 
 	for {
 		select {
-		case msg := <-ctx.Done():
-			fmt.Println("Done", msg, ctx.Err())
+		case <-ctx.Done():
 			return
 		case <-time.After(apStatsExportingDelay):
-			fmt.Println("time after")
 		}
 		var pathList []*gpb.Path
 		gpbPath, err := xpath.ToGNMIPath(statusPath)
@@ -190,6 +188,7 @@ func (collector *APStateCollector) Collect(ch chan<- prometheus.Metric) {
 		}
 		switch updateValue.(type) {
 		case string:
+			// Value in string type will be saved in a label.
 			labelKeys = append(labelKeys, "metric_value")
 			labelValues = append(labelValues, updateValue.(string))
 			metricDesc := prometheus.NewDesc(
@@ -278,10 +277,27 @@ func (collector *APStateCollector) Collect(ch chan<- prometheus.Metric) {
 				labelValues...,
 			)
 		case []interface{}:
-			//TODO(tianyangz): add implementation
-			// list value will be saved in variable labels
+			// All elements in this slice will be saved in labels.
+			for idx, intf := range updateValue.([]interface{}) {
+				labelKey := fmt.Sprintf("metric_value_%d", idx)
+				labelValue := fmt.Sprint(intf)
+				labelKeys = append(labelKeys, labelKey)
+				labelValues = append(labelValues, labelValue)
+			}
+			metricDesc := prometheus.NewDesc(
+				metricName,
+				"Array type gNMI metric",
+				labelKeys,
+				nil,
+			)
+			ch <- prometheus.MustNewConstMetric(
+				metricDesc,
+				prometheus.UntypedValue,
+				0,
+				labelValues...,
+			)
 		case []byte:
-			//TODO(tianyangz): add implementation
+			log.Info("Receive bytes type metric. Discard it because it's not aim for Prometheus")
 		default:
 			log.Error("Unknown type, doesn't include in gNMI supported types")
 			continue
