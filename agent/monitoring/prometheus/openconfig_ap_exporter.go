@@ -22,7 +22,6 @@ import (
 const (
 	apStatsExportingDelay = 15 * time.Second
 	timeOut               = 10 * time.Second
-	encodingName          = "JSON_IETF"
 	statusPath            = "/"
 )
 
@@ -57,16 +56,6 @@ func monitoringAPStats(ctx context.Context, targetAddress string, targetName str
 
 	cli := gpb.NewGNMIClient(conn)
 
-	encoding, ok := gpb.Encoding_value[encodingName]
-	if !ok {
-		var gnmiEncodingList []string
-		for _, name := range gpb.Encoding_name {
-			gnmiEncodingList = append(gnmiEncodingList, name)
-		}
-		log.Errorf("Supported encodings: %s", strings.Join(gnmiEncodingList, ", "))
-		return
-	}
-
 	for {
 		select {
 		case <-ctx.Done():
@@ -78,8 +67,8 @@ func monitoringAPStats(ctx context.Context, targetAddress string, targetName str
 		pathList = append(pathList, gpbPath)
 
 		getRequest := &gpb.GetRequest{
-			Path:     pathList,
-			Encoding: gpb.Encoding(encoding),
+			Path: pathList,
+			//Encoding: gpb.Encoding(encoding),
 		}
 
 		getResponse, err := cli.Get(ctx, getRequest)
@@ -112,13 +101,6 @@ func newAPStateCollector(s *TargetState) *APStateCollector {
 		return nil
 	}
 	return &APStateCollector{state: s}
-}
-
-//convertToValidName converts a Openconfig path to valid Prometheus metric name
-func (collector *APStateCollector) convertToValidName(p string) string {
-	p = strings.Replace(p, "/", ":", -1)
-	p = strings.Replace(p, "-", "_", -1)
-	return p
 }
 
 // gNMIPathtoString splits GNMI Path into a path string and a label set.
