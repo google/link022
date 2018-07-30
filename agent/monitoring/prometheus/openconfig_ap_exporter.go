@@ -261,23 +261,23 @@ func (collector *APStateCollector) Collect(ch chan<- prometheus.Metric) {
 		case []interface{}:
 			// All elements in this slice will be saved in labels.
 			for idx, intf := range updateValue.([]interface{}) {
-				labelKey := fmt.Sprintf("metric_value_%d", idx)
-				labelValue := fmt.Sprint(intf)
-				labelKeys = append(labelKeys, labelKey)
-				labelValues = append(labelValues, labelValue)
+				currentLabelKeys := append(labelKeys, "array_index")
+				currentLabelValues := append(labelValues, fmt.Sprint(idx))
+				currentLabelKeys = append(currentLabelKeys, "metric_value")
+				currentLabelValues = append(currentLabelValues, fmt.Sprint(intf))
+				metricDesc := prometheus.NewDesc(
+					metricName,
+					"Array type gNMI metric",
+					currentLabelKeys,
+					nil,
+				)
+				ch <- prometheus.MustNewConstMetric(
+					metricDesc,
+					prometheus.UntypedValue,
+					0,
+					currentLabelValues...,
+				)
 			}
-			metricDesc := prometheus.NewDesc(
-				metricName,
-				"Array type gNMI metric",
-				labelKeys,
-				nil,
-			)
-			ch <- prometheus.MustNewConstMetric(
-				metricDesc,
-				prometheus.UntypedValue,
-				0,
-				labelValues...,
-			)
 		case []byte:
 			log.Info("Receive bytes type metric. Discard it because it's not aim for Prometheus")
 		default:

@@ -149,8 +149,9 @@ func TestPrometheusHandler(t *testing.T) {
 	}
 	expectedArrayVal := "# HELP p1:p2:p3a:c:d:e:array Array type gNMI metric\n" +
 		"# TYPE p1:p2:p3a:c:d:e:array untyped\n" +
-		"p1:p2:p3a:c:d:e:array{d_id=\"1\",metric_value_0=\"100\",metric_value_1=\"1.1\"," +
-		"metric_value_2=\"test_val\",p2_name=\"abc\"} 0"
+		"p1:p2:p3a:c:d:e:array{array_index=\"0\",d_id=\"1\",metric_value=\"100\",p2_name=\"abc\"} 0\n" +
+		"p1:p2:p3a:c:d:e:array{array_index=\"1\",d_id=\"1\",metric_value=\"1.1\",p2_name=\"abc\"} 0\n" +
+		"p1:p2:p3a:c:d:e:array{array_index=\"2\",d_id=\"1\",metric_value=\"test_val\",p2_name=\"abc\"} 0\n"
 	if strings.Index(responRecord.Body.String(), expectedArrayVal) == -1 {
 		t.Errorf("Can't find string test metric in exposed metrics: got %v want %v",
 			responRecord.Body.String(), expectedArrayVal)
