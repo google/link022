@@ -110,6 +110,7 @@ The output should be similar to:
 One test file contains one JSON blob. It represents a single gNMI test, with following properties.
 * name: test name
 * description: detail description of this test
+* model: OpenConfig model used in this test case
 * test_cases: a list of gNMI test cases to run in this test
 
 ### Test Case
@@ -121,9 +122,19 @@ type TestCase struct {
     Name string `json:"name"`
     // Description is the detail description of this test case.
     Description string `json:"description"`
+    // Model is used to construct the UseModels property in gNMI requests.
+    // If not specified, all gNMI requests are sent without UseModels.
+    Model *ModelData `json:"model"`
     // OPs contains a list of operations need to be processed in this test case.
     // All operations are processed in one single gNMI message.
     OPs []*Operation `json:"ops"`
+}
+
+// ModelData describes the OpenConfig model used in this test case.
+type ModelData struct {
+    Name         string `json:"name"`
+    Organization string `json:"organization"`
+    Version      string `json:"version"`
 }
 
 // Operation represents a gNMI operation.
@@ -166,6 +177,11 @@ One sample test file:
     {
       "name":"Push entire config",
       "description":"Push the entire configuration to AP device.",
+      "model":{
+        "name": "openconfig-access-points",
+        "organization": "OpenConfig working group",
+        "version": "0.1.0"
+      },
       "ops":[
         {
           "type":"replace",
