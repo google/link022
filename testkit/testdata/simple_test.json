@@ -5,6 +5,11 @@
     {
       "name":"Push entire config",
       "description":"Push the entire configuration to AP device.",
+      "model":{
+        "name": "openconfig-access-points",
+        "organization": "OpenConfig working group",
+        "version": "0.1.0"
+      },
       "ops":[
         {
           "type":"replace",
@@ -100,12 +105,7 @@
           "type":"update",
           "path":"/access-points/access-point[hostname=link022-pi-ap]/ssids/ssid[name=Guest-Link022]/config/opmode",
           "val": "WPA2_PERSONAL"
-        }
-      ]
-    },
-    {
-      "name":"Set a PSK for the Guest SSID.",
-      "ops":[
+        },
         {
           "type":"update",
           "path":"/access-points/access-point[hostname=link022-pi-ap]/ssids/ssid[name=Guest-Link022]/config/wpa2-psk",
