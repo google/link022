@@ -84,7 +84,7 @@ func runConfigTest(client pb.GNMIClient, testCase *common.TestCase, timeout time
 	}
 
 	// Check the pushed configuration updates are on device.
-	return verifyConfiguration(client, expectedVals, timeout)
+	return verifyConfiguration(client, testCase.Model, expectedVals, timeout)
 }
 
 func runStateTest(client pb.GNMIClient, testCase *common.TestCase, timeout time.Duration) error {
@@ -108,13 +108,9 @@ func runStateTest(client pb.GNMIClient, testCase *common.TestCase, timeout time.
 
 	// Generate the gNMI GetRequest containing all desired paths.
 	getRequest := &pb.GetRequest{
-		Path:     desiredPaths,
-		Encoding: pb.Encoding_JSON_IETF,
-		UseModels: []*pb.ModelData{{
-			Name:         "office-ap",
-			Organization: "Google, Inc.",
-			Version:      "0.1.0",
-		}},
+		Path:      desiredPaths,
+		Encoding:  pb.Encoding_JSON_IETF,
+		UseModels: buildModelData(testCase.Model),
 	}
 
 	// Send gNMI GetRequest.
@@ -168,6 +164,17 @@ func buildGNMISetRequest(ops []*common.Operation) (*pb.SetRequest, map[*pb.Path]
 	}, expectedVals, nil
 }
 
+func buildModelData(model *common.ModelData) []*pb.ModelData {
+	if model == nil {
+		return nil
+	}
+	return []*pb.ModelData{{
+		Name:         model.Name,
+		Organization: model.Organization,
+		Version:      model.Version,
+	}}
+}
+
 func verifySetResponse(setResponse *pb.SetResponse, expectedVals map[*pb.Path]*pb.TypedValue) error {
 	if len(setResponse.Response) != len(expectedVals) {
 		return fmt.Errorf("incorrect response number in SetResponse, actual = %d, expected = %d", len(setResponse.Response), len(expectedVals))
@@ -205,17 +212,13 @@ func fetchVal(expectedVals map[*pb.Path]*pb.TypedValue, targetPath *pb.Path) (*p
 	return nil, false
 }
 
-func verifyConfiguration(client pb.GNMIClient, expectedVals map[*pb.Path]*pb.TypedValue, timeout time.Duration) error {
+func verifyConfiguration(client pb.GNMIClient, model *common.ModelData, expectedVals map[*pb.Path]*pb.TypedValue, timeout time.Duration) error {
 	for gnmiPath, expectedVal := range expectedVals {
 		// Fetch the updated config from device.
 		getRequest := &pb.GetRequest{
-			Path:     []*pb.Path{gnmiPath},
-			Encoding: pb.Encoding_JSON_IETF,
-			UseModels: []*pb.ModelData{{
-				Name:         "office-ap",
-				Organization: "Google, Inc.",
-				Version:      "0.1.0",
-			}},
+			Path:      []*pb.Path{gnmiPath},
+			Encoding:  pb.Encoding_JSON_IETF,
+			UseModels: buildModelData(model),
 		}
 		ctx, _ := context.WithTimeout(context.Background(), timeout)
 		getResponse, err := client.Get(ctx, getRequest)
