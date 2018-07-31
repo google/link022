@@ -135,8 +135,8 @@ func ValEqual(gnmiPath *pb.Path, actual *pb.TypedValue, expected *pb.TypedValue)
 		if err := json.Unmarshal(expectedJsonValue.JsonIetfVal, &expectedJson); err != nil {
 			return fmt.Errorf("invalid value %v: %v", string(expectedJsonValue.JsonIetfVal), err)
 		}
-		if !reflect.DeepEqual(actualJson, expectedJson) {
-			return fmt.Errorf("incorrect json config value on %v, actual = %v, expected = %v", gnmiPath, string(actualJsonValue.JsonIetfVal), string(expectedJsonValue.JsonIetfVal))
+		if err := jsonValEquals(actualJson, expectedJson); err != nil {
+			return fmt.Errorf("incorrect json config on %v, actual = %v, expected = %v, detail = %v", gnmiPath, string(actualJsonValue.JsonIetfVal), string(expectedJsonValue.JsonIetfVal), err)
 		}
 		return nil
 	}
@@ -151,6 +151,30 @@ func ValEqual(gnmiPath *pb.Path, actual *pb.TypedValue, expected *pb.TypedValue)
 	}
 	if !reflect.DeepEqual(actualValue, expectedValue) {
 		return fmt.Errorf("incorrect config on %v, actual = %v, expected = %v", gnmiPath, actualValue, expectedValue)
+	}
+	return nil
+}
+
+func jsonValEquals(actual, expected interface{}) error {
+	// Both are json blob.
+	actualJSON, okA := actual.(map[string]interface{})
+	expectedJSON, okE := expected.(map[string]interface{})
+	if okA && okE {
+		for key, expectedVal := range expectedJSON {
+			actualVal, ok := actualJSON[key]
+			if !ok {
+				return fmt.Errorf("miss the property %s, expected = %v", key, expectedVal)
+			}
+			if err := jsonValEquals(actualVal, expectedVal); err != nil {
+				return err
+			}
+		}
+		return nil
+	}
+
+	// Other value types.
+	if !reflect.DeepEqual(actual, expected) {
+		return fmt.Errorf("incorrect value, actual = %v, expected = %v", actual, expected)
 	}
 	return nil
 }
