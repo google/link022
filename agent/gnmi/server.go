@@ -37,8 +37,8 @@ const (
 var (
 	// link022ModelData is a list of models supported in this GNMI server.
 	link022ModelData = []*pb.ModelData{{
-		Name:         "office-ap",
-		Organization: "Google, Inc.",
+		Name:         "openconfig-access-points",
+		Organization: "OpenConfig working group",
 		Version:      "0.1.0",
 	}}
 )
