@@ -145,7 +145,7 @@ func TestRunTest(t *testing.T) {
 
 	// Run test cases.
 	for _, testCase := range testCases {
-		err := RunTest(client, testCase.targetTest, 10*time.Second)
+		err := RunTest(client, testCase.targetTest, 10*time.Second, 10*time.Second)
 		testResult := err == nil
 		if testResult != testCase.succeeded {
 			t.Errorf("[%s] incorrect test result, actual = %v [%v], expected = %v", testCase.targetTest.Name, testResult, err, testCase.succeeded)
