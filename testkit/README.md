@@ -140,11 +140,14 @@ type ModelData struct {
 // Operation represents a gNMI operation.
 type Operation struct {
     // Type is the gNMI operation type.
-    // Available types: [replace, update, delete, get, subscribe].
     Type OPType `json:"type"`
     // Path is the xPath of the target field/branch.
     Path string `json:"path"`
+    // StatePath is the xPath of the corresponding state field/branch.
+    // If specified, testkit will verify the state update.
+    StatePath string `json:"state_path"`
     // Val is the string format of the desired value.
+    // Val should be unset for gNMI delete operation.
     // Supported types:
     //     Integer: "1", "2"
     //     Float: "1.5", "2.4"
@@ -196,11 +199,13 @@ One sample test file:
         {
           "type":"update",
           "path":"/access-points/access-point[hostname=link022-pi-ap]/radios/radio[id=1]/config/channel",
+          "state_path":"/access-points/access-point[hostname=link022-pi-ap]/radios/radio[id=1]/state/channel",
           "val": "6"
         },
         {
           "type":"update",
           "path":"/access-points/access-point[hostname=link022-pi-ap]/radios/radio[id=1]/config/channel-width",
+          "state_path":"/access-points/access-point[hostname=link022-pi-ap]/radios/radio[id=1]/state/channel-width",
           "val": "20"
         }
       ]
