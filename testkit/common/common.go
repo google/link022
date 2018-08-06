@@ -69,7 +69,11 @@ type Operation struct {
 	Type OPType `json:"type"`
 	// Path is the xPath of the target field/branch.
 	Path string `json:"path"`
+	// StatePath is the xPath of the corresponding state field/branch.
+	// If specified, testkit will verify the state update.
+	StatePath string `json:"state_path"`
 	// Val is the string format of the desired value.
+	// Val should be unset for gNMI delete operation.
 	// Supported types:
 	//     Integer: "1", "2"
 	//     Float: "1.5", "2.4"

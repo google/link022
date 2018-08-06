@@ -48,11 +48,12 @@ func (i *arrayFlags) Set(value string) error {
 }
 
 var (
-	gnmiTests  arrayFlags
-	targetAddr = flag.String("target_addr", "localhost:10161", "The target address in the format of host:port")
-	targetName = flag.String("target_name", "hostname.com", "The target name used to verify the hostname returned by TLS handshake")
-	timeout    = flag.Duration("time_out", 30*time.Second, "Timeout for each request, 30 seconds by default")
-	pauseMode  = flag.Bool("pause_mode", false, "Pause after each test case")
+	gnmiTests           arrayFlags
+	targetAddr          = flag.String("target_addr", "localhost:10161", "The target address in the format of host:port")
+	targetName          = flag.String("target_name", "hostname.com", "The target name used to verify the hostname returned by TLS handshake")
+	timeout             = flag.Duration("time_out", 30*time.Second, "Timeout for each request, 30 seconds by default")
+	stateUpdateMaxDelay = flag.Duration("state_update_max_delay", 30*time.Second, "The maximum delay of the corresponding state field updating after a config field changes")
+	pauseMode           = flag.Bool("pause_mode", false, "Pause after each test case")
 )
 
 func loadTests(testFiles []string) ([]*common.GNMITest, error) {
@@ -72,7 +73,7 @@ func loadTests(testFiles []string) ([]*common.GNMITest, error) {
 	return tests, nil
 }
 
-func runTest(client pb.GNMIClient, gNMITest *common.GNMITest, timeout time.Duration) *common.TestResult {
+func runTest(client pb.GNMIClient, gNMITest *common.GNMITest, timeout time.Duration, stateUpdateDelay time.Duration) *common.TestResult {
 	var testCaseResults []*common.TestCaseResult
 
 	// Run gNMI config tests.
@@ -81,7 +82,7 @@ func runTest(client pb.GNMIClient, gNMITest *common.GNMITest, timeout time.Durat
 	totalNum := len(gNMITest.GNMITestCase)
 	for i, testcase := range gNMITest.GNMITestCase {
 		log.Infof("Started [%s].", testcase.Name)
-		err := gnmitest.RunTest(client, testcase, timeout)
+		err := gnmitest.RunTest(client, testcase, timeout, stateUpdateDelay)
 		if err != nil {
 			failedNum += 1
 			log.Errorf("[%d/%d] [%s] failed: %v.", i+1, totalNum, testcase.Name, err)
@@ -171,7 +172,7 @@ func main() {
 	// Run all tests.
 	var results []*common.TestResult
 	for _, test := range tests {
-		results = append(results, runTest(client, test, *timeout))
+		results = append(results, runTest(client, test, *timeout, *stateUpdateMaxDelay))
 	}
 
 	// Print out the result.
