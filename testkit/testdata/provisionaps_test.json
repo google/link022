@@ -5,11 +5,6 @@
     {
       "name":"Push Hostname & CC",
       "description":"Initial assignment of hostname & CC.",
-      "model":{
-        "name": "openconfig-ap-manager",
-        "organization": "OpenConfig working group",
-        "version": "0.1.0"
-      },
       "ops":[
         {
           "type":"replace",

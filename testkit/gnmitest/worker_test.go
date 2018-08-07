@@ -72,11 +72,6 @@ func TestRunTest(t *testing.T) {
 		{
 			targetTest: &common.TestCase{
 				Name: "push all configurations",
-				Model: &common.ModelData{
-					Name:         "openconfig-access-points",
-					Organization: "OpenConfig working group",
-					Version:      "0.1.0",
-				},
 				OPs: []*common.Operation{
 					{
 						Type: common.OPReplace,
