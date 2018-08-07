@@ -5,11 +5,6 @@
     {
       "name":"Push AP Managers",
       "description":"Push assigned-ap-managers to AP device.",
-      "model":{
-        "name": "openconfig-access-points",
-        "organization": "OpenConfig working group",
-        "version": "0.1.0"
-      },
       "ops":[
         {
           "type":"replace",

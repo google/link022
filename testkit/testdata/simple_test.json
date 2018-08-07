@@ -5,11 +5,6 @@
     {
       "name":"Push entire config",
       "description":"Push the entire configuration to AP device.",
-      "model":{
-        "name":"openconfig-access-points",
-        "organization":"OpenConfig working group",
-        "version":"0.1.0"
-      },
       "ops":[
         {
           "type":"replace",
