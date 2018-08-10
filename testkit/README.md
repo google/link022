@@ -110,6 +110,7 @@ The output should be similar to:
 One test file contains one JSON blob. It represents a single gNMI test, with following properties.
 * name: test name
 * description: detail description of this test
+* model: OpenConfig model used in this test case
 * test_cases: a list of gNMI test cases to run in this test
 
 ### Test Case
@@ -121,19 +122,32 @@ type TestCase struct {
     Name string `json:"name"`
     // Description is the detail description of this test case.
     Description string `json:"description"`
+    // Model is used to construct the UseModels property in gNMI requests.
+    // If not specified, all gNMI requests are sent without UseModels.
+    Model *ModelData `json:"model"`
     // OPs contains a list of operations need to be processed in this test case.
     // All operations are processed in one single gNMI message.
     OPs []*Operation `json:"ops"`
 }
 
+// ModelData describes the OpenConfig model used in this test case.
+type ModelData struct {
+    Name         string `json:"name"`
+    Organization string `json:"organization"`
+    Version      string `json:"version"`
+}
+
 // Operation represents a gNMI operation.
 type Operation struct {
     // Type is the gNMI operation type.
-    // Available types: [replace, update, delete, get, subscribe].
     Type OPType `json:"type"`
     // Path is the xPath of the target field/branch.
     Path string `json:"path"`
+    // StatePath is the xPath of the corresponding state field/branch.
+    // If specified, testkit will verify the state update.
+    StatePath string `json:"state_path"`
     // Val is the string format of the desired value.
+    // Val should be unset for gNMI delete operation.
     // Supported types:
     //     Integer: "1", "2"
     //     Float: "1.5", "2.4"
@@ -166,6 +180,11 @@ One sample test file:
     {
       "name":"Push entire config",
       "description":"Push the entire configuration to AP device.",
+      "model":{
+        "name": "openconfig-access-points",
+        "organization": "OpenConfig working group",
+        "version": "0.1.0"
+      },
       "ops":[
         {
           "type":"replace",
@@ -180,11 +199,13 @@ One sample test file:
         {
           "type":"update",
           "path":"/access-points/access-point[hostname=link022-pi-ap]/radios/radio[id=1]/config/channel",
+          "state_path":"/access-points/access-point[hostname=link022-pi-ap]/radios/radio[id=1]/state/channel",
           "val": "6"
         },
         {
           "type":"update",
           "path":"/access-points/access-point[hostname=link022-pi-ap]/radios/radio[id=1]/config/channel-width",
+          "state_path":"/access-points/access-point[hostname=link022-pi-ap]/radios/radio[id=1]/state/channel-width",
           "val": "20"
         }
       ]

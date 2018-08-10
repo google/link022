@@ -28,7 +28,12 @@ import (
 	"github.com/google/link022/testkit/common"
 	"github.com/google/link022/testkit/util/gnmiutil"
 
+	log "github.com/golang/glog"
 	pb "github.com/openconfig/gnmi/proto/gnmi"
+)
+
+const (
+	stateCheckDelay = 5 * time.Second
 )
 
 // RunTest runs one gNMI test case.
@@ -36,9 +41,10 @@ import (
 //   client: A gNMI client. It is used to send gNMI requests.
 //   testCase: The target test case to run.
 //   timeout: The timeout for each gNMI request. The test case failes if hitting timeout.
+//   stateUpdateDelay: The timeout for verifying related state field udpates. The test case failes if state field is not synced to the pushed config value before timeout.
 // Returns:
 //   nil if test case passed. Otherwise, return the error with failure details.
-func RunTest(client pb.GNMIClient, testCase *common.TestCase, timeout time.Duration) error {
+func RunTest(client pb.GNMIClient, testCase *common.TestCase, timeout time.Duration, stateUpdateDelay time.Duration) error {
 	if client == nil {
 		return errors.New("gNMI client is not available")
 	}
@@ -53,7 +59,7 @@ func RunTest(client pb.GNMIClient, testCase *common.TestCase, timeout time.Durat
 	switch testCase.OPs[0].Type {
 	case common.OPReplace, common.OPUpdate, common.OPDelete:
 		// This is a config test.
-		return runConfigTest(client, testCase, timeout)
+		return runConfigTest(client, testCase, timeout, stateUpdateDelay)
 	case common.OPGet:
 		// This is a state fetching test.
 		return runStateTest(client, testCase, timeout)
@@ -64,9 +70,9 @@ func RunTest(client pb.GNMIClient, testCase *common.TestCase, timeout time.Durat
 	}
 }
 
-func runConfigTest(client pb.GNMIClient, testCase *common.TestCase, timeout time.Duration) error {
+func runConfigTest(client pb.GNMIClient, testCase *common.TestCase, timeout time.Duration, stateUpdateDelay time.Duration) error {
 	// Generate the gNMI SetRequest containing all desired operations.
-	setRequest, expectedVals, err := buildGNMISetRequest(testCase.OPs)
+	setRequest, expectedVals, expectedStateVals, err := buildGNMISetRequest(testCase.OPs)
 	if err != nil {
 		return fmt.Errorf("unable to build gNMI SetRequest: %v.", err)
 	}
@@ -84,7 +90,12 @@ func runConfigTest(client pb.GNMIClient, testCase *common.TestCase, timeout time
 	}
 
 	// Check the pushed configuration updates are on device.
-	return verifyConfiguration(client, expectedVals, timeout)
+	if err := verifyConfiguration(client, testCase.Model, expectedVals, timeout); err != nil {
+		return err
+	}
+
+	// Verify the pushed configuration synced to target device (state field updated), if requested.
+	return verifyConfigurationState(client, testCase.Model, expectedStateVals, timeout, stateUpdateDelay)
 }
 
 func runStateTest(client pb.GNMIClient, testCase *common.TestCase, timeout time.Duration) error {
@@ -108,13 +119,9 @@ func runStateTest(client pb.GNMIClient, testCase *common.TestCase, timeout time.
 
 	// Generate the gNMI GetRequest containing all desired paths.
 	getRequest := &pb.GetRequest{
-		Path:     desiredPaths,
-		Encoding: pb.Encoding_JSON_IETF,
-		UseModels: []*pb.ModelData{{
-			Name:         "office-ap",
-			Organization: "Google, Inc.",
-			Version:      "0.1.0",
-		}},
+		Path:      desiredPaths,
+		Encoding:  pb.Encoding_JSON_IETF,
+		UseModels: buildModelData(testCase.Model),
 	}
 
 	// Send gNMI GetRequest.
@@ -128,36 +135,49 @@ func runStateTest(client pb.GNMIClient, testCase *common.TestCase, timeout time.
 	return verifyGetResponse(getResponse, expectedVals)
 }
 
-func buildGNMISetRequest(ops []*common.Operation) (*pb.SetRequest, map[*pb.Path]*pb.TypedValue, error) {
+func buildGNMISetRequest(ops []*common.Operation) (*pb.SetRequest, map[*pb.Path]*pb.TypedValue, map[*pb.Path]*pb.TypedValue, error) {
 	var deleteList []*pb.Path
 	var replaceList, updateList []*pb.Update
 	expectedVals := make(map[*pb.Path]*pb.TypedValue)
+	expectedStateVals := make(map[*pb.Path]*pb.TypedValue)
 
 	for _, op := range ops {
+		// Get the gNMI path of target config field.
 		pbPath, err := xpath.ToGNMIPath(op.Path)
 		if err != nil {
-			return nil, nil, err
+			return nil, nil, nil, err
 		}
+		// Get the gNMI path of target state field.
+		var pbStatePath *pb.Path
+		if op.StatePath != "" {
+			pbStatePath, err = xpath.ToGNMIPath(op.StatePath)
+			if err != nil {
+				return nil, nil, nil, err
+			}
+		}
+
+		// Convert the expected Value.
+		var pbVal *pb.TypedValue
+		if op.Val != "" {
+			pbVal, err = gnmiutil.ToPbVal(op.Val)
+			if err != nil {
+				return nil, nil, nil, err
+			}
+		}
+		expectedVals[pbPath] = pbVal
+		if pbStatePath != nil {
+			expectedStateVals[pbStatePath] = pbVal
+		}
+
 		switch op.Type {
 		case common.OPReplace:
-			pbVal, err := gnmiutil.ToPbVal(op.Val)
-			if err != nil {
-				return nil, nil, err
-			}
 			replaceList = append(replaceList, &pb.Update{Path: pbPath, Val: pbVal})
-			expectedVals[pbPath] = pbVal
 		case common.OPUpdate:
-			pbVal, err := gnmiutil.ToPbVal(op.Val)
-			if err != nil {
-				return nil, nil, err
-			}
 			updateList = append(updateList, &pb.Update{Path: pbPath, Val: pbVal})
-			expectedVals[pbPath] = pbVal
 		case common.OPDelete:
 			deleteList = append(deleteList, pbPath)
-			expectedVals[pbPath] = nil
 		default:
-			return nil, nil, fmt.Errorf("invalid operation type %s for SET operation", op.Type)
+			return nil, nil, nil, fmt.Errorf("invalid operation type %s for SET operation", op.Type)
 		}
 	}
 
@@ -165,7 +185,18 @@ func buildGNMISetRequest(ops []*common.Operation) (*pb.SetRequest, map[*pb.Path]
 		Delete:  deleteList,
 		Replace: replaceList,
 		Update:  updateList,
-	}, expectedVals, nil
+	}, expectedVals, expectedStateVals, nil
+}
+
+func buildModelData(model *common.ModelData) []*pb.ModelData {
+	if model == nil {
+		return nil
+	}
+	return []*pb.ModelData{{
+		Name:         model.Name,
+		Organization: model.Organization,
+		Version:      model.Version,
+	}}
 }
 
 func verifySetResponse(setResponse *pb.SetResponse, expectedVals map[*pb.Path]*pb.TypedValue) error {
@@ -205,17 +236,13 @@ func fetchVal(expectedVals map[*pb.Path]*pb.TypedValue, targetPath *pb.Path) (*p
 	return nil, false
 }
 
-func verifyConfiguration(client pb.GNMIClient, expectedVals map[*pb.Path]*pb.TypedValue, timeout time.Duration) error {
+func verifyConfiguration(client pb.GNMIClient, model *common.ModelData, expectedVals map[*pb.Path]*pb.TypedValue, timeout time.Duration) error {
 	for gnmiPath, expectedVal := range expectedVals {
 		// Fetch the updated config from device.
 		getRequest := &pb.GetRequest{
-			Path:     []*pb.Path{gnmiPath},
-			Encoding: pb.Encoding_JSON_IETF,
-			UseModels: []*pb.ModelData{{
-				Name:         "office-ap",
-				Organization: "Google, Inc.",
-				Version:      "0.1.0",
-			}},
+			Path:      []*pb.Path{gnmiPath},
+			Encoding:  pb.Encoding_JSON_IETF,
+			UseModels: buildModelData(model),
 		}
 		ctx, _ := context.WithTimeout(context.Background(), timeout)
 		getResponse, err := client.Get(ctx, getRequest)
@@ -236,6 +263,26 @@ func verifyConfiguration(client pb.GNMIClient, expectedVals map[*pb.Path]*pb.Typ
 	}
 
 	return nil
+}
+
+func verifyConfigurationState(client pb.GNMIClient, model *common.ModelData, expectedStateVals map[*pb.Path]*pb.TypedValue, timeout time.Duration, stateUpdateDelay time.Duration) error {
+	if len(expectedStateVals) == 0 {
+		return nil
+	}
+	ctx, _ := context.WithTimeout(context.Background(), stateUpdateDelay)
+	for {
+		select {
+		case <-ctx.Done():
+			return fmt.Errorf("state fields are not synced with the lastest configuration with in %v, expected: %v", stateUpdateDelay, expectedStateVals)
+		case <-time.After(stateCheckDelay):
+		}
+		err := verifyConfiguration(client, model, expectedStateVals, timeout)
+		if err == nil {
+			return nil
+		}
+		log.Errorf("State fields are not updated yet, detail: %v. Recheck in %v.", err, stateCheckDelay)
+	}
+
 }
 
 func verifyGetResponse(getResponse *pb.GetResponse, expectedVals map[*pb.Path]*pb.TypedValue) error {

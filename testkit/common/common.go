@@ -48,9 +48,19 @@ type TestCase struct {
 	Name string `json:"name"`
 	// Description is the detail description of this test case.
 	Description string `json:"description"`
+	// Model is used to construct the UseModels property in gNMI requests.
+	// If not specified, all gNMI requests are sent without UseModels.
+	Model *ModelData `json:"model"`
 	// OPs contains a list of operations need to be processed in this test case.
 	// All operations are processed in one single gNMI message.
 	OPs []*Operation `json:"ops"`
+}
+
+// ModelData describes the OpenConfig model used in this test case.
+type ModelData struct {
+	Name         string `json:"name"`
+	Organization string `json:"organization"`
+	Version      string `json:"version"`
 }
 
 // Operation represents a gNMI operation.
@@ -59,7 +69,11 @@ type Operation struct {
 	Type OPType `json:"type"`
 	// Path is the xPath of the target field/branch.
 	Path string `json:"path"`
+	// StatePath is the xPath of the corresponding state field/branch.
+	// If specified, testkit will verify the state update.
+	StatePath string `json:"state_path"`
 	// Val is the string format of the desired value.
+	// Val should be unset for gNMI delete operation.
 	// Supported types:
 	//     Integer: "1", "2"
 	//     Float: "1.5", "2.4"

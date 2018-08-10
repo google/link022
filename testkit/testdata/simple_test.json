@@ -14,102 +14,108 @@
       ]
     },
     {
-      "name":"Update Radio Channel.",
+      "name":"Update Radio Channel",
       "ops":[
         {
           "type":"update",
           "path":"/access-points/access-point[hostname=link022-pi-ap]/radios/radio[id=1]/config/channel",
-          "val": "11"
+          "state_path":"/access-points/access-point[hostname=link022-pi-ap]/radios/radio[id=1]/state/channel",
+          "val":"11"
         },
         {
           "type":"update",
           "path":"/access-points/access-point[hostname=link022-pi-ap]/radios/radio[id=1]/config/channel-width",
-          "val": "20"
+          "state_path":"/access-points/access-point[hostname=link022-pi-ap]/radios/radio[id=1]/state/channel-width",
+          "val":"20"
         }
       ]
     },
     {
-      "name":"Update Radio Transmit Power.",
+      "name":"Update Radio Transmit Power",
       "ops":[
         {
           "type":"update",
           "path":"/access-points/access-point[hostname=link022-pi-ap]/radios/radio[id=1]/config/transmit-power",
-          "val": "9"
+          "state_path":"/access-points/access-point[hostname=link022-pi-ap]/radios/radio[id=1]/state/transmit-power",
+          "val":"9"
         },
         {
           "type":"update",
           "path":"/access-points/access-point[hostname=link022-pi-ap]/radios/radio[id=1]/config/channel-width",
-          "val": "20"
+          "state_path":"/access-points/access-point[hostname=link022-pi-ap]/radios/radio[id=1]/state/channel-width",
+          "val":"20"
         }
       ]
     },
     {
-      "name":"Update Radio frequency.",
+      "name":"Update Radio frequency",
       "ops":[
         {
           "type":"update",
           "path":"/access-points/access-point[hostname=link022-pi-ap]/radios/radio[id=1]/config/operating-frequency",
-          "val": "FREQ_5GHZ"
+          "state_path":"/access-points/access-point[hostname=link022-pi-ap]/radios/radio[id=1]/state/operating-frequency",
+          "val":"FREQ_5GHZ"
         }
       ]
     },
     {
-      "name":"Update Radio channel-width.",
+      "name":"Update Radio channel-width",
       "ops":[
         {
           "type":"update",
           "path":"/access-points/access-point[hostname=link022-pi-ap]/radios/radio[id=1]/config/channel-width",
-          "val": "40"
+          "state_path":"/access-points/access-point[hostname=link022-pi-ap]/radios/radio[id=1]/state/channel-width",
+          "val":"40"
         }
       ]
     },
     {
-      "name":"Disable scanning on the Radio.",
+      "name":"Disable scanning on the Radio",
       "ops":[
         {
           "type":"update",
           "path":"/access-points/access-point[hostname=link022-pi-ap]/radios/radio[id=1]/config/scanning",
-          "val": "false"
+          "state_path":"/access-points/access-point[hostname=link022-pi-ap]/radios/radio[id=1]/state/scanning",
+          "val":"false"
         }
       ]
     },
     {
-      "name":"Disable broadcast filter on Guest SSID.",
+      "name":"Disable broadcast filter on Guest SSID",
       "ops":[
         {
           "type":"update",
           "path":"/access-points/access-point[hostname=link022-pi-ap]/ssids/ssid[name=Guest-Link022]/config/broadcast-filter",
-          "val": "false"
+          "state_path":"/access-points/access-point[hostname=link022-pi-ap]/ssids/ssid[name=Guest-Link022]/state/broadcast-filter",
+          "val":"false"
         }
       ]
     },
     {
-      "name":"Disable station-isolation on Guest SSID.",
+      "name":"Disable station-isolation on Guest SSID",
       "ops":[
         {
           "type":"update",
           "path":"/access-points/access-point[hostname=link022-pi-ap]/ssids/ssid[name=Guest-Link022]/config/station-isolation",
-          "val": "false"
+          "state_path":"/access-points/access-point[hostname=link022-pi-ap]/ssids/ssid[name=Guest-Link022]/state/station-isolation",
+          "val":"false"
         }
       ]
     },
     {
-      "name":"Change opmode of Guest SSID to WPA-Personal.",
+      "name":"Change opmode of Guest SSID to WPA-Personal",
       "ops":[
         {
           "type":"update",
           "path":"/access-points/access-point[hostname=link022-pi-ap]/ssids/ssid[name=Guest-Link022]/config/opmode",
-          "val": "WPA2_PERSONAL"
-        }
-      ]
-    },
-    {
-      "name":"Set a PSK for the Guest SSID.",
-      "ops":[
+          "state_path":"/access-points/access-point[hostname=link022-pi-ap]/ssids/ssid[name=Guest-Link022]/state/opmode",
+          "val":"WPA2_PERSONAL"
+        },
         {
           "type":"update",
           "path":"/access-points/access-point[hostname=link022-pi-ap]/ssids/ssid[name=Guest-Link022]/config/wpa2-psk",
-          "val": "testing123"
+          "state_path":"/access-points/access-point[hostname=link022-pi-ap]/ssids/ssid[name=Guest-Link022]/state/wpa2-psk",
+          "val":"testing123"
         }
       ]
     },
@@ -119,12 +125,12 @@
         {
           "type":"get",
           "path":"/access-points/access-point[hostname=link022-pi-ap]/ssids/ssid[name=Auth-Link022]/config/vlan-id",
-          "val": "300"
+          "val":"300"
         },
         {
           "type":"get",
           "path":"/access-points/access-point[hostname=link022-pi-ap]/ssids/ssid[name=Guest-Link022]/config/vlan-id",
-          "val": "200"
+          "val":"200"
         }
       ]
     }
