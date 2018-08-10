@@ -19,6 +19,7 @@ limitations under the License.
 package main
 
 import (
+	ctx "context"
 	"flag"
 	"fmt"
 	"net"
@@ -28,6 +29,7 @@ import (
 	"github.com/google/link022/agent/context"
 	"github.com/google/link022/agent/controller"
 	"github.com/google/link022/agent/gnmi"
+	"github.com/google/link022/agent/monitoring"
 	"github.com/google/link022/agent/syscmd"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
@@ -85,6 +87,10 @@ func main() {
 	if err != nil {
 		log.Exitf("Failed to create the GNMI server. Error: %v.", err)
 	}
+
+	// Start a goroutine to collect states periodically
+	backgroundContext := ctx.Background()
+	go monitoring.UpdateDeviceStatus(backgroundContext, gnmiServer)
 
 	// Start the GNMI server.
 	var opts []grpc.ServerOption
