@@ -16,15 +16,16 @@ import (
 )
 
 const (
-	testNanoTimeStamp   = 1529343009489648
-	testGNMIPrefix      = "/p1/p2[name=abc]/p3"
-	testGNMIPathInt     = "/a/b-b/c[id=0]/d/intval"
-	testGNMIPathFloat   = "/a/b-b/c[id=0]/d/floatval"
-	testGNMIPathString  = "/a/b-b/c[id=0]/d/stringval"
-	testGNMIPathArray   = "a/c/d[id=1]/e/array"
-	testMetricIntVal    = 100
-	testMetricDoubleVal = float32(1.1)
-	testMetricStringVal = "test_val"
+	testNanoTimeStamp    = 1529343009489648
+	testGNMIPrefix       = "/p1/p2[name=abc]/p3"
+	testGNMIPathInt      = "/a/b-b/c[id=0]/d/intval"
+	testGNMIPathFloat    = "/a/b-b/c[id=0]/d/floatval"
+	testGNMIPathString   = "/a/b-b/c[id=0]/d/stringval"
+	testGNMIPathArray    = "a/c/d[id=1]/e/array"
+	testGNMIPathIntArray = "a/c/d[id=1]/e/intarray"
+	testMetricIntVal     = 100
+	testMetricDoubleVal  = float32(1.1)
+	testMetricStringVal  = "test_val"
 )
 
 func newGNMINotification() *gpb.Notification {
@@ -53,6 +54,16 @@ func newGNMINotification() *gpb.Notification {
 		return nil
 	}
 
+	intArrayIntf := make([]interface{}, 3)
+	intArrayIntf[0] = testMetricIntVal
+	intArrayIntf[1] = testMetricIntVal
+	intArrayIntf[2] = testMetricIntVal
+	intArrayVal, err := value.FromScalar(intArrayIntf)
+	if err != nil {
+		log.Errorf("convert %v to GNMI value type failed", intArrayIntf)
+		return nil
+	}
+
 	prefixPath, err := xpath.ToGNMIPath(testGNMIPrefix)
 	if err != nil {
 		log.Errorf("convert %v to GNMI path failed", testGNMIPrefix)
@@ -78,6 +89,11 @@ func newGNMINotification() *gpb.Notification {
 		log.Errorf("convert %v to GNMI path failed", testGNMIPathArray)
 		return nil
 	}
+	gnmiPathIntArray, err := xpath.ToGNMIPath(testGNMIPathIntArray)
+	if err != nil {
+		log.Errorf("convert %v to GNMI path failed", testGNMIPathIntArray)
+		return nil
+	}
 	noti :=
 		&gpb.Notification{
 			Timestamp: testNanoTimeStamp,
@@ -98,6 +114,10 @@ func newGNMINotification() *gpb.Notification {
 				&gpb.Update{
 					Path: gnmiPathArray,
 					Val:  arrayVal,
+				},
+				&gpb.Update{
+					Path: gnmiPathIntArray,
+					Val:  intArrayVal,
 				},
 			},
 		}
@@ -147,7 +167,7 @@ func TestPrometheusHandler(t *testing.T) {
 		t.Errorf("Can't find string test metric in exposed metrics: got %v want %v",
 			responRecord.Body.String(), expectedStringVal)
 	}
-	expectedArrayVal := "# HELP p1:p2:p3a:c:d:e:array Array type gNMI metric\n" +
+	expectedArrayVal := "# HELP p1:p2:p3a:c:d:e:array string array type gNMI metric\n" +
 		"# TYPE p1:p2:p3a:c:d:e:array untyped\n" +
 		"p1:p2:p3a:c:d:e:array{array_index=\"0\",d_id=\"1\",metric_value=\"100\",p2_name=\"abc\"} 0\n" +
 		"p1:p2:p3a:c:d:e:array{array_index=\"1\",d_id=\"1\",metric_value=\"1.1\",p2_name=\"abc\"} 0\n" +
@@ -155,5 +175,14 @@ func TestPrometheusHandler(t *testing.T) {
 	if strings.Index(responRecord.Body.String(), expectedArrayVal) == -1 {
 		t.Errorf("Can't find string test metric in exposed metrics: got %v want %v",
 			responRecord.Body.String(), expectedArrayVal)
+	}
+	expectedIntArrayVal := "# HELP p1:p2:p3a:c:d:e:intarray int64 array type gNMI metric\n" +
+		"# TYPE p1:p2:p3a:c:d:e:intarray gauge\n" +
+		"p1:p2:p3a:c:d:e:intarray{array_index=\"0\",d_id=\"1\",p2_name=\"abc\"} 100\n" +
+		"p1:p2:p3a:c:d:e:intarray{array_index=\"1\",d_id=\"1\",p2_name=\"abc\"} 100\n" +
+		"p1:p2:p3a:c:d:e:intarray{array_index=\"2\",d_id=\"1\",p2_name=\"abc\"} 100\n"
+	if strings.Index(responRecord.Body.String(), expectedIntArrayVal) == -1 {
+		t.Errorf("Can't find string test metric in exposed metrics: got %v want %v",
+			responRecord.Body.String(), expectedIntArrayVal)
 	}
 }

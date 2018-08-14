@@ -2,7 +2,9 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"reflect"
 	"strings"
 	"sync"
 	"time"
@@ -23,6 +25,9 @@ const (
 	apStatsExportingDelay = 15 * time.Second
 	timeOut               = 10 * time.Second
 	statusPath            = "/"
+	// ArrayIndexLabel is the label used to indicate index in original array.
+	// This is the key of the label.
+	ArrayIndexLabel = "array_index"
 )
 
 // TargetState contain current state of the assigned ap device
@@ -129,6 +134,317 @@ func gNMIPathtoString(in *gpb.Path) (string, map[string]string) {
 	return path, labels
 }
 
+// check if all elements in input array have same type
+func checkSingleType(leafList []*gpb.TypedValue) bool {
+	if len(leafList) == 0 {
+		return true
+	}
+	for i := 1; i < len(leafList); i++ {
+		if reflect.TypeOf(leafList[i].Value) != reflect.TypeOf(leafList[0].Value) {
+			return false
+		}
+	}
+	return true
+}
+
+func typedValueToScalar(tv *gpb.TypedValue) (interface{}, error) {
+	var i interface{}
+	switch tv.Value.(type) {
+	case *gpb.TypedValue_DecimalVal,
+		*gpb.TypedValue_FloatVal,
+		*gpb.TypedValue_StringVal,
+		*gpb.TypedValue_IntVal,
+		*gpb.TypedValue_UintVal,
+		*gpb.TypedValue_BoolVal:
+		val, err := value.ToScalar(tv)
+		if err != nil {
+			log.Errorf("convert gNMI %T type to scalar type failed: %v", tv.Value, err)
+			return nil, err
+		}
+		i = val
+	case *gpb.TypedValue_LeaflistVal:
+		elems := tv.GetLeaflistVal().GetElement()
+		ss := make([]interface{}, len(elems))
+		if checkSingleType(elems) {
+			for x, e := range elems {
+				v, err := typedValueToScalar(e)
+				if err != nil {
+					return nil, fmt.Errorf("convert gNMI %T type to scalar type failed: %v", e.Value, err)
+				}
+				ss[x] = v
+			}
+		} else {
+			for x, e := range elems {
+				scalarEle, err := value.ToScalar(e)
+				if err != nil {
+					return nil, fmt.Errorf("convert gNMI %T type to scalar type failed: %v", e.Value, err)
+				}
+				stringVal := fmt.Sprint(scalarEle)
+				ss[x] = stringVal
+			}
+		}
+
+		i = ss
+	default:
+		return nil, fmt.Errorf("unsupported type %T", tv.Value)
+	}
+	return i, nil
+}
+
+func gNMIToPrometheusMetrics(noti *gpb.Notification) ([]prometheus.Metric, error) {
+	if noti == nil {
+		return nil, errors.New("no gNMI telemetry in input parameters")
+	}
+	metrics := []prometheus.Metric{}
+
+	prefixPath := ""
+	prefixLabels := make(map[string]string)
+	if noti.GetPrefix() != nil {
+		prefixPath, prefixLabels = gNMIPathtoString(noti.GetPrefix())
+	}
+	for _, update := range noti.GetUpdate() {
+		metricName, labels := gNMIPathtoString(update.GetPath())
+		metricName = prefixPath + metricName
+		labelKeys := []string{}
+		labelValues := []string{}
+		for k, v := range prefixLabels {
+			labelKeys = append(labelKeys, k)
+			labelValues = append(labelValues, v)
+		}
+		for k, v := range labels {
+			labelKeys = append(labelKeys, k)
+			labelValues = append(labelValues, v)
+		}
+
+		switch update.Val.Value.(type) {
+		case *gpb.TypedValue_StringVal,
+			*gpb.TypedValue_DecimalVal,
+			*gpb.TypedValue_FloatVal,
+			*gpb.TypedValue_IntVal,
+			*gpb.TypedValue_UintVal,
+			*gpb.TypedValue_BoolVal:
+			scalarVal, err := typedValueToScalar(update.Val)
+			if err != nil {
+				return nil, fmt.Errorf("failed value type conversion: %v", err)
+			}
+			switch scalarVal.(type) {
+			case string:
+				// Value in string type will be saved in a label.
+				labelKeys = append(labelKeys, "metric_value")
+				labelValues = append(labelValues, scalarVal.(string))
+				metricDesc := prometheus.NewDesc(
+					metricName,
+					"string type gNMI metric",
+					labelKeys,
+					nil,
+				)
+				metrics = append(metrics, prometheus.MustNewConstMetric(
+					metricDesc,
+					prometheus.UntypedValue,
+					0,
+					labelValues...,
+				))
+			case float32:
+				metricValue := scalarVal.(float32)
+				metricDesc := prometheus.NewDesc(
+					metricName,
+					"float32 type gNMI metric",
+					labelKeys,
+					nil,
+				)
+				metrics = append(metrics, prometheus.MustNewConstMetric(
+					metricDesc,
+					prometheus.GaugeValue,
+					float64(metricValue),
+					labelValues...,
+				))
+			case int64:
+				metricValue := scalarVal.(int64)
+				var maxFloat64, minFloat64 int64
+				maxFloat64 = 2 << 52
+				minFloat64 = -2 << 52
+				if metricValue < minFloat64 || metricValue > maxFloat64 {
+					log.Warning("Lose precision in converting int64 to float64")
+				}
+				metricDesc := prometheus.NewDesc(
+					metricName,
+					"int64 type gNMI metric",
+					labelKeys,
+					nil,
+				)
+				metrics = append(metrics, prometheus.MustNewConstMetric(
+					metricDesc,
+					prometheus.GaugeValue,
+					float64(metricValue),
+					labelValues...,
+				))
+			case bool:
+				metricDesc := prometheus.NewDesc(
+					metricName,
+					"bool type gNMI metric",
+					labelKeys,
+					nil,
+				)
+				boolValue := scalarVal.(bool)
+				var metricValue float64
+				if boolValue {
+					metricValue = 1
+				} else {
+					metricValue = 0
+				}
+				metrics = append(metrics, prometheus.MustNewConstMetric(
+					metricDesc,
+					prometheus.GaugeValue,
+					metricValue,
+					labelValues...,
+				))
+			case uint64:
+				metricValue := scalarVal.(uint64)
+				var maxFloat64 uint64
+				maxFloat64 = 2 << 52
+				if metricValue > maxFloat64 {
+					log.Warning("Lose precision in converting uint64 to float64")
+				}
+				metricDesc := prometheus.NewDesc(
+					metricName,
+					"uint64 type gNMI metric",
+					labelKeys,
+					nil,
+				)
+				metrics = append(metrics, prometheus.MustNewConstMetric(
+					metricDesc,
+					prometheus.GaugeValue,
+					float64(metricValue),
+					labelValues...,
+				))
+			default:
+				log.Error("Unexpected type, doesn't included in gNMI supported types")
+			}
+		case *gpb.TypedValue_LeaflistVal:
+			scalarVal, err := typedValueToScalar(update.Val)
+			if err != nil {
+				return nil, fmt.Errorf("failed value type conversion: %v", err)
+			}
+			intfArray := scalarVal.([]interface{})
+			if len(intfArray) == 0 {
+				continue
+			}
+			labelKeys = append(labelKeys, ArrayIndexLabel)
+			switch intfArray[0].(type) {
+			case string:
+				for idx, intf := range intfArray {
+					currentLabelValues := append(labelValues, fmt.Sprint(idx))
+					currentLabelKeys := append(labelKeys, "metric_value")
+					currentLabelValues = append(currentLabelValues, intf.(string))
+					metricDesc := prometheus.NewDesc(
+						metricName,
+						"string array type gNMI metric",
+						currentLabelKeys,
+						nil,
+					)
+					metrics = append(metrics, prometheus.MustNewConstMetric(
+						metricDesc,
+						prometheus.UntypedValue,
+						0,
+						currentLabelValues...,
+					))
+				}
+			case float32:
+				for idx, intf := range intfArray {
+					currentLabelValues := append(labelValues, fmt.Sprint(idx))
+					metricValue := intf.(float32)
+					metricDesc := prometheus.NewDesc(
+						metricName,
+						"float32 array type gNMI metric",
+						labelKeys,
+						nil,
+					)
+					metrics = append(metrics, prometheus.MustNewConstMetric(
+						metricDesc,
+						prometheus.GaugeValue,
+						float64(metricValue),
+						currentLabelValues...,
+					))
+				}
+
+			case int64:
+				for idx, intf := range intfArray {
+					currentLabelValues := append(labelValues, fmt.Sprint(idx))
+					metricValue := intf.(int64)
+					var maxFloat64, minFloat64 int64
+					maxFloat64 = 2 << 52
+					minFloat64 = -2 << 52
+					if metricValue < minFloat64 || metricValue > maxFloat64 {
+						log.Warning("Lose precision in converting int64 to float64")
+					}
+					metricDesc := prometheus.NewDesc(
+						metricName,
+						"int64 array type gNMI metric",
+						labelKeys,
+						nil,
+					)
+					metrics = append(metrics, prometheus.MustNewConstMetric(
+						metricDesc,
+						prometheus.GaugeValue,
+						float64(metricValue),
+						currentLabelValues...,
+					))
+				}
+			case bool:
+				for idx, intf := range intfArray {
+					currentLabelValues := append(labelValues, fmt.Sprint(idx))
+					boolValue := intf.(bool)
+					var metricValue float64
+					if boolValue {
+						metricValue = 1
+					} else {
+						metricValue = 0
+					}
+					metricDesc := prometheus.NewDesc(
+						metricName,
+						"bool array type gNMI metric",
+						labelKeys,
+						nil,
+					)
+					metrics = append(metrics, prometheus.MustNewConstMetric(
+						metricDesc,
+						prometheus.GaugeValue,
+						float64(metricValue),
+						currentLabelValues...,
+					))
+				}
+			case uint64:
+				for idx, intf := range intfArray {
+					currentLabelValues := append(labelValues, fmt.Sprint(idx))
+					metricValue := intf.(uint64)
+					var maxFloat64 uint64
+					maxFloat64 = 2 << 52
+					if metricValue > maxFloat64 {
+						log.Warning("Lose precision in converting uint64 to float64")
+					}
+					metricDesc := prometheus.NewDesc(
+						metricName,
+						"uint64 array type gNMI metric",
+						labelKeys,
+						nil,
+					)
+					metrics = append(metrics, prometheus.MustNewConstMetric(
+						metricDesc,
+						prometheus.GaugeValue,
+						float64(metricValue),
+						currentLabelValues...,
+					))
+				}
+			}
+		case *gpb.TypedValue_JsonIetfVal:
+			//TODO(tianyangz)
+		case *gpb.TypedValue_JsonVal:
+			//TODO(tianyangz)
+		}
+	}
+	return metrics, nil
+}
+
 // Describe export description for each fixed metrics. All YANG model's leaf node
 // metrics are dynamic, they shouldn't be described here.
 func (collector *APStateCollector) Describe(ch chan<- *prometheus.Desc) {
@@ -144,146 +460,12 @@ func (collector *APStateCollector) Describe(ch chan<- *prometheus.Desc) {
 func (collector *APStateCollector) Collect(ch chan<- prometheus.Metric) {
 
 	currentState := collector.state.currentState()
-	prefixPath := ""
-	prefixLabels := make(map[string]string)
-	if currentState.GetPrefix() != nil {
-		prefixPath, prefixLabels = gNMIPathtoString(currentState.GetPrefix())
-	}
-	for _, update := range currentState.GetUpdate() {
-		metricName, labels := gNMIPathtoString(update.GetPath())
-		metricName = prefixPath + metricName
-		labelKeys := []string{}
-		labelValues := []string{}
-		for k, v := range prefixLabels {
-			labelKeys = append(labelKeys, k)
-			labelValues = append(labelValues, v)
-		}
-		for k, v := range labels {
-			labelKeys = append(labelKeys, k)
-			labelValues = append(labelValues, v)
-		}
-
-		updateValue, err := value.ToScalar(update.GetVal())
-		if err != nil {
-			log.Errorf("Error converting gNMI TypeValue to scalar type: %v", err)
-			continue
-		}
-		switch updateValue.(type) {
-		case string:
-			// Value in string type will be saved in a label.
-			labelKeys = append(labelKeys, "metric_value")
-			labelValues = append(labelValues, updateValue.(string))
-			metricDesc := prometheus.NewDesc(
-				metricName,
-				"string type gNMI metric",
-				labelKeys,
-				nil,
-			)
-			ch <- prometheus.MustNewConstMetric(
-				metricDesc,
-				prometheus.UntypedValue,
-				0,
-				labelValues...,
-			)
-		case float32:
-			metricValue := updateValue.(float32)
-			metricDesc := prometheus.NewDesc(
-				metricName,
-				"float32 type gNMI metric",
-				labelKeys,
-				nil,
-			)
-			ch <- prometheus.MustNewConstMetric(
-				metricDesc,
-				prometheus.GaugeValue,
-				float64(metricValue),
-				labelValues...,
-			)
-		case int64:
-			metricValue := updateValue.(int64)
-			var maxFloat64, minFloat64 int64
-			maxFloat64 = 2 << 52
-			minFloat64 = -2 << 52
-			if metricValue < minFloat64 || metricValue > maxFloat64 {
-				log.Warning("Lose precision in converting int64 to float64")
-			}
-			metricDesc := prometheus.NewDesc(
-				metricName,
-				"int64 type gNMI metric",
-				labelKeys,
-				nil,
-			)
-			ch <- prometheus.MustNewConstMetric(
-				metricDesc,
-				prometheus.GaugeValue,
-				float64(metricValue),
-				labelValues...,
-			)
-		case bool:
-			metricDesc := prometheus.NewDesc(
-				metricName,
-				"bool type gNMI metric",
-				labelKeys,
-				nil,
-			)
-			boolValue := updateValue.(bool)
-			var metricValue float64
-			if boolValue {
-				metricValue = 1
-			} else {
-				metricValue = 0
-			}
-			ch <- prometheus.MustNewConstMetric(
-				metricDesc,
-				prometheus.GaugeValue,
-				metricValue,
-				labelValues...,
-			)
-		case uint64:
-			metricValue := updateValue.(uint64)
-			var maxFloat64 uint64
-			maxFloat64 = 2 << 52
-			if metricValue > maxFloat64 {
-				log.Warning("Lose precision in converting uint64 to float64")
-			}
-			metricDesc := prometheus.NewDesc(
-				metricName,
-				"uint64 type gNMI metric",
-				labelKeys,
-				nil,
-			)
-			ch <- prometheus.MustNewConstMetric(
-				metricDesc,
-				prometheus.GaugeValue,
-				float64(metricValue),
-				labelValues...,
-			)
-		case []interface{}:
-			// All elements in this slice will be saved in labels.
-			for idx, intf := range updateValue.([]interface{}) {
-				currentLabelKeys := append(labelKeys, "array_index")
-				currentLabelValues := append(labelValues, fmt.Sprint(idx))
-				currentLabelKeys = append(currentLabelKeys, "metric_value")
-				currentLabelValues = append(currentLabelValues, fmt.Sprint(intf))
-				metricDesc := prometheus.NewDesc(
-					metricName,
-					"Array type gNMI metric",
-					currentLabelKeys,
-					nil,
-				)
-				ch <- prometheus.MustNewConstMetric(
-					metricDesc,
-					prometheus.UntypedValue,
-					0,
-					currentLabelValues...,
-				)
-			}
-		case []byte:
-			log.Info("Receive bytes type metric. Discard it because it's not aim for Prometheus")
-		default:
-			log.Error("Unknown type, doesn't include in gNMI supported types")
-			continue
-		}
+	metrics, err := gNMIToPrometheusMetrics(currentState)
+	if err != nil {
+		log.Errorf("Error in converting telemetry to metrics: %v", err)
 	}
 
+	for _, m := range metrics {
+		ch <- m
+	}
 }
