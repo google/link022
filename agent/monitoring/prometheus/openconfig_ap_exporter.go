@@ -10,7 +10,10 @@ import (
 	"sync"
 	"time"
 
+	"github.com/openconfig/ygot/experimental/ygotutils"
+
 	"github.com/openconfig/gnmi/value"
+	"github.com/openconfig/ygot/ygot"
 
 	log "github.com/golang/glog"
 	"github.com/prometheus/client_golang/prometheus"
@@ -18,8 +21,10 @@ import (
 
 	"github.com/google/gnxi/utils/credentials"
 	"github.com/google/gnxi/utils/xpath"
+	"github.com/google/link022/generated/ocstruct"
 
 	gpb "github.com/openconfig/gnmi/proto/gnmi"
+	cpb "google.golang.org/genproto/googleapis/rpc/code"
 )
 
 const (
@@ -192,6 +197,33 @@ func typedValueToScalar(tv *gpb.TypedValue) (interface{}, error) {
 	return i, nil
 }
 
+// jsonIETFtoGNMINotification convert JSON_IETF encoded data to gNMI notifications.
+// nodePath is full path of this node (from root).
+func jsonIETFtoGNMINotifications(nodeJSON []byte, timeStamp int64, nodePath *gpb.Path) ([]*gpb.Notification, error) {
+	nodeTemp, stat := ygotutils.NewNode(reflect.TypeOf((*ocstruct.Device)(nil)), nodePath)
+	if stat.GetCode() != int32(cpb.Code_OK) {
+		return nil, fmt.Errorf("cannot create empty node with path %v: %v", nodePath, stat)
+	}
+	nodeStruct, ok := nodeTemp.(ygot.ValidatedGoStruct)
+	if !ok {
+		return nil, errors.New("node is not a ValidatedGoStruct")
+	}
+	if err := ocstruct.Unmarshal(nodeJSON, nodeStruct); err != nil {
+		return nil, fmt.Errorf("unmarshaling json data to config struct fails: %v", err)
+	}
+	if err := nodeStruct.Validate(); err != nil {
+		return nil, err
+	}
+	noti, err := ygot.TogNMINotifications(nodeStruct, timeStamp, ygot.GNMINotificationsConfig{
+		UsePathElem:    true,
+		PathElemPrefix: nodePath.GetElem(),
+	})
+	if err != nil {
+		return nil, fmt.Errorf("error in serializzing GoStruct to notiffications: %v", err)
+	}
+	return noti, nil
+}
+
 func gNMIToPrometheusMetrics(noti *gpb.Notification) ([]prometheus.Metric, error) {
 	if noti == nil {
 		return nil, errors.New("no gNMI telemetry in input parameters")
@@ -202,6 +234,9 @@ func gNMIToPrometheusMetrics(noti *gpb.Notification) ([]prometheus.Metric, error
 	prefixLabels := make(map[string]string)
 	if noti.GetPrefix() != nil {
 		prefixPath, prefixLabels = gNMIPathtoString(noti.GetPrefix())
+	}
+	if len(prefixPath) > 0 {
+		prefixPath = prefixPath + ":"
 	}
 	for _, update := range noti.GetUpdate() {
 		metricName, labels := gNMIPathtoString(update.GetPath())
@@ -438,7 +473,21 @@ func gNMIToPrometheusMetrics(noti *gpb.Notification) ([]prometheus.Metric, error
 				}
 			}
 		case *gpb.TypedValue_JsonIetfVal:
-			//TODO(tianyangz)
+			fullPath := update.GetPath()
+			if fullPath.GetElem() != nil && noti.GetPrefix().GetElem() != nil {
+				fullPath.Elem = append(fullPath.GetElem(), noti.GetPrefix().GetElem()...)
+			}
+			jsonIETFNoti, err := jsonIETFtoGNMINotifications(update.GetVal().GetJsonIetfVal(), noti.GetTimestamp(), fullPath)
+			if err != nil {
+				return nil, fmt.Errorf("Failed marshal JSON IETF into go struct: %v", err)
+			}
+			for _, ietfNoti := range jsonIETFNoti {
+				jsonIETFMetrics, err := gNMIToPrometheusMetrics(ietfNoti)
+				if err != nil {
+					return nil, fmt.Errorf("failed convert gNMI notification to prometheus metrics: %v", err)
+				}
+				metrics = append(metrics, jsonIETFMetrics...)
+			}
 		case *gpb.TypedValue_JsonVal:
 			var jsonValue interface{}
 			if err := json.Unmarshal(update.GetVal().GetJsonVal(), &jsonValue); err != nil {
