@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"reflect"
@@ -439,7 +440,45 @@ func gNMIToPrometheusMetrics(noti *gpb.Notification) ([]prometheus.Metric, error
 		case *gpb.TypedValue_JsonIetfVal:
 			//TODO(tianyangz)
 		case *gpb.TypedValue_JsonVal:
-			//TODO(tianyangz)
+			var jsonValue interface{}
+			if err := json.Unmarshal(update.GetVal().GetJsonVal(), &jsonValue); err != nil {
+				return nil, fmt.Errorf("failed unmarshal json bolb data: %v", err)
+			}
+			jsonNoti := &gpb.Notification{
+				Timestamp: noti.GetTimestamp(),
+				Prefix:    noti.GetPrefix(),
+				Update:    []*gpb.Update{},
+			}
+			if jsonValueMap, ok := jsonValue.(map[string]interface{}); ok {
+				for k, v := range jsonValueMap {
+					scalarVal, err := value.FromScalar(v)
+					if err != nil {
+						return nil, fmt.Errorf("failed convert json type data to gnmi type: %v", err)
+					}
+					nodePathElems := append([]*gpb.PathElem{}, update.GetPath().GetElem()...)
+					nodePathElems = append(nodePathElems, &gpb.PathElem{Name: k})
+					newUpdate := &gpb.Update{
+						Path: &gpb.Path{Elem: nodePathElems},
+						Val:  scalarVal,
+					}
+					jsonNoti.Update = append(jsonNoti.Update, newUpdate)
+				}
+			} else {
+				scalarVal, err := value.FromScalar(jsonValue)
+				if err != nil {
+					return nil, fmt.Errorf("failed convert json type data to gnmi type: %v", err)
+				}
+				newUpdate := &gpb.Update{
+					Path: update.GetPath(),
+					Val:  scalarVal,
+				}
+				jsonNoti.Update = append(jsonNoti.Update, newUpdate)
+			}
+			jsonMetrics, err := gNMIToPrometheusMetrics(jsonNoti)
+			if err != nil {
+				return nil, fmt.Errorf("failed convert JSON data to Murdock type data: %v", err)
+			}
+			metrics = append(metrics, jsonMetrics...)
 		}
 	}
 	return metrics, nil

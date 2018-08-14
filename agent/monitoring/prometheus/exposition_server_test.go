@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -23,6 +24,8 @@ const (
 	testGNMIPathString   = "/a/b-b/c[id=0]/d/stringval"
 	testGNMIPathArray    = "a/c/d[id=1]/e/array"
 	testGNMIPathIntArray = "a/c/d[id=1]/e/intarray"
+	testGNMIPathJSON     = "a/c/d[id=1]/e/json"
+	testGNMIPathJSONTree = "a/c/d[id=1]/e/jsontree"
 	testMetricIntVal     = 100
 	testMetricDoubleVal  = float32(1.1)
 	testMetricStringVal  = "test_val"
@@ -64,6 +67,21 @@ func newGNMINotification() *gpb.Notification {
 		return nil
 	}
 
+	jsonBolb, err := json.Marshal(testMetricDoubleVal)
+	if err != nil {
+		log.Errorf("convert %v to JSON bolb type failed: %v", testMetricDoubleVal, err)
+	}
+	jsonVal := &gpb.TypedValue{Value: &gpb.TypedValue_JsonVal{JsonVal: jsonBolb}}
+	jsonTree := make(map[string]interface{})
+	jsonTree["number1"] = testMetricDoubleVal
+	jsonTree["string"] = testMetricStringVal
+	jsonTree["number2"] = testMetricIntVal
+	jsonTreeBolb, err := json.Marshal(jsonTree)
+	if err != nil {
+		log.Errorf("convert %v to JSON bolb type failed: %v", jsonTree, err)
+	}
+	jsonTreeVal := &gpb.TypedValue{Value: &gpb.TypedValue_JsonVal{JsonVal: jsonTreeBolb}}
+
 	prefixPath, err := xpath.ToGNMIPath(testGNMIPrefix)
 	if err != nil {
 		log.Errorf("convert %v to GNMI path failed", testGNMIPrefix)
@@ -94,6 +112,16 @@ func newGNMINotification() *gpb.Notification {
 		log.Errorf("convert %v to GNMI path failed", testGNMIPathIntArray)
 		return nil
 	}
+	gnmiPathJSON, err := xpath.ToGNMIPath(testGNMIPathJSON)
+	if err != nil {
+		log.Errorf("convert %v to GNMI path failed", testGNMIPathJSON)
+		return nil
+	}
+	gnmiPathJSONTree, err := xpath.ToGNMIPath(testGNMIPathJSONTree)
+	if err != nil {
+		log.Errorf("convert %v to GNMI path failed", testGNMIPathJSONTree)
+		return nil
+	}
 	noti :=
 		&gpb.Notification{
 			Timestamp: testNanoTimeStamp,
@@ -118,6 +146,14 @@ func newGNMINotification() *gpb.Notification {
 				&gpb.Update{
 					Path: gnmiPathIntArray,
 					Val:  intArrayVal,
+				},
+				&gpb.Update{
+					Path: gnmiPathJSON,
+					Val:  jsonVal,
+				},
+				&gpb.Update{
+					Path: gnmiPathJSONTree,
+					Val:  jsonTreeVal,
 				},
 			},
 		}
@@ -184,5 +220,33 @@ func TestPrometheusHandler(t *testing.T) {
 	if strings.Index(responRecord.Body.String(), expectedIntArrayVal) == -1 {
 		t.Errorf("Can't find string test metric in exposed metrics: got %v want %v",
 			responRecord.Body.String(), expectedIntArrayVal)
+	}
+	expectedJSONVal := "# HELP p1:p2:p3a:c:d:e:json float32 type gNMI metric\n" +
+		"# TYPE p1:p2:p3a:c:d:e:json gauge\n" +
+		"p1:p2:p3a:c:d:e:json{d_id=\"1\",p2_name=\"abc\"} 1.1"
+	if strings.Index(responRecord.Body.String(), expectedJSONVal) == -1 {
+		t.Errorf("Can't find string test metric in exposed metrics: got %v want %v",
+			responRecord.Body.String(), expectedJSONVal)
+	}
+	expectedJSONTreeNumber1Val := "# HELP p1:p2:p3a:c:d:e:jsontree:number1 float32 type gNMI metric\n" +
+		"# TYPE p1:p2:p3a:c:d:e:jsontree:number1 gauge\n" +
+		"p1:p2:p3a:c:d:e:jsontree:number1{d_id=\"1\",p2_name=\"abc\"} 1.1"
+	if strings.Index(responRecord.Body.String(), expectedJSONTreeNumber1Val) == -1 {
+		t.Errorf("Can't find string test metric in exposed metrics: got %v want %v",
+			responRecord.Body.String(), expectedJSONTreeNumber1Val)
+	}
+	expectedJSONTreeNumber2Val := "# HELP p1:p2:p3a:c:d:e:jsontree:number2 float32 type gNMI metric\n" +
+		"# TYPE p1:p2:p3a:c:d:e:jsontree:number2 gauge\n" +
+		"p1:p2:p3a:c:d:e:jsontree:number2{d_id=\"1\",p2_name=\"abc\"} 100"
+	if strings.Index(responRecord.Body.String(), expectedJSONTreeNumber2Val) == -1 {
+		t.Errorf("Can't find string test metric in exposed metrics: got %v want %v",
+			responRecord.Body.String(), expectedJSONTreeNumber2Val)
+	}
+	expectedJSONTreeStringVal := " HELP p1:p2:p3a:c:d:e:jsontree:string string type gNMI metric\n" +
+		"# TYPE p1:p2:p3a:c:d:e:jsontree:string untyped\n" +
+		"p1:p2:p3a:c:d:e:jsontree:string{d_id=\"1\",metric_value=\"test_val\",p2_name=\"abc\"} 0"
+	if strings.Index(responRecord.Body.String(), expectedJSONTreeStringVal) == -1 {
+		t.Errorf("Can't find string test metric in exposed metrics: got %v want %v",
+			responRecord.Body.String(), expectedJSONTreeStringVal)
 	}
 }
