@@ -22,10 +22,10 @@ const (
 	systemClockTick    = 100
 	physicalMemoryPath = "/access-points/access-point[hostname=link022-pi-ap]/system/memory/state/physical"
 	cpuUsagePath       = "/access-points/access-point[hostname=link022-pi-ap]/system/cpus/cpu[index=$index]/state/total/instant"
-	channelPath        = "/access-points/access-point[hostname=link022-pi-ap]/radios/radio[id=$id]/channel"
-	widthPath          = "/access-points/access-point[hostname=link022-pi-ap]/radios/radio[id=$id]/channel-width"
-	frequencyPath      = "/access-points/access-point[hostname=link022-pi-ap]/radios/radio[id=$id]/operating-frequency"
-	txpowerPath        = "/access-points/access-point[hostname=link022-pi-ap]/radios/radio[id=$id]/transmit-power"
+	channelPath        = "/access-points/access-point[hostname=link022-pi-ap]/radios/radio[id=$id]/state/channel"
+	widthPath          = "/access-points/access-point[hostname=link022-pi-ap]/radios/radio[id=$id]/state/channel-width"
+	frequencyPath      = "/access-points/access-point[hostname=link022-pi-ap]/radios/radio[id=$id]/state/operating-frequency"
+	txpowerPath        = "/access-points/access-point[hostname=link022-pi-ap]/radios/radio[id=$id]/state/transmit-power"
 	selfMemPath        = "/access-points/access-point[hostname=link022-pi-ap]/system/processes/process[pid=$pid]/state/memory-usage"
 	selfCPUPath        = "/access-points/access-point[hostname=link022-pi-ap]/system/processes/process[pid=$pid]/state/cpu-utilization"
 )
@@ -46,7 +46,7 @@ func UpdateDeviceStatus(bkgdContext context.Context, gnmiServer *gnmi.Server) {
 			log.Errorf("Error in updating memory info: %v", err)
 		}
 		if err := updateCPUInfo(gnmiServer); err != nil {
-			log.Errorf("Error in updating memory info: %v", err)
+			log.Errorf("Error in updating CPU info: %v", err)
 		}
 		if err := updateAPInfo(gnmiServer); err != nil {
 			log.Errorf("Error in updating AP info: %v", err)
@@ -122,7 +122,7 @@ func updateCPUInfo(s *gnmi.Server) error {
 		return err
 	}
 	time.Sleep(1 * time.Second)
-	b1, err := ioutil.ReadFile("/proc/%v/stat")
+	b1, err := ioutil.ReadFile(filePath)
 	if err != nil {
 		log.Errorf("failed open %v: %v", filePath, err)
 		return err
@@ -161,6 +161,73 @@ func updateCPUInfo(s *gnmi.Server) error {
 }
 
 func updateAPInfo(s *gnmi.Server) error {
-	//(TODO:tianyangz):add implementation
+	// this will fecth all wireless network interface info on the machine,
+	// some of them may not configured or controled by link022.
+	// only fecth interfaces taht have valid ssid
+	apInfoString, err := cmdRunner.GetAPStates()
+	if err != nil {
+		return err
+	}
+	// If one interface has multiple ssid, match the first one
+	apRegex := regexp.MustCompile("phy#(\\d)+[\\S\\s]*?ssid\\s([\\w-_]+)[\\S\\s]*?channel\\s([\\d]+)[\\S\\s]*?width:\\s([\\d]+)[\\S\\s]*?txpower\\s([\\d]+)")
+	apInfos := apRegex.FindAllStringSubmatch(apInfoString, -1)
+	for _, apInfo := range apInfos {
+		phyIDStr := apInfo[1]
+		channelStr := apInfo[3]
+		widthStr := apInfo[4]
+		txpowerStr := apInfo[5]
+
+		p := strings.Replace(channelPath, "$id", phyIDStr, 1)
+		pbPath, err := xpath.ToGNMIPath(p)
+		if err != nil {
+			log.Errorf("convert %v to GNMI path failed: %v", p, err)
+			return err
+		}
+		channel, err := strconv.ParseInt(channelStr, 10, 8)
+		if err != nil {
+			log.Errorf("failed convert string to int: %v", err)
+			return err
+		}
+		stateOpt := gnmi.GNXIStateOptGenerator(pbPath, uint8(channel), gnmi.InternalUpdateState)
+		if err = s.InternalUpdate(stateOpt); err != nil {
+			log.Errorf("update state failed: %v", err)
+			return err
+		}
+
+		p = strings.Replace(widthPath, "$id", phyIDStr, 1)
+		pbPath, err = xpath.ToGNMIPath(p)
+		if err != nil {
+			log.Errorf("convert %v to GNMI path failed: %v", p, err)
+			return err
+		}
+		width, err := strconv.ParseInt(widthStr, 10, 8)
+		if err != nil {
+			log.Errorf("failed convert string to int: %v", err)
+			return err
+		}
+		stateOpt = gnmi.GNXIStateOptGenerator(pbPath, uint8(width), gnmi.InternalUpdateState)
+		if err = s.InternalUpdate(stateOpt); err != nil {
+			log.Errorf("update state failed: %v", err)
+			return err
+		}
+
+		p = strings.Replace(txpowerPath, "$id", phyIDStr, 1)
+		pbPath, err = xpath.ToGNMIPath(p)
+		if err != nil {
+			log.Errorf("convert %v to GNMI path failed: %v", p, err)
+			return err
+		}
+		txpower, err := strconv.ParseInt(txpowerStr, 10, 8)
+		if err != nil {
+			log.Errorf("failed convert string to int: %v", err)
+			return err
+		}
+		stateOpt = gnmi.GNXIStateOptGenerator(pbPath, uint8(txpower), gnmi.InternalUpdateState)
+		if err = s.InternalUpdate(stateOpt); err != nil {
+			log.Errorf("update state failed: %v", err)
+			return err
+		}
+	}
+
 	return nil
 }

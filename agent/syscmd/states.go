@@ -15,11 +15,9 @@ limitations under the License.
 
 package syscmd
 
-import log "github.com/golang/glog"
-
 // GetAPStates get ap states on target
 func (r *CommandRunner) GetAPStates() (string, error) {
-	log.Info("fetech latest AP states.")
+	//log.Info("fetch latest AP states.")
 	wlanInfo, err := r.ExecCommand(true, "iw", "dev")
 	if err != nil {
 		return "", err
