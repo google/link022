@@ -10,8 +10,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/google/gnxi/utils"
-
 	"github.com/openconfig/ygot/experimental/ygotutils"
 
 	"github.com/openconfig/gnmi/value"
@@ -88,7 +86,6 @@ func monitoringAPStats(ctx context.Context, targetAddress string, targetName str
 		if err != nil {
 			log.Errorf("Get failed: %v", err)
 		}
-		utils.PrintProto(getResponse)
 		var newestID int
 		var newestTimeStamp int64
 		newestTimeStamp = 0
