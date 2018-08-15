@@ -122,7 +122,7 @@ func updateCPUInfo(s *gnmi.Server) error {
 		return err
 	}
 	time.Sleep(1 * time.Second)
-	b1, err := ioutil.ReadFile("/proc/stat")
+	b1, err := ioutil.ReadFile("/proc/%v/stat")
 	if err != nil {
 		log.Errorf("failed open %v: %v", filePath, err)
 		return err
@@ -142,7 +142,9 @@ func updateCPUInfo(s *gnmi.Server) error {
 		log.Errorf("failed convert string to int: %v", err)
 		return err
 	}
-	cpuUtil := (up1 - up0) / systemClockTick
+	cpuinfo, err := ioutil.ReadFile("/proc/cpuinfo")
+	cpuCount := strings.Count(string(cpuinfo), "processor")
+	cpuUtil := (up1 - up0) / (systemClockTick * int64(cpuCount))
 	p := strings.Replace(selfCPUPath, "$pid", spid, 1)
 	pbPath, err := xpath.ToGNMIPath(p)
 	if err != nil {

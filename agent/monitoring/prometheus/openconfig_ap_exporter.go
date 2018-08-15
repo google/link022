@@ -10,6 +10,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/google/gnxi/utils"
+
 	"github.com/openconfig/ygot/experimental/ygotutils"
 
 	"github.com/openconfig/gnmi/value"
@@ -78,14 +80,15 @@ func monitoringAPStats(ctx context.Context, targetAddress string, targetName str
 		pathList = append(pathList, gpbPath)
 
 		getRequest := &gpb.GetRequest{
-			Path: pathList,
-			//Encoding: gpb.Encoding(encoding),
+			Path:     pathList,
+			Encoding: gpb.Encoding(gpb.Encoding_JSON_IETF),
 		}
 
 		getResponse, err := cli.Get(ctx, getRequest)
 		if err != nil {
 			log.Errorf("Get failed: %v", err)
 		}
+		utils.PrintProto(getResponse)
 		var newestID int
 		var newestTimeStamp int64
 		newestTimeStamp = 0
@@ -212,7 +215,7 @@ func jsonIETFtoGNMINotifications(nodeJSON []byte, timeStamp int64, nodePath *gpb
 		return nil, fmt.Errorf("unmarshaling json data to config struct fails: %v", err)
 	}
 	if err := nodeStruct.Validate(); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed validate output go struct: %v", err)
 	}
 	noti, err := ygot.TogNMINotifications(nodeStruct, timeStamp, ygot.GNMINotificationsConfig{
 		UsePathElem:    true,
@@ -500,6 +503,9 @@ func gNMIToPrometheusMetrics(noti *gpb.Notification) ([]prometheus.Metric, error
 			}
 			if jsonValueMap, ok := jsonValue.(map[string]interface{}); ok {
 				for k, v := range jsonValueMap {
+					if reflect.ValueOf(v).Kind() == reflect.Map {
+						return nil, errors.New("nested json is not supported")
+					}
 					scalarVal, err := value.FromScalar(v)
 					if err != nil {
 						return nil, fmt.Errorf("failed convert json type data to gnmi type: %v", err)
