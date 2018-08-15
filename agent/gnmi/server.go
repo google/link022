@@ -30,11 +30,8 @@ import (
 
 	log "github.com/golang/glog"
 	pb "github.com/openconfig/gnmi/proto/gnmi"
-	"github.com/openconfig/ygot/experimental/ygotutils"
-	"github.com/openconfig/ygot/util"
 	"github.com/openconfig/ygot/ygot"
 	"github.com/openconfig/ygot/ytypes"
-	cpb "google.golang.org/genproto/googleapis/rpc/code"
 )
 
 const (
@@ -127,42 +124,14 @@ func InternalUpdateState(path *pb.Path, val interface{}, config ygot.ValidatedGo
 		return errors.New("target node is not state node")
 	}
 
-	nodePathName := path.GetElem()[len(path.GetElem())-1].GetName()
-	parentPath := &pb.Path{
-		Elem:   path.Elem[:len(path.GetElem())-1],
-		Target: path.GetTarget(),
-		Origin: path.GetOrigin(),
-	}
-	parentNode, _, err := ytypes.GetOrCreateNode(ocstruct.SchemaTree["Device"], config, parentPath)
+	node, _, err := ytypes.GetOrCreateNode(ocstruct.SchemaTree["Device"], config, path)
 	if err != nil {
-		return fmt.Errorf("failed retrive parent node of target node: %v", err)
+		return fmt.Errorf("failed retrive target node: %v", err)
 	}
 
-	emptyNode, stat := ygotutils.NewNode(reflect.TypeOf((*ocstruct.Device)(nil)), path)
-	if stat.GetCode() != int32(cpb.Code_OK) {
-		return fmt.Errorf("path %v is not found in the config structure: %v", path, stat)
+	if reflect.ValueOf(node).Kind() != reflect.Ptr {
+		return fmt.Errorf("type of node is %v, not go struct pointer", reflect.ValueOf(node).Kind())
 	}
-	_, ok := emptyNode.(ygot.ValidatedGoStruct)
-	if ok {
-		return fmt.Errorf("Update JSON IETF state is not supported")
-	}
-
-	if reflect.ValueOf(parentNode).Kind() != reflect.Ptr {
-		return fmt.Errorf("type of parent node is %v, not go struct pointer", reflect.ValueOf(parentNode).Kind())
-	}
-	parentType := reflect.TypeOf(reflect.ValueOf(parentNode).Elem().Interface())
-	fieldName := ""
-	for i := 0; i < parentType.NumField(); i++ {
-		pathTag := parentType.Field(i).Tag.Get("path")
-		if strings.Compare(nodePathName, pathTag) == 0 {
-			fieldName = parentType.Field(i).Name
-		}
-	}
-	if len(fieldName) == 0 {
-		return fmt.Errorf("path %v is not found in the config structure", path)
-	}
-	if err := util.UpdateField(parentNode, fieldName, val); err != nil {
-		return fmt.Errorf("failed update state: %v", err)
-	}
+	reflect.ValueOf(node).Elem().Set(reflect.ValueOf(val))
 	return nil
 }
