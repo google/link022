@@ -299,6 +299,7 @@ func TestPrometheusHandler(t *testing.T) {
 		t.Errorf("Can't find string test metric in exposed metrics: got %v want %v",
 			responRecord.Body.String(), expectedJSONTreeStringVal)
 	}
+	prometheus.Unregister(gnmiExport)
 }
 
 // TestPrometheusHandlerJSONIETF will test HTTP handler of this Prometheus exporter.
@@ -386,4 +387,5 @@ func TestPrometheusHandlerJSONIETF(t *testing.T) {
 		t.Errorf("Can't find string test metric in exposed metrics: got %v want %v",
 			responRecord.Body.String(), expectedJSONIETFVal)
 	}
+	prometheus.Unregister(gnmiExport)
 }
