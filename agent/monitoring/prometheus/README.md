@@ -23,10 +23,10 @@ go get -t ./...
 go build exposition_server.go openconfig_ap_exporter.go
 ```
 
-This command will generate binary file named exposition_server
+This command will generate binary file named exposition_server.  
 
 ### Start Exporter
-Run the exporter binary. It takes two categories of input parameters:
+Run the exporter binary. It takes three categories of input parameters:  
 
 1. gNMI client certs config:
     * ca: CA certificate file
@@ -51,3 +51,33 @@ Here is one example:
 ```
 
 Note: The default location of exporter log file is "/tmp/exposition_server.INFO"
+
+## Monitoring In Prometheus
+
+Follow steps below to set up Prometheus and monitoring AP status.  
+
+### Prometheus Getting Started
+
+Download [Prometheus](https://prometheus.io/download/). Follow official Prometheus [tutorial](https://prometheus.io/docs/prometheus/latest/getting_started/) to learn how to configure and start it.
+
+### Configuring Prometheus to monitor AP
+
+If exposition server is listening on 127.0.0.1:8080  
+Save the following basic Prometheus configuration as a file named prometheus.yml
+
+```
+global:
+  scrape_interval:     15s # Exposition server sends gNMI request every 15 seconds.
+
+scrape_configs:
+  # The job name is added as a label `job=<job_name>` to any timeseries scraped from this config.
+  - job_name: 'link022-pi-ap'
+    static_configs:
+      - targets: ['127.0.0.1:8080']
+```
+
+### Start Prometheus
+
+Start Prometheus according to its official tutorial.  
+By default, Prometheus admin page is localhost:9090.
+You can see all exported AP status metrics in that page.
