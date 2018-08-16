@@ -32,7 +32,7 @@ const (
 
 var cmdRunner = syscmd.Runner()
 
-// UpdateDeviceStatus peroidically collect AP device stats
+// UpdateDeviceStatus periodically collect AP device stats
 // and update their corresponding nodes in OpenConfig Model tree.
 func UpdateDeviceStatus(bkgdContext context.Context, gnmiServer *gnmi.Server) {
 	for {
@@ -143,6 +143,10 @@ func updateCPUInfo(s *gnmi.Server) error {
 		return err
 	}
 	cpuinfo, err := ioutil.ReadFile("/proc/cpuinfo")
+	if err != nil {
+		log.Errorf("failed open %v: %v", "/proc/cpuinfo", err)
+		return err
+	}
 	cpuCount := strings.Count(string(cpuinfo), "processor")
 	cpuUtil := (up1 - up0) / (systemClockTick * int64(cpuCount))
 	p := strings.Replace(selfCPUPath, "$pid", spid, 1)
@@ -162,8 +166,8 @@ func updateCPUInfo(s *gnmi.Server) error {
 
 func updateAPInfo(s *gnmi.Server) error {
 	// this will fecth all wireless network interface info on the machine,
-	// some of them may not configured or controled by link022.
-	// only fecth interfaces taht have valid ssid
+	// some of them may not configured or controlled by link022.
+	// only fecth interfaces that have valid ssid
 	apInfoString, err := cmdRunner.GetAPStates()
 	if err != nil {
 		return err

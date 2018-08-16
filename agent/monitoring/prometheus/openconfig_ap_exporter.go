@@ -75,6 +75,11 @@ func monitoringAPStats(ctx context.Context, targetAddress string, targetName str
 		}
 		var pathList []*gpb.Path
 		gpbPath, err := xpath.ToGNMIPath(statusPath)
+		if err != nil {
+			log.Errorf("Failed convert %v to gNMI path: %v", statusPath, err)
+			log.Errorf("No valid path to fetch AP status, monitoring goroutine exited")
+			return
+		}
 		pathList = append(pathList, gpbPath)
 
 		getRequest := &gpb.GetRequest{
@@ -84,7 +89,7 @@ func monitoringAPStats(ctx context.Context, targetAddress string, targetName str
 
 		getResponse, err := cli.Get(ctx, getRequest)
 		if err != nil {
-			log.Errorf("Get failed: %v", err)
+			log.Errorf("gNMI Get failed: %v", err)
 		}
 		var newestID int
 		var newestTimeStamp int64

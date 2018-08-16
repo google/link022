@@ -165,31 +165,31 @@ func newGNMINotification() []*gpb.Notification {
 			Timestamp: testNanoTimeStamp,
 			Prefix:    prefixPath,
 			Update: []*gpb.Update{
-				&gpb.Update{
+				{
 					Path: gnmiPathInt,
 					Val:  intVal,
 				},
-				&gpb.Update{
+				{
 					Path: gnmiPathFloat,
 					Val:  floatVal,
 				},
-				&gpb.Update{
+				{
 					Path: gnmiPathString,
 					Val:  stringVal,
 				},
-				&gpb.Update{
+				{
 					Path: gnmiPathArray,
 					Val:  arrayVal,
 				},
-				&gpb.Update{
+				{
 					Path: gnmiPathIntArray,
 					Val:  intArrayVal,
 				},
-				&gpb.Update{
+				{
 					Path: gnmiPathJSON,
 					Val:  jsonVal,
 				},
-				&gpb.Update{
+				{
 					Path: gnmiPathJSONTree,
 					Val:  jsonTreeVal,
 				},
@@ -200,7 +200,7 @@ func newGNMINotification() []*gpb.Notification {
 			Timestamp: testNanoTimeStamp,
 			Prefix:    nil,
 			Update: []*gpb.Update{
-				&gpb.Update{
+				{
 					Path: gnmiPathJSONIETF,
 					Val:  jsonIETFVal,
 				},
@@ -210,7 +210,7 @@ func newGNMINotification() []*gpb.Notification {
 }
 
 // TestPrometheusHandler will test HTTP handler of this Prometheus exporter.
-// Because exporter will also expose some runtime infomation, this test only
+// Because exporter will also expose some runtime information, this test only
 // check input test metrics.
 func TestPrometheusHandler(t *testing.T) {
 	notis := newGNMINotification()
