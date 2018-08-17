@@ -48,17 +48,6 @@
       ]
     },
     {
-      "name":"Update Radio frequency",
-      "ops":[
-        {
-          "type":"update",
-          "path":"/access-points/access-point[hostname=link022-pi-ap]/radios/radio[id=1]/config/operating-frequency",
-          "state_path":"/access-points/access-point[hostname=link022-pi-ap]/radios/radio[id=1]/state/operating-frequency",
-          "val":"FREQ_5GHZ"
-        }
-      ]
-    },
-    {
       "name":"Update Radio channel-width",
       "ops":[
         {
@@ -99,6 +88,17 @@
           "path":"/access-points/access-point[hostname=link022-pi-ap]/ssids/ssid[name=Guest-Link022]/config/station-isolation",
           "state_path":"/access-points/access-point[hostname=link022-pi-ap]/ssids/ssid[name=Guest-Link022]/state/station-isolation",
           "val":"false"
+        }
+      ]
+    },
+    {
+      "name":"Update SSID frequency",
+      "ops":[
+        {
+          "type":"update",
+          "path":"/access-points/access-point[hostname=link022-pi-ap]/ssids/ssid[name=Guest-Link022]/config/operating-frequency",
+          "state_path":"/access-points/access-point[hostname=link022-pi-ap]/ssids/ssid[name=Guest-Link022]/state/operating-frequency",
+          "val":"FREQ_5GHZ"
         }
       ]
     },
