@@ -37,22 +37,10 @@
     "radio":[
       {
         "config":{
-          "channel":157,
-          "channel-width":40,
-          "dca":false,
-          "enabled":true,
-          "id":0,
-          "operating-frequency":"openconfig-wifi-types:FREQ_5GHZ",
-          "scanning":false,
-          "scanning-defer-traffic":true,
-          "transmit-power":9
-        },
-        "id":0
-      },
-      {
-        "config":{
           "operating-frequency":"openconfig-wifi-types:FREQ_2GHZ",
           "channel-width":20,
+          "dca":false,
+          "dtp":false,
           "transmit-power":3,
           "id":1,
           "channel":6
@@ -65,34 +53,55 @@
     "ssid":[
       {
         "config":{
-          "operating-frequency":"openconfig-wifi-types:FREQ_2GHZ",
+          "qbss-load":true,
+          "dva":true,
+          "station-isolation":true,
+          "operating-frequency":"openconfig-wifi-types:FREQ_2_5_GHZ",
           "name":"Auth-Link022",
           "vlan-id":300,
+          "dot11k":true,
+          "supported-data-rates":[
+            "openconfig-wifi-types:RATE_36MB",
+            "openconfig-wifi-types:RATE_48MB",
+            "openconfig-wifi-types:RATE_54MB"
+          ],
+          "basic-data-rates":[
+            "openconfig-wifi-types:RATE_36MB",
+            "openconfig-wifi-types:RATE_48MB",
+            "openconfig-wifi-types:RATE_54MB"
+          ],
+          "broadcast-filter":true,
           "enabled":true,
           "server-group":"freeradius",
+          "csa":true,
+          "hidden":false,
           "opmode":"WPA2_ENTERPRISE"
         },
         "name":"Auth-Link022"
-      }
-    ]
-  },
-  "openconfig-access-points:assigned-ap-managers":{
-    "ap-manager":[
-      {
-        "config":{
-          "ap-manager-ipv4-address":"192.168.1.2",
-          "id":"primary",
-          "fqdn":"primary-manager.example.com"
-        },
-        "id":"primary"
       },
       {
         "config":{
-          "ap-manager-ipv4-address":"192.168.2.2",
-          "id":"secondary",
-          "fqdn":"secondary-manager.example.com"
+          "advertise-apname":true,
+          "basic-data-rates":[
+            "openconfig-wifi-types:RATE_11MB",
+            "openconfig-wifi-types:RATE_24MB"
+          ],
+          "broadcast-filter":true,
+          "csa":false,
+          "dot11k":false,
+          "dva":false,
+          "enabled":true,
+          "hidden":false,
+          "name":"Guest-Link022",
+          "operating-frequency":"openconfig-wifi-types:FREQ_2_5_GHZ",
+          "opmode":"OPEN",
+          "supported-data-rates":[
+            "openconfig-wifi-types:RATE_11MB",
+            "openconfig-wifi-types:RATE_24MB"
+          ],
+          "vlan-id":200
         },
-        "id":"secondary"
+        "name":"Guest-Link022"
       }
     ]
   }
