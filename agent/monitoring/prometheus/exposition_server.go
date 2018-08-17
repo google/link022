@@ -12,7 +12,7 @@ import (
 
 var (
 	targetAddr = flag.String("target_addr", "localhost:10161", "The target address in the format of host:port")
-	targetName = flag.String("target_name", "hostname.com", "The target name use to verify the hostname returned by TLS handshake")
+	targetName = flag.String("target_name", "hostname.com", "The target name used to verify the hostname returned by TLS handshake")
 	listenAddr = flag.String("listen_addr", "localhost:8080", "The address to listen on for HTTP requests.")
 )
 

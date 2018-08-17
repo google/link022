@@ -1,6 +1,6 @@
 # OpenConfig Telemetry Exporter (Prometheus)
 
-This directory contains a exporter that periodically collects AP's info via gNMI and exposes converted metrics to a web page. Prometheus can monitor AP's status by scrape that web page.
+This directory contains an exporter that periodically collects AP's info via gNMI and exposes converted metrics to a web page. Prometheus can monitor AP's status by scraping that web page.
 
 ## Get Started
 
@@ -8,7 +8,7 @@ Follow steps below to set up environment and start exposition server
 
 ### Prerequisites
 
-Dolnload entire Link022 repository.  
+Download entire Link022 repository.  
 Install golang 1.10+ (get it from: https://golang.org/doc/install#install)  
 Install dependencies:  
 Change directory in terminal to this folder, then run below command.
