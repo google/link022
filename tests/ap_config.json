@@ -37,9 +37,24 @@
     "radio":[
       {
         "config":{
+          "channel":157,
+          "channel-width":40,
+          "dca":false,
+          "enabled":true,
+          "id":0,
+          "operating-frequency":"openconfig-wifi-types:FREQ_5GHZ",
+          "scanning":false,
+          "scanning-defer-traffic":true,
+          "transmit-power":9
+        },
+        "id":0
+      },
+      {
+        "config":{
           "operating-frequency":"openconfig-wifi-types:FREQ_2GHZ",
           "channel-width":20,
           "dca":false,
+          "enabled":true,
           "dtp":false,
           "transmit-power":3,
           "id":1,
@@ -56,7 +71,7 @@
           "qbss-load":true,
           "dva":true,
           "station-isolation":true,
-          "operating-frequency":"openconfig-wifi-types:FREQ_2_5_GHZ",
+          "operating-frequency":"openconfig-wifi-types:FREQ_2GHZ",
           "name":"Auth-Link022",
           "vlan-id":300,
           "dot11k":true,
@@ -93,7 +108,7 @@
           "enabled":true,
           "hidden":false,
           "name":"Guest-Link022",
-          "operating-frequency":"openconfig-wifi-types:FREQ_2_5_GHZ",
+          "operating-frequency":"openconfig-wifi-types:FREQ_2GHZ",
           "opmode":"OPEN",
           "supported-data-rates":[
             "openconfig-wifi-types:RATE_11MB",

@@ -37,13 +37,27 @@
     "radio":[
       {
         "config":{
+          "channel":157,
+          "channel-width":40,
+          "dca":false,
+          "enabled":true,
+          "id":0,
+          "operating-frequency":"openconfig-wifi-types:FREQ_5GHZ",
+          "scanning":false,
+          "scanning-defer-traffic":true,
+          "transmit-power":9
+        },
+        "id":0
+      },
+      {
+        "config":{
           "operating-frequency":"openconfig-wifi-types:FREQ_2GHZ",
           "channel-width":20,
           "transmit-power":3,
-          "id":0,
+          "id":1,
           "channel":6
         },
-        "id":0
+        "id":1
       }
     ]
   },
