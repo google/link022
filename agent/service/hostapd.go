@@ -37,6 +37,7 @@ interface=%s
 driver=nl80211
 hw_mode=%s
 channel=%d
+ctrl_interface=/var/run/hostapd
 
 `
 

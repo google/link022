@@ -17,16 +17,21 @@ limitations under the License.
 package gnmi
 
 import (
+	"errors"
+	"fmt"
 	"io/ioutil"
 	"os"
 	"path"
 	"reflect"
+	"strings"
 
 	"github.com/google/gnxi/gnmi"
 	"github.com/google/link022/generated/ocstruct"
 
 	log "github.com/golang/glog"
 	pb "github.com/openconfig/gnmi/proto/gnmi"
+	"github.com/openconfig/ygot/ygot"
+	"github.com/openconfig/ygot/ytypes"
 )
 
 const (
@@ -47,6 +52,8 @@ var (
 type Server struct {
 	*gnmi.Server
 }
+
+type serverStateOperator func(path *pb.Path, val interface{}, config ygot.ValidatedGoStruct) error
 
 // NewServer creates a GNMI server.
 func NewServer() (*Server, error) {
@@ -91,4 +98,40 @@ func loadExistingConfigContent() ([]byte, error) {
 
 	log.Info("Loaded existing configuration.")
 	return existingConfigContent, nil
+}
+
+// GNXIStateOptGenerator decorate a given function to a gNXI state operator function
+func GNXIStateOptGenerator(path *pb.Path, val interface{}, stateOpt serverStateOperator) func(config ygot.ValidatedGoStruct) error {
+	fp := func(config ygot.ValidatedGoStruct) error {
+		return stateOpt(path, val, config)
+	}
+	return fp
+}
+
+// InternalUpdateState update state node in Server config. When updating,
+// call server's InternalUpdate method and send this function as parameter.
+// The type of val must exactly matchs node's type.
+func InternalUpdateState(path *pb.Path, val interface{}, config ygot.ValidatedGoStruct) error {
+	checkStateNode := false
+	for _, i := range path.GetElem() {
+		if strings.Compare(i.GetName(), "state") == 0 {
+			checkStateNode = true
+			break
+		}
+	}
+	if !checkStateNode {
+		log.Error("failed update state: target node is not state node")
+		return errors.New("target node is not state node")
+	}
+
+	node, _, err := ytypes.GetOrCreateNode(ocstruct.SchemaTree["Device"], config, path)
+	if err != nil {
+		return fmt.Errorf("failed retrive target node: %v", err)
+	}
+
+	if reflect.ValueOf(node).Kind() != reflect.Ptr {
+		return fmt.Errorf("type of node is %v, not go struct pointer", reflect.ValueOf(node).Kind())
+	}
+	reflect.ValueOf(node).Elem().Set(reflect.ValueOf(val))
+	return nil
 }
