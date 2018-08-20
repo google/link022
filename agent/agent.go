@@ -89,6 +89,7 @@ func main() {
 	}
 
 	// Start a goroutine to collect states periodically
+	// Monitoing service is disabled because it has a bug that causes internal OpenConfig model being invalid.
 	//backgroundContext := ctx.Background()
 	//go monitoring.UpdateDeviceStatus(backgroundContext, gnmiServer)
 
