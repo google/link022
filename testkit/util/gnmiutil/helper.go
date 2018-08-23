@@ -156,7 +156,30 @@ func ValEqual(gnmiPath *pb.Path, actual *pb.TypedValue, expected *pb.TypedValue)
 }
 
 func jsonValEquals(actual, expected interface{}) error {
-	// Both are json blob.
+	// Both are JSON array.
+	actualJSONArr, okA := actual.([]interface{})
+	expectedJSONArr, okE := expected.([]interface{})
+	if okA && okE {
+		if len(actualJSONArr) != len(expectedJSONArr) {
+			return fmt.Errorf("array length no equal, actual = %v, expected = %v", actual, expected)
+		}
+
+		for _, expectedElem := range expectedJSONArr {
+			found := false
+			for _, actualElem := range actualJSONArr {
+				if err := jsonValEquals(actualElem, actualElem); err == nil {
+					found = true
+					break
+				}
+			}
+			if !found {
+				return fmt.Errorf("not found the expected element %v in array, actual = %v, expected = %v", expectedElem, actual, expected)
+			}
+		}
+		return nil
+	}
+
+	// Both are JSON blob.
 	actualJSON, okA := actual.(map[string]interface{})
 	expectedJSON, okE := expected.(map[string]interface{})
 	if okA && okE {
