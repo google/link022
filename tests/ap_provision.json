@@ -1,12 +1,7 @@
 {
-  "openconfig-ap-manager:provision-ap":[
-    {
-      "mac":"00:11:22:33:44:55",
-      "config":{
-        "mac":"00:11:22:33:44:55",
-        "country-code":"US",
-        "hostname":"link022-pi-ap"
-      }
-    }
-  ]
+  "openconfig-ap-manager:config":{
+    "mac":"00:11:22:33:44:55",
+    "country-code":"US",
+    "hostname":"link022-pi-ap"
+  }
 }

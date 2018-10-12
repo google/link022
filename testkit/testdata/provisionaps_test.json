@@ -7,8 +7,8 @@
       "description":"Initial assignment of hostname & CC.",
       "ops":[
         {
-          "type":"replace",
-          "path":"/provision-aps",
+          "type":"update",
+          "path":"/provision-aps/provision-ap[mac=00:11:22:33:44:55]",
           "val":"@../tests/ap_provision.json"
         }
       ]
