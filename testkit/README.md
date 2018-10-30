@@ -46,7 +46,7 @@ Here is one example:
 -cert ../demo/cert/client/client.crt \
 -key ../demo/cert/client/client.key \
 -target_name www.example.com \
--target_addr 127.0.0.1:8080 \
+-target_addr 127.0.0.1:10162 \
 -test_file=testdata/simple_test.json
 
 insecure mode on:
@@ -74,7 +74,7 @@ Note, return here after you've completed Step 4 (verify the setup), but before S
 
 An emulated Link022 AP should run inside mininet node "target".
 * management interface IP: 10.0.0.1
-* gNMI port: 8080
+* gNMI port: 10162
 
 Note: The default log file location:
 * link022 AP: "/tmp/link022_agent.INFO"
@@ -90,7 +90,7 @@ mininet> ctrlr {path to testkit binary} -logtostderr \
 -cert ../demo/cert/client/client.crt \
 -key ../demo/cert/client/client.key \
 -target_name www.example.com \
--target_addr 10.0.0.1:8080 \
+-target_addr 10.0.0.1:10162 \
 -test_file=../testkit/testdata/simple_test.json
 ```
 

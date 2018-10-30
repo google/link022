@@ -41,7 +41,7 @@ import (
 var (
 	ethINTFName    = flag.String("eth_intf_name", "eth0", "The management network interface on this device.")
 	wlanINTFName   = flag.String("wlan_intf_name", "wlan0", "The WLAN interface on this device for AP radio.")
-	gnmiPort       = flag.Int("gnmi_port", 8080, "The port GNMI server listening on.")
+	gnmiPort       = flag.Int("gnmi_port", 10162, "The port GNMI server listening on.")
 	controllerAddr = flag.String("controller_address", "", "The WiFi Controller of this device.")
 
 	cmdRunner = syscmd.Runner()
