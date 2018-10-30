@@ -91,7 +91,7 @@ target-eth2: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
         TX packets 6  bytes 508 (508.0 B)
         TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
 ```
-"target-eth0" is the management interface of the emulated AP, where gNMI target listens on (default port 8080).
+"target-eth0" is the management interface of the emulated AP, where gNMI target listens on (default port 10162).
 
 The link022 agent process runs inside "target" node:
 ```
@@ -119,7 +119,7 @@ mininet> xterm ctrlr
 -cert ../demo/cert/client/client.crt \
 -key ../demo/cert/client/client.key \
 -target_name www.example.com \
--target_addr 10.0.0.1:8080 \
+-target_addr 10.0.0.1:10162 \
 -replace=/:@../tests/ap_config.json
 ```
 
@@ -131,7 +131,7 @@ mininet> xterm ctrlr
 -cert ../demo/cert/client/client.crt \
 -key ../demo/cert/client/client.key \
 -target_name www.example.com \
--target_addr 10.0.0.1:8080 \
+-target_addr 10.0.0.1:10162 \
 -xpath "/access-points/access-point[hostname=link022-pi-ap]/radios/radio[id=1]/config/channel"
 ```
 

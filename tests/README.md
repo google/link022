@@ -26,7 +26,7 @@ sudo python integration.py \
   --cert ${LINK022}/demo/cert/client/client.crt \
   --key ${LINK022}/demo/cert/client/client.key \
   --target_name www.example.com \
-  --target_addr 10.0.0.1:8080 \
+  --target_addr 10.0.0.1:10162 \
   --json_conf ${LINK022}/demo/ap_config.json
 
 ```
@@ -39,7 +39,7 @@ sudo python integration.py \
   --cert ${LINK022}/demo/cert/client/client.crt \
   --key ${LINK022}/demo/cert/client/client.key \
   --target_name www.example.com \
-  --target_addr 10.0.0.1:8080 \
+  --target_addr 10.0.0.1:10162 \
   --json_conf ${LINK022}/demo/ap_config.json
 
 ```

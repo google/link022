@@ -6,5 +6,5 @@ sudo env PATH=$PATH ip netns exec lk22 gnmi_set \
 -cert=../cert/client/client.crt \
 -key=../cert/client/client.key \
 -target_name=www.example.com \
--target_addr=192.168.11.8:8080 \
+-target_addr=192.168.11.8:10162 \
 -replace=/:@../ap_config_1r.json
