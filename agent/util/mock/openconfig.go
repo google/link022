@@ -153,7 +153,7 @@ func guestWLAN() *ocstruct.OpenconfigAccessPoints_AccessPoints_AccessPoint_Ssids
 			Opmode:             ocstruct.OpenconfigAccessPoints_AccessPoints_AccessPoint_Ssids_Ssid_Config_Opmode_OPEN,
 			PtkTimeout:         ygot.Uint16(1000),
 			SupportedDataRates: []ocstruct.E_OpenconfigWifiTypes_DATA_RATE{ocstruct.OpenconfigWifiTypes_DATA_RATE_RATE_11MB, ocstruct.OpenconfigWifiTypes_DATA_RATE_RATE_24MB},
-			VlanId:             ygot.Uint16(666),
+			DefaultVlan:        ygot.Uint16(666),
 		},
 	}
 }
@@ -179,7 +179,7 @@ func authWLAN() *ocstruct.OpenconfigAccessPoints_AccessPoints_AccessPoint_Ssids_
 			ServerGroup:        ygot.String(radiusServerGroupName),
 			PtkTimeout:         ygot.Uint16(1000),
 			SupportedDataRates: []ocstruct.E_OpenconfigWifiTypes_DATA_RATE{ocstruct.OpenconfigWifiTypes_DATA_RATE_RATE_11MB, ocstruct.OpenconfigWifiTypes_DATA_RATE_RATE_24MB},
-			VlanId:             ygot.Uint16(250),
+			DefaultVlan:        ygot.Uint16(250),
 		},
 	}
 }

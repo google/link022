@@ -58,7 +58,7 @@ func VLANIDs(apConfig *ocstruct.OpenconfigAccessPoints_AccessPoints_AccessPoint)
 	}
 
 	for _, wlan := range wlans.Ssid {
-		vlanIDs = append(vlanIDs, int(*wlan.Config.VlanId))
+		vlanIDs = append(vlanIDs, int(*wlan.Config.DefaultVlan))
 	}
 
 	return vlanIDs

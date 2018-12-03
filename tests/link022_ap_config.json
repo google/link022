@@ -58,7 +58,7 @@
           "station-isolation":true,
           "operating-frequency":"openconfig-wifi-types:FREQ_2_5_GHZ",
           "name":"Auth-Link022",
-          "vlan-id":300,
+          "default-vlan":300,
           "dot11k":true,
           "supported-data-rates":[
             "openconfig-wifi-types:RATE_36MB",
@@ -99,7 +99,7 @@
             "openconfig-wifi-types:RATE_11MB",
             "openconfig-wifi-types:RATE_24MB"
           ],
-          "vlan-id":200
+          "default-vlan":200
         },
         "name":"Guest-Link022"
       }

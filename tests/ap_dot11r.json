@@ -74,7 +74,7 @@
         "config":{
           "operating-frequency":"openconfig-wifi-types:FREQ_2GHZ",
           "name":"Auth-Link022",
-          "vlan-id":300,
+          "default-vlan":300,
           "enabled":true,
           "server-group":"freeradius",
           "opmode":"WPA2_ENTERPRISE"
