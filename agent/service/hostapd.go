@@ -144,7 +144,7 @@ func hostapdConfigFile(radioConfig *ocstruct.OpenconfigAccessPoints_AccessPoints
 		}
 
 		// Add WLAN configuration.
-		wlanBridgeName := getBridgeName(int(*wlanConfig.VlanId))
+		wlanBridgeName := getBridgeName(int(*wlanConfig.DefaultVlan))
 
 		wlanStationIsolation := 0
 		if wlanConfig.StationIsolation != nil && *wlanConfig.StationIsolation {

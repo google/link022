@@ -78,7 +78,7 @@
                 "ptk-timeout": 28800,
                 "operating-frequency": "openconfig-wifi-types:FREQ_2_5_GHZ",
                 "name": "Auth-Link022",
-                "vlan-id": 300,
+                "default-vlan": 300,
                 "advertise-apname": true,
                 "ipv6-ndp-filter-timer": 300,
                 "dot11k": true,
@@ -127,7 +127,7 @@
                   "openconfig-wifi-types:RATE_11MB",
                   "openconfig-wifi-types:RATE_24MB"
                 ],
-                "vlan-id": 200
+                "default-vlan": 200
               },
               "name": "Guest-Link022"
             }
